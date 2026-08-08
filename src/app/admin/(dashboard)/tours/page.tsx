@@ -20,7 +20,7 @@ export default async function AdminToursPage() {
       <AdminPageHeader
         eyebrow="02 · Tour desk"
         title="Tours and charters"
-        description="Edit the promise before you sell it: route, guest expectations, group pricing, and every public detail live together."
+        description="Create tours and update routes, group pricing, and the details shown to guests."
         action={<Link href="/admin/tours/new" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-gold bg-gold px-5 text-sm font-semibold text-charcoal shadow-sun transition hover:-translate-y-0.5 hover:bg-gold-dark"><Plus className="size-4" aria-hidden="true" /> New tour</Link>}
       />
 

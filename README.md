@@ -25,7 +25,22 @@ pnpm lint
 pnpm build
 ```
 
-Never commit `.env.local`. Midtrans server keys, database credentials, email credentials, and admin secrets belong in the deployment environment only.
+Generate distinct runtime secrets locally with:
+
+```bash
+pnpm secrets:generate
+```
+
+To create the database-safe admin password hash, set `ADMIN_PASSWORD`
+temporarily in your shell and run `pnpm admin:hash-password`. Store only the
+resulting hash in `.env.local`; never store the plain password.
+
+After changing the hash, run `pnpm admin:sync` to update and verify the
+database admin account without exposing the hash in a SQL command.
+
+Never commit `.env.local`. Runtime credentials belong in Vercel; the direct
+database URL and seed-only admin password hash stay in `.env.local` or a
+dedicated migration environment.
 
 ## Payments
 

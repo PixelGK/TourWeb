@@ -18,9 +18,9 @@ export function SiteFooter() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold">Explore</p>
             <nav className="mt-4 flex flex-col gap-3 text-sm" aria-label="Footer navigation">
-              <Link href="#top-picks" className="hover:text-gold">Top tours</Link>
-              <Link href="#experiences" className="hover:text-gold">All experiences</Link>
-              <Link href="#custom-tour" className="hover:text-gold">Custom tour</Link>
+              <Link href="/#top-picks" className="hover:text-gold">Top tours</Link>
+              <Link href="/#experiences" className="hover:text-gold">All experiences</Link>
+              <Link href="/#custom-tour" className="hover:text-gold">Custom tour</Link>
               <Link href="/" className="hover:text-gold">Home</Link>
               <a href="#footer-contact" className="hover:text-gold">WhatsApp contact</a>
             </nav>

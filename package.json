@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "admin:hash-password": "node scripts/generate-admin-password-hash.mjs",
+    "admin:sync": "node scripts/sync-admin-user.mjs",
+    "secrets:generate": "node scripts/generate-runtime-secrets.mjs",
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed"
   },

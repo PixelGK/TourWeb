@@ -87,7 +87,7 @@ export default function HomePage() {
 
           <div className="relative min-h-[25rem] overflow-hidden bg-terrace sm:min-h-[34rem] lg:min-h-full">
             <Image
-              src="https://images.unsplash.com/photo-1729591793272-2d4ae68d6255?auto=format&fit=crop&w=1800&q=84"
+              src="/images/hero-bali.avif"
               alt="A path between palm trees and rice fields in Bali"
               fill
               priority
