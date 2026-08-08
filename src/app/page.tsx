@@ -1,13 +1,12 @@
 import {
   ArrowRight,
-  BadgeCheck,
   CalendarCheck2,
   Check,
   ChevronRight,
   CircleDollarSign,
+  ClipboardCheck,
   Headphones,
   MapPinned,
-  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -68,12 +67,12 @@ export default function HomePage() {
       <SiteHeader />
 
       <section className="relative overflow-hidden bg-limestone" aria-labelledby="hero-heading">
-        <div className="mx-auto grid max-w-[1440px] lg:min-h-[40rem] lg:grid-cols-[0.48fr_0.52fr]">
-          <div className="relative z-10 flex flex-col justify-center px-5 pb-11 pt-14 sm:px-8 lg:px-12 lg:pb-24 lg:pt-20 xl:pl-[max(3rem,calc((100vw-1280px)/2))]">
+        <div className="mx-auto grid max-w-[1440px] lg:min-h-[36rem] lg:grid-cols-[0.48fr_0.52fr] xl:min-h-[39rem]">
+          <div className="relative z-10 flex flex-col justify-center px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:pb-20 lg:pt-16 xl:pl-[max(3rem,calc((100vw-1280px)/2))]">
             <Badge tone="category" className="w-fit bg-transparent">
-              <ShieldCheck aria-hidden="true" className="size-3.5" /> Verified local operator
+              <MapPinned aria-hidden="true" className="size-3.5" /> Bali-based · direct booking
             </Badge>
-            <h1 id="hero-heading" className="mt-6 max-w-[10ch] font-serif text-[clamp(3.4rem,5.7vw,6.1rem)] leading-[0.91] tracking-[-0.04em] text-charcoal">
+            <h1 id="hero-heading" className="mt-6 max-w-[11ch] font-serif text-[clamp(3rem,5.4vw,5.75rem)] leading-[0.93] tracking-[-0.04em] text-charcoal">
               See Bali with a local driver.
             </h1>
             <p className="mt-7 max-w-lg text-lg leading-8 text-weathered">
@@ -85,24 +84,24 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative min-h-[25rem] overflow-hidden bg-terrace sm:min-h-[34rem] lg:min-h-full">
+          <div className="relative aspect-[16/11] w-full overflow-hidden bg-terrace sm:aspect-[16/9] lg:aspect-auto lg:min-h-[36rem] xl:min-h-[39rem]">
             <Image
-              src="/images/hero-bali.avif"
-              alt="A path between palm trees and rice fields in Bali"
+              src="https://images.unsplash.com/photo-1573593198586-9335916930e5?auto=format&fit=crop&w=1800&q=84"
+              alt="Layered green rice terraces and palms near Ubud, Bali"
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 60vw"
-              className="object-cover object-[50%_58%]"
+              className="object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-charcoal/20 via-transparent to-transparent" aria-hidden="true" />
             <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between gap-4 bg-charcoal/88 px-5 py-4 text-frangipani backdrop-blur-sm sm:px-7">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold">Near Ubud / Central Bali</p>
-              <p className="text-right font-serif text-base sm:text-lg">A quieter route between the rice fields</p>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold">Tegalalang / North of Ubud</p>
+              <p className="text-right font-serif text-base sm:text-lg">Routes shaped around real Bali traffic</p>
             </div>
           </div>
         </div>
 
-        <div className="relative z-20 mx-auto -mt-7 max-w-7xl px-5 pb-8 sm:-mt-12 sm:px-8 lg:-mt-19 lg:px-12">
+        <div className="relative z-20 mx-auto -mt-5 max-w-7xl px-5 pb-8 sm:-mt-8 sm:px-8 lg:-mt-10 lg:px-12">
           <SearchPanel />
         </div>
       </section>
@@ -156,9 +155,9 @@ export default function HomePage() {
               <p className="mt-2 text-sm leading-6 text-frangipani/65">Routes are planned by someone who drives these roads and understands realistic travel times.</p>
             </div>
             <div className="border-b border-frangipani/20 p-6 sm:border-b-0 sm:border-r lg:p-8">
-              <BadgeCheck aria-hidden="true" className="size-6 text-gold" />
-              <p className="mt-4 font-serif text-3xl">Verified</p>
-              <p className="mt-2 text-sm leading-6 text-frangipani/65">Operator contact details are kept on file and shown clearly before payment.</p>
+              <ClipboardCheck aria-hidden="true" className="size-6 text-gold" />
+              <p className="mt-4 font-serif text-3xl">Clear details</p>
+              <p className="mt-2 text-sm leading-6 text-frangipani/65">Pickup area, inclusions, exclusions, and cancellation terms are shown before you pay.</p>
             </div>
             <div className="p-6 lg:p-8">
               <Headphones aria-hidden="true" className="size-6 text-gold" />

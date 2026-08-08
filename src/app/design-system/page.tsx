@@ -92,7 +92,7 @@ export default function DesignSystemPage() {
               <Badge tone="category">Trekking</Badge>
               <Badge tone="category">Water sports</Badge>
               <Badge tone="clay">Cultural tour</Badge>
-              <Badge tone="trust"><Check aria-hidden="true" className="size-3.5" /> Verified operator</Badge>
+              <Badge tone="trust"><Check aria-hidden="true" className="size-3.5" /> Direct local booking</Badge>
               <Badge tone="warning">Only 3 spots left</Badge>
             </div>
           </div>

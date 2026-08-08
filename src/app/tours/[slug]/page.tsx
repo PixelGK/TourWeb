@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Clock3, ExternalLink, MapPin, ShieldCheck, Users, X } from "lucide-react";
+import { ArrowLeft, Check, Clock3, ExternalLink, MapPin, MessageCircle, ShieldCheck, Users, X } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -76,7 +76,7 @@ export default async function TourDetailPage({ params }: PageProps) {
             <div>
               <div className="flex flex-wrap items-center gap-3">
                 <Badge tone="category">{tour.category}</Badge>
-                <Badge tone="trust"><ShieldCheck aria-hidden="true" className="size-3.5" /> Verified operator</Badge>
+                <Badge tone="trust"><MessageCircle aria-hidden="true" className="size-3.5" /> Direct local booking</Badge>
               </div>
               <h1 className="mt-5 max-w-4xl font-serif text-5xl leading-[0.94] tracking-[-0.035em] text-charcoal sm:text-6xl lg:text-7xl">{tour.title}</h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-weathered">{tour.summary}</p>
@@ -151,7 +151,7 @@ export default async function TourDetailPage({ params }: PageProps) {
 
           <section className="border-t border-charcoal/25 pt-8" aria-labelledby="reviews-heading">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay">Guest reviews</p>
-            <h2 id="reviews-heading" className="mt-3 font-serif text-4xl sm:text-5xl">Verified reviews are coming</h2>
+            <h2 id="reviews-heading" className="mt-3 font-serif text-4xl sm:text-5xl">Guest reviews are coming</h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-weathered">We are moving existing guest feedback to this website. Until it is connected, message us on WhatsApp for the current review link.</p>
           </section>
         </div>
