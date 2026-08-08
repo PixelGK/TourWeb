@@ -1,0 +1,29 @@
+# dependencies
+/node_modules
+
+# Next.js
+/.next/
+/out/
+
+# production
+/build
+
+# local previews and generated artifacts
+/work/
+/outputs/
+
+# local environment files
+.env*
+!.env.example
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp

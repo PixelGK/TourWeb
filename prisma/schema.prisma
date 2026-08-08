@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TourCategory {
+  TREKKING
+  WATER_SPORTS
+  CULTURAL_TOUR
+  CAR_CHARTER
+  MULTI_DAY_TRIP
+  CUSTOM_TOUR
+  ISLAND_TRIP
+  NATURE
+}
+
+enum BookingStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentProviderName {
+  MIDTRANS
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+enum AddonPricingMode {
+  PER_PERSON
+  PER_BOOKING
+}
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+model Tour {
+  id                 String              @id @default(uuid()) @db.Uuid
+  title              String
+  slug               String              @unique
+  description        String
+  category           TourCategory
+  durationMinutes    Int                 @map("duration_minutes")
+  basePriceIdr       Int                 @map("base_price_idr")
+  images             String[]
+  inclusions         String[]
+  exclusions         String[]
+  meetingPoint       String              @map("meeting_point")
+  cancellationPolicy String              @map("cancellation_policy")
+  maxGroupSize       Int                 @map("max_group_size")
+  published          Boolean             @default(false)
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  itinerary          TourItineraryStop[]
+  pricingTiers       TourPricingTier[]
+  availability       Availability[]
+  bookings           Booking[]
+  addons             TourAddon[]
+
+  @@index([category, published])
+  @@map("tours")
+}
+
+model TourPricingTier {
+  id           String @id @default(uuid()) @db.Uuid
+  tourId       String @map("tour_id") @db.Uuid
+  minPax       Int    @map("min_pax")
+  maxPax       Int    @map("max_pax")
+  perPersonIdr Int    @map("per_person_idr")
+  tour         Tour   @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@unique([tourId, minPax, maxPax])
+  @@index([tourId])
+  @@map("tour_pricing_tiers")
+}
+
+model TourItineraryStop {
+  id          String @id @default(uuid()) @db.Uuid
+  tourId      String @map("tour_id") @db.Uuid
+  position    Int
+  timeLabel   String @map("time_label")
+  title       String
+  description String
+  tour        Tour   @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@unique([tourId, position])
+  @@index([tourId])
+  @@map("tour_itinerary_stops")
+}
+
+model Availability {
+  id             String    @id @default(uuid()) @db.Uuid
+  tourId         String    @map("tour_id") @db.Uuid
+  date           DateTime  @db.Date
+  capacity       Int
+  spotsRemaining Int       @map("spots_remaining")
+  isOpen         Boolean   @default(true) @map("is_open")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  tour           Tour      @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  bookings       Booking[]
+
+  @@unique([tourId, date])
+  @@index([date])
+  @@index([tourId])
+  @@map("availability")
+}
+
+model TourAddon {
+  id          String           @id @default(uuid()) @db.Uuid
+  tourId      String           @map("tour_id") @db.Uuid
+  code        String
+  title       String
+  description String?
+  priceIdr    Int              @map("price_idr")
+  pricingMode AddonPricingMode @map("pricing_mode")
+  active      Boolean          @default(true)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  tour        Tour             @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  bookings    BookingAddon[]
+
+  @@unique([tourId, code])
+  @@index([tourId])
+  @@map("tour_addons")
+}
+
+model Booking {
+  id                      String              @id @default(uuid()) @db.Uuid
+  reference               String              @unique
+  tourId                  String              @map("tour_id") @db.Uuid
+  availabilityId          String              @map("availability_id") @db.Uuid
+  paxCount                Int                 @map("pax_count")
+  customerName            String              @map("customer_name")
+  customerEmail           String              @map("customer_email")
+  customerPhone           String              @map("customer_phone")
+  customerCountry         String              @map("customer_country")
+  hotelName               String?             @map("hotel_name")
+  notes                   String?
+  status                  BookingStatus       @default(PENDING)
+  totalAmountIdr          Int                 @map("total_amount_idr")
+  currency                String              @default("IDR")
+  paymentProvider         PaymentProviderName @map("payment_provider")
+  paymentStatus           PaymentStatus       @default(PENDING) @map("payment_status")
+  paymentTransactionId    String?             @unique @map("payment_transaction_id")
+  idempotencyKey          String              @unique @map("idempotency_key")
+  idempotencyRequestHash  String              @map("idempotency_request_hash")
+  heldUntil               DateTime            @map("held_until")
+  paidAt                  DateTime?           @map("paid_at")
+  cancelledAt             DateTime?           @map("cancelled_at")
+  confirmationEmailSentAt DateTime?           @map("confirmation_email_sent_at")
+  createdAt               DateTime            @default(now()) @map("created_at")
+  updatedAt               DateTime            @updatedAt @map("updated_at")
+  tour                    Tour                @relation(fields: [tourId], references: [id], onDelete: Restrict)
+  availability            Availability        @relation(fields: [availabilityId], references: [id], onDelete: Restrict)
+  addons                  BookingAddon[]
+
+  @@index([availabilityId, status])
+  @@index([tourId])
+  @@index([status, createdAt])
+  @@index([customerEmail])
+  @@map("bookings")
+}
+
+model BookingAddon {
+  bookingId    String    @map("booking_id") @db.Uuid
+  addonId      String    @map("addon_id") @db.Uuid
+  quantity     Int
+  unitPriceIdr Int       @map("unit_price_idr")
+  booking      Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  addon        TourAddon @relation(fields: [addonId], references: [id], onDelete: Restrict)
+
+  @@id([bookingId, addonId])
+  @@index([addonId])
+  @@map("booking_addons")
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  name         String?
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(ADMIN)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model RateLimitBucket {
+  key         String   @id
+  count       Int
+  windowStart DateTime @map("window_start")
+  resetAt     DateTime @map("reset_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([resetAt])
+  @@map("rate_limit_buckets")
+}

@@ -1,0 +1,216 @@
+"use client";
+
+import { ArrowLeft, ArrowRight, Check, LockKeyhole, ShieldCheck } from "lucide-react";
+import { useState, type FormEvent } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { PricingTier } from "@/data/mock-tour-details";
+import type { MockAddon } from "@/data/mock-addons";
+import { cn } from "@/lib/utils";
+
+const idr = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
+const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const longDate = new Intl.DateTimeFormat("en", { dateStyle: "full", timeZone: "UTC" });
+const idrPerUsdEstimate = 16500;
+
+interface TravelerState {
+  name: string;
+  email: string;
+  phone: string;
+  country: string;
+  hotelName: string;
+  notes: string;
+}
+
+interface CheckoutFlowProps {
+  tour: { slug: string; title: string; location: string; duration: string };
+  date: string;
+  pax: number;
+  pricingTiers: PricingTier[];
+  addons: MockAddon[];
+}
+
+export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: CheckoutFlowProps) {
+  const [step, setStep] = useState(1);
+  const [traveler, setTraveler] = useState<TravelerState>({ name: "", email: "", phone: "", country: "", hotelName: "", notes: "" });
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
+
+  const lunchAddon = addons.find((addon) => addon.code === "local-lunch");
+  const otherAddons = addons.filter((addon) => addon.code !== "local-lunch");
+  const lunchIncluded = lunchAddon ? selectedAddons.includes(lunchAddon.code) : false;
+  const selectedExtraCount = selectedAddons.filter((code) => code !== lunchAddon?.code).length;
+  const perPersonIdr = pricingTiers.find((tier) => pax >= tier.minPax && pax <= tier.maxPax)?.perPersonIdr ?? pricingTiers.at(-1)?.perPersonIdr ?? 0;
+  const addOnTotal = addons.filter((addon) => selectedAddons.includes(addon.code)).reduce((sum, addon) => sum + addon.priceIdr * (addon.pricingMode === "PER_PERSON" ? pax : 1), 0);
+  const totalIdr = perPersonIdr * pax + addOnTotal;
+  const dateLabel = longDate.format(new Date(`${date}T00:00:00.000Z`));
+
+  function updateTraveler(field: keyof TravelerState, value: string) {
+    setTraveler((current) => ({ ...current, [field]: value }));
+  }
+
+  function continueFromTraveler(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function chooseLunch(included: boolean) {
+    if (!lunchAddon) return;
+    setSelectedAddons((current) => included
+      ? [...new Set([...current, lunchAddon.code])]
+      : current.filter((code) => code !== lunchAddon.code));
+  }
+
+  async function beginPayment() {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+        body: JSON.stringify({ tourSlug: tour.slug, date, pax, addonCodes: selectedAddons, traveler }),
+      });
+      const result = await response.json() as { error?: string; redirectUrl?: string };
+      if (!response.ok || !result.redirectUrl) {
+        if (response.status === 502) setIdempotencyKey(crypto.randomUUID());
+        throw new Error(result.error ?? "Secure payment could not be started");
+      }
+
+      const redirect = new URL(result.redirectUrl);
+      if (!new Set(["app.midtrans.com", "app.sandbox.midtrans.com"]).has(redirect.hostname)) throw new Error("The payment destination was not recognized");
+      window.location.assign(redirect.toString());
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Secure payment could not be started");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:py-12">
+      <main>
+        <ol aria-label="Checkout progress" className="mb-8 grid grid-cols-3 border border-charcoal/25 bg-frangipani">
+          {["Traveler", "Options", "Payment"].map((label, index) => {
+            const number = index + 1;
+            return <li key={label} aria-current={step === number ? "step" : undefined} className={cn("flex min-h-14 items-center gap-2 border-r border-charcoal/20 px-3 text-sm last:border-r-0 sm:px-5", step === number && "bg-terrace text-frangipani", step > number && "text-terrace")}>
+              <span className={cn("grid size-6 shrink-0 place-items-center rounded-full border text-xs font-bold", step === number ? "border-frangipani/60" : "border-current")}>{step > number ? <Check className="size-3.5" aria-hidden="true" /> : number}</span>
+              <span className="hidden font-semibold sm:inline">{label}</span>
+            </li>;
+          })}
+        </ol>
+
+        {step === 1 ? (
+          <section aria-labelledby="traveler-heading">
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-clay">Step 1 of 3</p>
+            <h1 id="traveler-heading" className="mt-2 font-serif text-4xl sm:text-5xl">Traveler details</h1>
+            <p className="mt-3 max-w-2xl text-weathered">Tell us who is making the booking and where you are staying. You can confirm the hotel later if you have not booked it yet.</p>
+            <form onSubmit={continueFromTraveler} className="mt-8 grid gap-5 sm:grid-cols-2">
+              <Input label="Full name" autoComplete="name" required value={traveler.name} onChange={(event) => updateTraveler("name", event.target.value)} />
+              <Input label="Email" type="email" autoComplete="email" required value={traveler.email} onChange={(event) => updateTraveler("email", event.target.value)} />
+              <Input label="WhatsApp / phone" type="tel" autoComplete="tel" required hint="Include your country code, for example +61." value={traveler.phone} onChange={(event) => updateTraveler("phone", event.target.value)} />
+              <Input label="Country" autoComplete="country-name" required value={traveler.country} onChange={(event) => updateTraveler("country", event.target.value)} />
+              <Input label="Bali hotel or villa" autoComplete="organization" hint="Optional—you can confirm this later on WhatsApp." value={traveler.hotelName} onChange={(event) => updateTraveler("hotelName", event.target.value)} containerClassName="sm:col-span-2" />
+              <label className="space-y-2 sm:col-span-2">
+                <span className="block text-sm font-semibold">Notes for the operator <span className="font-normal text-weathered">(optional)</span></span>
+                <textarea value={traveler.notes} onChange={(event) => updateTraveler("notes", event.target.value)} maxLength={800} rows={4} className="w-full rounded-field border border-charcoal/35 bg-frangipani px-3.5 py-3 text-base outline-none focus:border-terrace focus:ring-3 focus:ring-gold/30" placeholder="Mobility needs, dietary requests, pickup questions…" />
+              </label>
+              <Button type="submit" size="lg" className="sm:col-start-2">Choose trip options <ArrowRight className="size-4" aria-hidden="true" /></Button>
+            </form>
+          </section>
+        ) : null}
+
+        {step === 2 ? (
+          <section aria-labelledby="addons-heading">
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-clay">Step 2 of 3</p>
+            <h1 id="addons-heading" className="mt-2 font-serif text-4xl sm:text-5xl">Choose lunch and extras</h1>
+            <p className="mt-3 text-weathered">Lunch is optional. Every extra is priced in IDR before you pay.</p>
+
+            {lunchAddon ? (
+              <fieldset className="mt-8">
+                <legend className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Lunch plan</legend>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <label className={cn("cursor-pointer border p-5 transition-colors hover:bg-frangipani", lunchIncluded ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25")}>
+                    <span className="flex items-start gap-3">
+                      <input type="radio" name="lunch-plan" checked={lunchIncluded} onChange={() => chooseLunch(true)} className="mt-1 size-5 shrink-0 accent-terrace" />
+                      <span>
+                        <strong className="block">Lunch included</strong>
+                        <span className="mt-1 block text-sm leading-6 text-weathered">{lunchAddon.description}</span>
+                        <span className="mt-3 block font-semibold tabular-nums text-terrace">+ {idr.format(lunchAddon.priceIdr * pax)} <span className="text-xs font-normal text-weathered">({idr.format(lunchAddon.priceIdr)} each)</span></span>
+                      </span>
+                    </span>
+                  </label>
+                  <label className={cn("cursor-pointer border p-5 transition-colors hover:bg-frangipani", !lunchIncluded ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25")}>
+                    <span className="flex items-start gap-3">
+                      <input type="radio" name="lunch-plan" checked={!lunchIncluded} onChange={() => chooseLunch(false)} className="mt-1 size-5 shrink-0 accent-terrace" />
+                      <span>
+                        <strong className="block">Choose where to eat</strong>
+                        <span className="mt-1 block text-sm leading-6 text-weathered">Your driver can suggest suitable stops, but you choose the restaurant and pay for your own food and drinks directly.</span>
+                        <span className="mt-3 block font-semibold text-terrace">No BaliXperience lunch charge</span>
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
+            ) : null}
+
+            {otherAddons.length ? <div className="mt-8 divide-y divide-charcoal/20 border-y border-charcoal/25">
+              {otherAddons.map((addon) => {
+                const selected = selectedAddons.includes(addon.code);
+                const lineTotal = addon.priceIdr * (addon.pricingMode === "PER_PERSON" ? pax : 1);
+                return <label key={addon.code} className={cn("grid cursor-pointer grid-cols-[1.5rem_1fr_auto] gap-3 px-2 py-5 transition-colors hover:bg-frangipani sm:px-4", selected && "bg-frangipani")}>
+                  <input type="checkbox" checked={selected} onChange={() => setSelectedAddons((current) => selected ? current.filter((code) => code !== addon.code) : [...current, addon.code])} className="mt-1 size-5 accent-terrace" />
+                  <span><strong className="block">{addon.title}</strong><span className="mt-1 block text-sm leading-6 text-weathered">{addon.description}</span></span>
+                  <span className="text-right"><strong className="block tabular-nums">{idr.format(lineTotal)}</strong><span className="text-xs text-weathered">{addon.pricingMode === "PER_PERSON" ? `${idr.format(addon.priceIdr)} each` : "per booking"}</span></span>
+                </label>;
+              })}
+            </div> : null}
+            <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+              <Button variant="ghost" size="lg" onClick={() => setStep(1)}><ArrowLeft className="size-4" aria-hidden="true" /> Traveler details</Button>
+              <Button size="lg" onClick={() => { setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Review payment <ArrowRight className="size-4" aria-hidden="true" /></Button>
+            </div>
+          </section>
+        ) : null}
+
+        {step === 3 ? (
+          <section aria-labelledby="payment-heading">
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-clay">Step 3 of 3</p>
+            <h1 id="payment-heading" className="mt-2 font-serif text-4xl sm:text-5xl">Review and pay</h1>
+            <div className="mt-7 border-l-4 border-gold bg-frangipani p-5 sm:p-6">
+              <div className="flex gap-3"><LockKeyhole className="mt-0.5 size-5 shrink-0 text-terrace" aria-hidden="true" /><div><h2 className="font-bold">You’ll continue to Midtrans</h2><p className="mt-1 text-sm leading-6 text-weathered">Card, bank, or wallet details are entered only on Midtrans’s hosted checkout. BaliXperience never receives or stores raw card numbers.</p></div></div>
+            </div>
+            <dl className="mt-8 divide-y divide-charcoal/20 border-y border-charcoal/25">
+              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lead traveler</dt><dd className="text-right font-semibold">{traveler.name}<br /><span className="font-normal text-weathered">{traveler.email}</span></dd></div>
+              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Tour price</dt><dd className="font-semibold tabular-nums">{idr.format(perPersonIdr * pax)}</dd></div>
+              {lunchAddon ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? <>Included · <span className="tabular-nums">{idr.format(lunchAddon.priceIdr * pax)}</span></> : <>Choose your own · <span className="font-normal text-weathered">pay at restaurant</span></>}</dd></div> : null}
+              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold tabular-nums">{idr.format(addOnTotal - (lunchIncluded && lunchAddon ? lunchAddon.priceIdr * pax : 0))}</dd></div>
+            </dl>
+            {error ? <p role="alert" className="mt-5 border border-error/40 bg-error/8 p-4 text-sm font-semibold text-error">{error}</p> : null}
+            <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+              <Button variant="ghost" size="lg" onClick={() => setStep(2)} disabled={loading}><ArrowLeft className="size-4" aria-hidden="true" /> Trip options</Button>
+              <Button size="lg" onClick={beginPayment} loading={loading}>Pay securely in IDR <ArrowRight className="size-4" aria-hidden="true" /></Button>
+            </div>
+          </section>
+        ) : null}
+      </main>
+
+      <aside className="h-fit border border-charcoal/25 bg-frangipani p-5 shadow-sun lg:sticky lg:top-6" aria-label="Booking summary">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Your booking</p>
+        <h2 className="mt-2 font-serif text-2xl leading-tight">{tour.title}</h2>
+        <p className="mt-2 text-sm text-weathered">{tour.location} · {tour.duration}</p>
+        <dl className="mt-5 space-y-3 border-y border-charcoal/20 py-4 text-sm">
+          <div className="flex justify-between gap-4"><dt className="text-weathered">Date</dt><dd className="text-right font-semibold">{dateLabel}</dd></div>
+          <div className="flex justify-between gap-4"><dt className="text-weathered">Travelers</dt><dd className="font-semibold">{pax}</dd></div>
+          {lunchAddon ? <div className="flex justify-between gap-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? "Included" : "Choose & pay directly"}</dd></div> : null}
+          <div className="flex justify-between gap-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold">{selectedExtraCount || "None"}</dd></div>
+        </dl>
+        <div className="mt-5 flex items-end justify-between gap-3"><span className="text-sm text-weathered">Total</span><strong className="font-serif text-3xl tabular-nums">{idr.format(totalIdr)}</strong></div>
+        <p className="mt-1 text-right text-xs text-weathered">≈ {usd.format(totalIdr / idrPerUsdEstimate)} estimate</p>
+        <p className="mt-5 flex gap-2 text-xs leading-5 text-weathered"><ShieldCheck className="size-4 shrink-0 text-terrace" aria-hidden="true" />The actual charge and settlement currency is IDR. Your bank determines any conversion rate or foreign transaction fee.</p>
+      </aside>
+    </div>
+  );
+}
