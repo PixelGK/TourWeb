@@ -4,7 +4,7 @@ import {
   Check,
   ChevronRight,
   CircleDollarSign,
-  ClipboardCheck,
+  HeartHandshake,
   Headphones,
   MapPinned,
   Sparkles,
@@ -67,12 +67,12 @@ export default function HomePage() {
       <SiteHeader />
 
       <section className="relative overflow-hidden bg-limestone" aria-labelledby="hero-heading">
-        <div className="mx-auto grid max-w-[1440px] lg:min-h-[36rem] lg:grid-cols-[0.48fr_0.52fr] xl:min-h-[39rem]">
-          <div className="relative z-10 flex flex-col justify-center px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:pb-20 lg:pt-16 xl:pl-[max(3rem,calc((100vw-1280px)/2))]">
+        <div className="mx-auto grid w-full xl:min-h-[36rem] xl:w-[94%] xl:max-w-[1520px] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)]">
+          <div className="relative z-10 flex min-w-0 flex-col justify-center px-5 py-12 sm:px-8 sm:py-16 lg:px-12 xl:px-14 xl:pb-20 xl:pt-16 2xl:px-16">
             <Badge tone="category" className="w-fit bg-transparent">
               <MapPinned aria-hidden="true" className="size-3.5" /> Bali-based · direct booking
             </Badge>
-            <h1 id="hero-heading" className="mt-6 max-w-[11ch] font-serif text-[clamp(3rem,5.4vw,5.75rem)] leading-[0.93] tracking-[-0.04em] text-charcoal">
+            <h1 id="hero-heading" className="mt-6 max-w-[12ch] font-serif text-[clamp(3rem,5.2vw,5.5rem)] leading-[0.93] tracking-[-0.04em] text-charcoal">
               See Bali with a local driver.
             </h1>
             <p className="mt-7 max-w-lg text-lg leading-8 text-weathered">
@@ -84,19 +84,19 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative aspect-[16/11] w-full overflow-hidden bg-terrace sm:aspect-[16/9] lg:aspect-auto lg:min-h-[36rem] xl:min-h-[39rem]">
+          <div className="relative aspect-[16/11] min-w-0 w-full overflow-hidden bg-terrace sm:aspect-[16/9] xl:aspect-auto xl:min-h-[36rem]">
             <Image
               src="https://images.unsplash.com/photo-1573593198586-9335916930e5?auto=format&fit=crop&w=1800&q=84"
               alt="Layered green rice terraces and palms near Ubud, Bali"
               fill
               priority
-              sizes="(max-width: 1024px) 100vw, 60vw"
+              sizes="(max-width: 1279px) 100vw, min(50vw, 790px)"
               className="object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-charcoal/20 via-transparent to-transparent" aria-hidden="true" />
-            <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between gap-4 bg-charcoal/88 px-5 py-4 text-frangipani backdrop-blur-sm sm:px-7">
+            <div className="absolute bottom-8 left-5 right-5 flex min-w-0 flex-col items-start gap-1 border-l-4 border-gold bg-charcoal/90 px-5 py-4 text-frangipani shadow-lg backdrop-blur-sm sm:bottom-10 sm:left-8 sm:right-auto sm:max-w-md sm:px-6 xl:bottom-14">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold">Tegalalang / North of Ubud</p>
-              <p className="text-right font-serif text-base sm:text-lg">Routes shaped around real Bali traffic</p>
+              <p className="font-serif text-base leading-snug sm:text-lg">Routes shaped around real Bali traffic</p>
             </div>
           </div>
         </div>
@@ -155,9 +155,9 @@ export default function HomePage() {
               <p className="mt-2 text-sm leading-6 text-frangipani/65">Routes are planned by someone who drives these roads and understands realistic travel times.</p>
             </div>
             <div className="border-b border-frangipani/20 p-6 sm:border-b-0 sm:border-r lg:p-8">
-              <ClipboardCheck aria-hidden="true" className="size-6 text-gold" />
-              <p className="mt-4 font-serif text-3xl">Clear details</p>
-              <p className="mt-2 text-sm leading-6 text-frangipani/65">Pickup area, inclusions, exclusions, and cancellation terms are shown before you pay.</p>
+              <HeartHandshake aria-hidden="true" className="size-6 text-gold" />
+              <p className="mt-4 font-serif text-3xl">Planned with care</p>
+              <p className="mt-2 text-sm leading-6 text-frangipani/65">Each route has realistic timing and enough breathing room to enjoy the day without rushing.</p>
             </div>
             <div className="p-6 lg:p-8">
               <Headphones aria-hidden="true" className="size-6 text-gold" />
