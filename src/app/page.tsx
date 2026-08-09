@@ -31,7 +31,8 @@ const categories = [
   ["03", "Cultural tours"],
   ["04", "Car charter"],
   ["05", "Multi-day trips"],
-  ["06", "Custom tour"],
+  ["06", "Attraction tickets"],
+  ["07", "Custom tour"],
 ] as const;
 
 const directReasons = [
@@ -73,7 +74,7 @@ export default function HomePage() {
               <MapPinned aria-hidden="true" className="size-3.5" /> Bali-based · direct booking
             </Badge>
             <h1 id="hero-heading" className="mt-6 max-w-[12ch] font-serif text-[clamp(3rem,5.2vw,5.5rem)] leading-[0.93] tracking-[-0.04em] text-charcoal">
-              See Bali with a local driver.
+              See Bali with a local guide.
             </h1>
             <p className="mt-7 max-w-lg text-lg leading-8 text-weathered">
               Private day tours and driver hire, planned around where you are staying and how much you want to fit in.

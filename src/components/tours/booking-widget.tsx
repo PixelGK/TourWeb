@@ -15,8 +15,8 @@ function getPerPersonPrice(tiers: PricingTier[], pax: number) {
   return tiers.find((tier) => pax >= tier.minPax && pax <= tier.maxPax)?.perPersonIdr ?? tiers[tiers.length - 1].perPersonIdr;
 }
 
-export function BookingWidget({ tourSlug, pricingTiers, maxGroupSize }: { tourSlug: string; pricingTiers: PricingTier[]; maxGroupSize: number }) {
-  const [pax, setPax] = useState(2);
+export function BookingWidget({ tourSlug, pricingTiers, maxGroupSize, initialDate = "", initialPax = 2 }: { tourSlug: string; pricingTiers: PricingTier[]; maxGroupSize: number; initialDate?: string; initialPax?: number }) {
+  const [pax, setPax] = useState(Math.min(Math.max(initialPax, 1), maxGroupSize));
   const [bookingWindow] = useState(getBookingWindow);
   const perPerson = getPerPersonPrice(pricingTiers, pax);
   const total = perPerson * pax;
@@ -27,7 +27,7 @@ export function BookingWidget({ tourSlug, pricingTiers, maxGroupSize }: { tourSl
       <aside className="sticky top-6 hidden border border-charcoal/25 bg-frangipani p-6 shadow-sun-raised lg:block" aria-label="Book this tour">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Reserve your date</p>
         <h2 className="mt-2 font-serif text-3xl">Book direct</h2>
-        <BookingForm tourSlug={tourSlug} pax={pax} setPax={setPax} maxGroupSize={maxGroupSize} minDate={bookingWindow.minDate} maxDate={bookingWindow.maxDate} />
+        <BookingForm tourSlug={tourSlug} pax={pax} setPax={setPax} maxGroupSize={maxGroupSize} minDate={bookingWindow.minDate} maxDate={bookingWindow.maxDate} initialDate={initialDate} />
         <div className="mt-5 border-y border-charcoal/20 py-4">
           <div className="flex items-baseline justify-between gap-4">
             <span className="text-sm text-weathered">Total for {pax}</span>
@@ -45,7 +45,7 @@ export function BookingWidget({ tourSlug, pricingTiers, maxGroupSize }: { tourSl
           <label className="relative block">
             <span className="sr-only">Travel date</span>
             <CalendarDays aria-hidden="true" className="pointer-events-none absolute left-2.5 top-3 size-4 text-clay" />
-            <input type="date" name="date" min={bookingWindow.minDate} max={bookingWindow.maxDate} required suppressHydrationWarning className="min-h-10 w-full rounded-control border border-charcoal/30 bg-limestone py-2 pl-8 pr-2 text-xs text-charcoal outline-none focus:border-terrace focus:ring-2 focus:ring-gold/30" />
+            <input type="date" name="date" min={bookingWindow.minDate} max={bookingWindow.maxDate} defaultValue={initialDate} required suppressHydrationWarning className="min-h-10 w-full rounded-control border border-charcoal/30 bg-limestone py-2 pl-8 pr-2 text-xs text-charcoal outline-none focus:border-terrace focus:ring-2 focus:ring-gold/30" />
           </label>
           <label className="relative block">
             <span className="sr-only">Travelers</span>
@@ -67,13 +67,13 @@ export function BookingWidget({ tourSlug, pricingTiers, maxGroupSize }: { tourSl
   );
 }
 
-function BookingForm({ tourSlug, pax, setPax, maxGroupSize, minDate, maxDate }: { tourSlug: string; pax: number; setPax: (pax: number) => void; maxGroupSize: number; minDate: string; maxDate: string }) {
+function BookingForm({ tourSlug, pax, setPax, maxGroupSize, minDate, maxDate, initialDate }: { tourSlug: string; pax: number; setPax: (pax: number) => void; maxGroupSize: number; minDate: string; maxDate: string; initialDate: string }) {
   return (
     <form id="desktop-booking-form" action="/checkout" method="get" className="mt-5 space-y-4">
       <input type="hidden" name="tour" value={tourSlug} />
       <label className="block space-y-2">
         <span className="text-sm font-semibold">Travel date</span>
-        <input type="date" name="date" min={minDate} max={maxDate} required suppressHydrationWarning className="min-h-12 w-full rounded-field border border-charcoal/35 bg-limestone px-3.5 text-base text-charcoal outline-none focus:border-terrace focus:ring-3 focus:ring-gold/30" />
+        <input type="date" name="date" min={minDate} max={maxDate} defaultValue={initialDate} required suppressHydrationWarning className="min-h-12 w-full rounded-field border border-charcoal/35 bg-limestone px-3.5 text-base text-charcoal outline-none focus:border-terrace focus:ring-3 focus:ring-gold/30" />
         <span className="block text-xs leading-5 text-weathered">Dates open on a rolling 12-month window.</span>
       </label>
       <label className="block space-y-2">

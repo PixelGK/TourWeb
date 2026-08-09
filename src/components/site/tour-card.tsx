@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { PriceTag } from "@/components/ui/price-tag";
 import type { MockTour } from "@/data/mock-tours";
 
-export function TourCard({ tour, priority = false }: { tour: MockTour; priority?: boolean }) {
+export function TourCard({ tour, priority = false, bookingQuery }: { tour: MockTour; priority?: boolean; bookingQuery?: string }) {
+  const href = bookingQuery ? `/tours/${tour.slug}?${bookingQuery}` : `/tours/${tour.slug}`;
+
   return (
     <article className="group h-full border border-charcoal/20 bg-frangipani transition-[border-color,box-shadow,transform] duration-base hover:-translate-y-1 hover:border-charcoal/50 hover:shadow-sun-raised">
-      <Link href={`/tours/${tour.slug}`} className="flex h-full flex-col focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus">
+      <Link href={href} className="flex h-full flex-col focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus">
         <div className="relative aspect-[4/3] overflow-hidden bg-terrace">
           <Image
             src={tour.image}

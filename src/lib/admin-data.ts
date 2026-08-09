@@ -238,6 +238,7 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
     const mockCategory: Record<string, string> = {
       Trekking: "TREKKING", "Water Sports": "WATER_SPORTS", "Cultural tour": "CULTURAL_TOUR", "Cultural Tours": "CULTURAL_TOUR",
       "Car Charter": "CAR_CHARTER", "Multi-Day Trips": "MULTI_DAY_TRIP", "Custom Tour": "CUSTOM_TOUR", "Island Trips": "ISLAND_TRIP", Nature: "NATURE",
+      "Attraction Tickets": "ATTRACTION_TICKET",
     };
     return {
       id: tour.slug,

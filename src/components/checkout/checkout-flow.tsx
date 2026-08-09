@@ -35,6 +35,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
   const [step, setStep] = useState(1);
   const [traveler, setTraveler] = useState<TravelerState>({ name: "", email: "", phone: "", country: "", hotelName: "", notes: "" });
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+  const hasLunchOption = addons.some((addon) => addon.code === "local-lunch");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
@@ -126,8 +127,8 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
         {step === 2 ? (
           <section aria-labelledby="addons-heading">
             <p className="text-xs font-bold uppercase tracking-[0.15em] text-clay">Step 2 of 3</p>
-            <h1 id="addons-heading" className="mt-2 font-serif text-4xl sm:text-5xl">Choose lunch and extras</h1>
-            <p className="mt-3 text-weathered">Lunch is optional. Every extra is priced in IDR before you pay.</p>
+            <h1 id="addons-heading" className="mt-2 font-serif text-4xl sm:text-5xl">{hasLunchOption ? "Choose lunch and extras" : "Choose optional extras"}</h1>
+            <p className="mt-3 text-weathered">{hasLunchOption ? "Lunch is optional. Every extra is priced in IDR before you pay." : "Add only what you need. Every extra is priced in IDR before you pay."}</p>
 
             {lunchAddon ? (
               <fieldset className="mt-8">

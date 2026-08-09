@@ -22,6 +22,7 @@ const categories: Record<string, TourCategory> = {
   "Custom Tour": TourCategory.CUSTOM_TOUR,
   "Island Trips": TourCategory.ISLAND_TRIP,
   Nature: TourCategory.NATURE,
+  "Attraction Tickets": TourCategory.ATTRACTION_TICKET,
 };
 
 function bookableDates(days = 366) {
@@ -41,7 +42,14 @@ async function main() {
     });
   }
 
-  for (const mockTour of allTours) {
+  const requestedSlugs = new Set((process.env.SEED_SLUGS ?? "").split(",").map((slug) => slug.trim()).filter(Boolean));
+  const toursToSeed = requestedSlugs.size ? allTours.filter((tour) => requestedSlugs.has(tour.slug)) : allTours;
+  if (requestedSlugs.size && toursToSeed.length !== requestedSlugs.size) {
+    const known = new Set(toursToSeed.map((tour) => tour.slug));
+    throw new Error(`Unknown SEED_SLUGS: ${[...requestedSlugs].filter((slug) => !known.has(slug)).join(", ")}`);
+  }
+
+  for (const mockTour of toursToSeed) {
     const detail = getTourDetail(mockTour);
     const tour = await prisma.tour.upsert({
       where: { slug: mockTour.slug },
@@ -95,12 +103,19 @@ async function main() {
         create: { tourId: tour.id, ...addon, active: true },
       });
     }
-    for (const date of bookableDates()) {
-      await prisma.availability.upsert({
-        where: { tourId_date: { tourId: tour.id, date } },
-        update: { capacity: detail.maxGroupSize },
-        create: { tourId: tour.id, date, capacity: detail.maxGroupSize, spotsRemaining: detail.maxGroupSize },
+    if (requestedSlugs.size) {
+      await prisma.availability.createMany({
+        data: bookableDates().map((date) => ({ tourId: tour.id, date, capacity: detail.maxGroupSize, spotsRemaining: detail.maxGroupSize })),
+        skipDuplicates: true,
       });
+    } else {
+      for (const date of bookableDates()) {
+        await prisma.availability.upsert({
+          where: { tourId_date: { tourId: tour.id, date } },
+          update: { capacity: detail.maxGroupSize },
+          create: { tourId: tour.id, date, capacity: detail.maxGroupSize, spotsRemaining: detail.maxGroupSize },
+        });
+      }
     }
   }
 }

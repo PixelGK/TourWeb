@@ -11,8 +11,9 @@ import { PhotoGallery } from "@/components/tours/photo-gallery";
 import { Badge } from "@/components/ui/badge";
 import { getTourDetail } from "@/data/mock-tour-details";
 import { allTours } from "@/data/mock-tours";
+import { isInsideBookingWindow } from "@/lib/booking-window";
 
-type PageProps = { params: Promise<{ slug: string }> };
+type PageProps = { params: Promise<{ slug: string }>; searchParams: Promise<{ date?: string; pax?: string }> };
 
 export const revalidate = 86400;
 
@@ -34,15 +35,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: tour.title,
-    description: `${tour.title}: a private ${tour.duration.toLowerCase()} Bali experience with hotel pickup, direct local support, and clear IDR pricing.`,
+    description: tour.category === "Attraction Tickets"
+      ? `${tour.title}: dated attraction admission with e-ticket confirmation, direct local support, and clear IDR pricing.`
+      : `${tour.title}: a private ${tour.duration.toLowerCase()} Bali experience with hotel pickup, direct local support, and clear IDR pricing.`,
   };
 }
 
-export default async function TourDetailPage({ params }: PageProps) {
+export default async function TourDetailPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const query = await searchParams;
   const baseTour = findTour(slug);
   if (!baseTour) notFound();
   const tour = getTourDetail(baseTour);
+  const isTicket = tour.category === "Attraction Tickets";
+  const initialDate = query.date && /^\d{4}-\d{2}-\d{2}$/.test(query.date) && isInsideBookingWindow(query.date) ? query.date : undefined;
+  const requestedPax = Number(query.pax);
+  const initialPax = Number.isInteger(requestedPax) && requestedPax >= 1 && requestedPax <= tour.maxGroupSize ? requestedPax : 2;
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -83,7 +91,7 @@ export default async function TourDetailPage({ params }: PageProps) {
             </div>
             <div className="flex flex-wrap gap-x-6 gap-y-3 border-l-2 border-gold pl-5 text-sm font-semibold text-charcoal lg:max-w-xs lg:flex-col lg:gap-3">
               <span className="inline-flex items-center gap-2"><Clock3 aria-hidden="true" className="size-4 text-clay" /> {tour.duration}</span>
-              <span className="inline-flex items-center gap-2"><Users aria-hidden="true" className="size-4 text-clay" /> Private · up to {tour.maxGroupSize}</span>
+              <span className="inline-flex items-center gap-2"><Users aria-hidden="true" className="size-4 text-clay" /> {isTicket ? `Dated admission · up to ${tour.maxGroupSize} tickets` : `Private · up to ${tour.maxGroupSize}`}</span>
               <span className="inline-flex items-center gap-2"><MapPin aria-hidden="true" className="size-4 text-clay" /> {tour.location}</span>
             </div>
           </div>
@@ -95,9 +103,9 @@ export default async function TourDetailPage({ params }: PageProps) {
       <div className="mx-auto grid max-w-7xl gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:px-12 lg:py-20">
         <div className="min-w-0 space-y-16">
           <section aria-labelledby="itinerary-heading">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay">Your day</p>
-            <h2 id="itinerary-heading" className="mt-3 font-serif text-4xl leading-none sm:text-5xl">What happens on the day</h2>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-weathered">Pickup times change by hotel area. We’ll confirm your time on WhatsApp the evening before.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay">{isTicket ? "Your visit" : "Your day"}</p>
+            <h2 id="itinerary-heading" className="mt-3 font-serif text-4xl leading-none sm:text-5xl">{isTicket ? "How the ticket works" : "What happens on the day"}</h2>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-weathered">{isTicket ? "Your booking is checked against supplier capacity before the dated e-ticket is issued." : "Pickup times change by hotel area. We’ll confirm your time on WhatsApp the evening before."}</p>
             <ItineraryTimeline stops={tour.itinerary} />
           </section>
 
@@ -118,7 +126,7 @@ export default async function TourDetailPage({ params }: PageProps) {
 
           <section aria-labelledby="pricing-heading">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay">Group pricing</p>
-            <h2 id="pricing-heading" className="mt-3 font-serif text-4xl sm:text-5xl">Price per person</h2>
+            <h2 id="pricing-heading" className="mt-3 font-serif text-4xl sm:text-5xl">{isTicket ? "Ticket price per person" : "Price per person"}</h2>
             <div className="mt-7 overflow-hidden border border-charcoal/25 bg-frangipani">
               <div className="grid grid-cols-[1fr_1fr_0.8fr] border-b border-charcoal/20 bg-terrace px-4 py-3 text-xs font-bold uppercase tracking-[0.1em] text-frangipani sm:px-6">
                 <span>Group size</span><span>Per person</span><span className="text-right">USD est.</span>
@@ -156,7 +164,7 @@ export default async function TourDetailPage({ params }: PageProps) {
           </section>
         </div>
 
-        <BookingWidget tourSlug={tour.slug} pricingTiers={tour.pricingTiers} maxGroupSize={tour.maxGroupSize} />
+        <BookingWidget tourSlug={tour.slug} pricingTiers={tour.pricingTiers} maxGroupSize={tour.maxGroupSize} initialDate={initialDate} initialPax={initialPax} />
       </div>
 
       <SiteFooter />

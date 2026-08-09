@@ -16,6 +16,11 @@ const roadTripAddons: MockAddon[] = [
   { code: "local-lunch", title: "Lunch included", description: "A pre-arranged Indonesian lunch with vegetarian options at a vetted local stop.", priceIdr: 180000, pricingMode: "PER_PERSON" },
 ];
 
+const ticketAddons: MockAddon[] = [
+  { code: "private-transfer", title: "Private return hotel transfer", description: "Private air-conditioned pickup and return for the main Bali service areas. Remote-area supplements are confirmed before payment.", priceIdr: 650000, pricingMode: "PER_BOOKING" },
+];
+
 export function getMockAddons(category: string) {
+  if (category === "Attraction Tickets") return ticketAddons;
   return category === "Trekking" || category === "Water Sports" || category === "Island Trips" ? activityAddons : roadTripAddons;
 }

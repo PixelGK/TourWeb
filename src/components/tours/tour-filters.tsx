@@ -9,6 +9,9 @@ export interface ActiveFilters {
   duration?: string;
   price?: string;
   sort?: string;
+  destination?: string;
+  date?: string;
+  pax?: string;
 }
 
 function FilterFields({ filters }: { filters: ActiveFilters }) {
@@ -62,6 +65,9 @@ function FilterForm({ filters }: { filters: ActiveFilters }) {
   return (
     <form action="/tours" method="get">
       {filters.sort && filters.sort !== "featured" ? <input type="hidden" name="sort" value={filters.sort} /> : null}
+      {filters.destination && filters.destination !== "all" ? <input type="hidden" name="destination" value={filters.destination} /> : null}
+      {filters.date ? <input type="hidden" name="date" value={filters.date} /> : null}
+      {filters.pax ? <input type="hidden" name="pax" value={filters.pax} /> : null}
       <FilterFields filters={filters} />
       <div className="flex gap-3 border-t border-charcoal/25 pt-5">
         <Button type="submit" className="flex-1">Apply filters</Button>

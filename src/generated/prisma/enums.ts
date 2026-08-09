@@ -17,7 +17,8 @@ export const TourCategory = {
   MULTI_DAY_TRIP: 'MULTI_DAY_TRIP',
   CUSTOM_TOUR: 'CUSTOM_TOUR',
   ISLAND_TRIP: 'ISLAND_TRIP',
-  NATURE: 'NATURE'
+  NATURE: 'NATURE',
+  ATTRACTION_TICKET: 'ATTRACTION_TICKET'
 } as const
 
 export type TourCategory = (typeof TourCategory)[keyof typeof TourCategory]

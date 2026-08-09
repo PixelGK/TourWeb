@@ -56,6 +56,12 @@ const imageLibrary = {
   atv: "https://images.unsplash.com/photo-1506797848948-339596317992?auto=format&fit=crop&w=1400&q=82",
   coffee: "https://images.unsplash.com/photo-1754164257813-4cb6c35968e6?auto=format&fit=crop&w=1400&q=82",
   terracesWide: "https://images.unsplash.com/photo-1746932715288-649222986ea9?auto=format&fit=crop&w=1400&q=82",
+  safari: "https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1400&q=82",
+  elephant: "https://images.unsplash.com/photo-1757343652094-16e82e7eb086?auto=format&fit=crop&w=1400&q=82",
+  lion: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=1400&q=82",
+  giraffe: "https://images.unsplash.com/photo-1547721064-da6cfb341d50?auto=format&fit=crop&w=1400&q=82",
+  waterpark: "https://images.unsplash.com/photo-1708157730402-67cc5b19e335?auto=format&fit=crop&w=1400&q=82",
+  waterparkAerial: "https://images.unsplash.com/photo-1763051338904-e2434c7dd20a?auto=format&fit=crop&w=1400&q=82",
 };
 
 interface TourContentOverride {
@@ -63,6 +69,10 @@ interface TourContentOverride {
   itinerary: ItineraryStop[];
   inclusions: string[];
   exclusions: string[];
+  pricingTiers?: PricingTier[];
+  meetingPoint?: string;
+  meetingNote?: string;
+  cancellationPolicy?: string;
 }
 
 const tourContentOverrides: Record<string, TourContentOverride> = {
@@ -122,6 +132,52 @@ const tourContentOverrides: Record<string, TourContentOverride> = {
     ],
     inclusions: ["Private air-conditioned vehicle", "English-speaking local driver", "Hotel pickup or Ubud drop-off", "Parking and fuel", "Standard coffee and tea tasting", "Drinking water"],
     exclusions: ["Rice-terrace entrance or local donations", "Premium coffee purchases", "Meals", "Personal travel insurance", "Gratuities"],
+  },
+  "bali-safari-day-admission": {
+    summary: "Reserve dated daytime admission for Taman Safari Bali, with your e-ticket confirmation sent by email and WhatsApp. Add a private hotel transfer if you want BaliXperience to arrange the whole journey.",
+    itinerary: [
+      { time: "Before your visit", title: "Receive the confirmed e-ticket", description: "BaliXperience checks the selected date with the supplier and sends the final voucher and entry instructions." },
+      { time: "09:00", title: "Present your voucher at entry", description: "Arrive at the Gianyar park and follow the redemption instructions shown on your confirmed ticket." },
+      { time: "Morning", title: "Safari and wildlife areas", description: "Explore the daytime park and join the included safari experience for the package named on your voucher." },
+      { time: "Afternoon", title: "Shows and remaining exhibits", description: "Plan the rest of the visit around the venue schedule, weather, and animal-welfare requirements." },
+      { time: "Before closing", title: "Meet your driver or depart", description: "Use your pre-arranged private transfer or make your own way from the park." },
+    ],
+    inclusions: ["Dated Bali Safari admission for the package shown on your final voucher", "Digital voucher and redemption instructions", "Supplier availability confirmation", "BaliXperience support by WhatsApp"],
+    exclusions: ["Hotel transfer unless selected as an add-on", "Food and drinks", "Paid animal encounters or package upgrades", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 750000 }],
+    meetingPoint: "Taman Safari Bali entrance, Gianyar",
+    meetingNote: "Bring the confirmed e-ticket and the identification requested on the voucher. Opening hours and included activities can change by date.",
+    cancellationPolicy: "Your request is fully refundable before the supplier confirms and issues the e-ticket. Once issued, the venue ticket is non-refundable unless the final voucher states otherwise.",
+  },
+  "bali-zoo-general-admission": {
+    summary: "Book dated general admission for Bali Zoo and receive the confirmed e-ticket by email and WhatsApp. A private return transfer is optional, so you can choose ticket-only or a door-to-door day.",
+    itinerary: [
+      { time: "Before your visit", title: "Receive the confirmed e-ticket", description: "BaliXperience checks the date and sends the final voucher with the supplier’s redemption instructions." },
+      { time: "Opening time", title: "Enter Bali Zoo", description: "Present the voucher at the entrance in Singapadu and follow any identification requirements shown on it." },
+      { time: "Morning", title: "Explore the animal habitats", description: "Walk the main zoo areas at your own pace and check the daily venue schedule on arrival." },
+      { time: "Afternoon", title: "Continue or meet your driver", description: "Stay until you are ready to leave, then use the optional private transfer or your own transport." },
+    ],
+    inclusions: ["Dated Bali Zoo general-admission e-ticket", "Digital voucher and redemption instructions", "Supplier availability confirmation", "BaliXperience support by WhatsApp"],
+    exclusions: ["Hotel transfer unless selected as an add-on", "Food and drinks", "Breakfast, animal encounters, and other ticket upgrades", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 395000 }],
+    meetingPoint: "Bali Zoo entrance, Singapadu",
+    meetingNote: "Bring the confirmed voucher and any identification named in the redemption instructions. Package inclusions follow the final e-ticket.",
+    cancellationPolicy: "Your request is fully refundable before the supplier confirms and issues the e-ticket. Once issued, the venue ticket follows the supplier’s cancellation and rescheduling rules shown on the voucher.",
+  },
+  "waterbom-bali-single-day-pass": {
+    summary: "Reserve a dated Waterbom Bali single-day pass for access to the park, slides, and pools. The confirmed e-ticket and redemption instructions are sent by email and WhatsApp.",
+    itinerary: [
+      { time: "Before your visit", title: "Receive the confirmed e-ticket", description: "BaliXperience checks date capacity and sends the final voucher after supplier confirmation." },
+      { time: "Opening time", title: "Enter Waterbom Bali", description: "Present the dated voucher at the Kuta entrance and exchange it for the required entry access." },
+      { time: "Full day", title: "Slides, pools, and park time", description: "Use the standard slides and pools included with the single-day pass, subject to venue operations and safety rules." },
+      { time: "Before closing", title: "Depart at your own pace", description: "Collect your belongings and use your arranged transfer or make your own way from the park." },
+    ],
+    inclusions: ["Dated Waterbom Bali single-day admission", "Access to standard park slides and pools", "Digital voucher and redemption instructions", "BaliXperience support by WhatsApp"],
+    exclusions: ["Hotel transfer unless selected as an add-on", "Towel, locker, gazebo, FlowRider, spa, and in-park credit", "Food and drinks", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 630000 }],
+    meetingPoint: "Waterbom Bali entrance, Kuta",
+    meetingNote: "The ticket is valid only for the confirmed visit date. Bring the voucher and any identification required for the selected market rate.",
+    cancellationPolicy: "Waterbom single-day admission is non-refundable after the supplier confirms and issues the e-ticket. If the requested date cannot be confirmed, you may choose another date or receive a full refund.",
   },
 };
 
@@ -187,6 +243,11 @@ const categoryItineraries: Record<string, ItineraryStop[]> = {
     { time: "Day 2 · 07:30", title: "North or east Bali", description: "Use the overnight location to reach waterfalls, temples, or coast before day-trip traffic." },
     { time: "Day 3 · 08:00", title: "Unhurried return route", description: "Choose the final stops around your onward hotel, airport plans, and energy level." },
   ],
+  "Attraction Tickets": [
+    { time: "Before your visit", title: "Receive your confirmed voucher", description: "The dated e-ticket and redemption details are sent after supplier confirmation." },
+    { time: "On the day", title: "Present the e-ticket", description: "Follow the identification and redemption instructions shown on the final voucher." },
+    { time: "During opening hours", title: "Enjoy the attraction", description: "Use the inclusions shown on the selected package and follow the venue’s safety rules." },
+  ],
 };
 
 function roundToFiftyThousand(value: number) {
@@ -222,6 +283,18 @@ function galleryFor(tour: MockTour): TourGalleryImage[] {
     { src: imageLibrary.terracesWide, alt: "Green rice terraces cascading down a Tegalalang hillside" },
     { src: imageLibrary.terraces, alt: "Layered working rice terraces in Ubud" },
     { src: imageLibrary.coffee, alt: "Coffee cherries growing among glossy green leaves" },
+  ];
+  if (tour.slug === "bali-safari-day-admission" || tour.slug === "bali-zoo-general-admission") return [
+    main,
+    { src: imageLibrary.safari, alt: "Zebras seen during a safari-style wildlife visit" },
+    { src: imageLibrary.lion, alt: "A lion resting in a wildlife park" },
+    { src: imageLibrary.giraffe, alt: "A giraffe standing against an open sky" },
+  ];
+  if (tour.slug === "waterbom-bali-single-day-pass") return [
+    main,
+    { src: imageLibrary.waterpark, alt: "A water park pool and slide area" },
+    { src: imageLibrary.waterparkAerial, alt: "An aerial view of pools and water slides" },
+    { src: imageLibrary.surf, alt: "Tropical water and palms in Bali" },
   ];
 
   if (tour.category === "Trekking") return [
@@ -271,10 +344,10 @@ export function getTourDetail(tour: MockTour): MockTourDetail {
     exclusions: contentOverride?.exclusions ?? (isTrek
       ? ["Lunch after the hot springs", "Personal travel insurance", "Optional coffee purchases", "Gratuities"]
       : ["Attraction entrance tickets unless stated", "Meals and personal purchases", "Personal travel insurance", "Gratuities"]),
-    pricingTiers: buildPricing(tour.priceIdr),
-    meetingPoint: "Your hotel or villa lobby",
-    meetingNote: `Pickup is included in the main Bali service areas. The exact time for ${tour.location} is confirmed by WhatsApp the evening before. Remote pickups may require a clearly quoted supplement.`,
-    cancellationPolicy: "Cancel at least 24 hours before pickup for a full refund. Cancellations within 24 hours are non-refundable. If unsafe weather or local restrictions prevent the tour from operating, you may reschedule or receive a full refund.",
+    pricingTiers: contentOverride?.pricingTiers ?? buildPricing(tour.priceIdr),
+    meetingPoint: contentOverride?.meetingPoint ?? "Your hotel or villa lobby",
+    meetingNote: contentOverride?.meetingNote ?? `Pickup is included in the main Bali service areas. The exact time for ${tour.location} is confirmed by WhatsApp the evening before. Remote pickups may require a clearly quoted supplement.`,
+    cancellationPolicy: contentOverride?.cancellationPolicy ?? "Cancel at least 24 hours before pickup for a full refund. Cancellations within 24 hours are non-refundable. If unsafe weather or local restrictions prevent the tour from operating, you may reschedule or receive a full refund.",
     maxGroupSize: 6,
     reviews: [
       { author: "Maya R.", country: "Australia", rating: 5, date: "July 2026", body: "The pickup instructions were exact and we never felt rushed. Our guide found a quieter place for sunrise and checked in with us throughout the climb." },

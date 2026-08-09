@@ -16,6 +16,7 @@ enum TourCategory {
   CUSTOM_TOUR
   ISLAND_TRIP
   NATURE
+  ATTRACTION_TICKET
 }
 
 enum BookingStatus {
