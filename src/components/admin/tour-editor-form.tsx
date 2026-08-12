@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import type { AdminTourEditorData } from "@/lib/admin-data";
 
-const categories = ["TREKKING", "WATER_SPORTS", "CULTURAL_TOUR", "CAR_CHARTER", "MULTI_DAY_TRIP", "CUSTOM_TOUR", "ISLAND_TRIP", "NATURE", "ATTRACTION_TICKET"];
+const categories = ["TREKKING", "WATER_SPORTS", "CULTURAL_TOUR", "CAR_CHARTER", "MULTI_DAY_TRIP", "CUSTOM_TOUR", "ISLAND_TRIP", "NATURE", "EXPERIENCE_DAY"];
 const textAreaClass = "w-full rounded-field border border-charcoal/35 bg-frangipani px-3.5 py-3 text-sm leading-6 text-charcoal outline-none focus:border-terrace focus:ring-3 focus:ring-gold/30 disabled:bg-limestone disabled:text-weathered";
 
 function FieldLabel({ htmlFor, children, hint }: { htmlFor: string; children: ReactNode; hint?: string }) {

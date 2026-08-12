@@ -31,7 +31,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
         date={date}
         pax={pax}
         pricingTiers={detail.pricingTiers}
-        addons={getMockAddons(tour.category)}
+        addons={getMockAddons(tour.category, tour.slug)}
       />
       <SiteFooter />
     </>

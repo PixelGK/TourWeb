@@ -22,7 +22,7 @@ import { topTours } from "@/data/mock-tours";
 
 export const metadata: Metadata = {
   title: "Private Bali Tours & Drivers",
-  description: "Book private Bali day tours, sunrise treks, island trips, activities, and car charters directly with a trusted local operator.",
+  description: "Book private Bali day tours, hosted experience days, sunrise treks, island trips, activities, and car charters directly with a trusted local operator.",
 };
 
 const categories = [
@@ -31,7 +31,7 @@ const categories = [
   ["03", "Cultural tours"],
   ["04", "Car charter"],
   ["05", "Multi-day trips"],
-  ["06", "Attraction tickets"],
+  ["06", "Experience days"],
   ["07", "Custom tour"],
 ] as const;
 

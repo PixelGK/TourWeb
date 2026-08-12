@@ -21,10 +21,15 @@ export function SearchPanel() {
         <option value="north-bali">North Bali</option>
         <option value="ubud-adventure">Rafting, ATV & Ubud</option>
         <option value="private-driver">Private driver</option>
-        <option value="attraction-tickets">Attraction tickets</option>
+        <option value="experience-days">Experience days with transport</option>
         <option value="bali-safari">Bali Safari</option>
         <option value="bali-zoo">Bali Zoo</option>
         <option value="waterbom">Waterbom Bali</option>
+        <option value="bird-park">Bali Bird Park</option>
+        <option value="uluwatu-kecak">Uluwatu & Kecak</option>
+        <option value="cooking-class">Balinese cooking class</option>
+        <option value="blue-lagoon">Blue Lagoon snorkeling</option>
+        <option value="sidemen">Sidemen</option>
       </Select>
       <DatePicker label="Travel date" name="date" min={bookingWindow.minDate} max={bookingWindow.maxDate} suppressHydrationWarning />
       <Select label="Travelers" name="pax" defaultValue="2">

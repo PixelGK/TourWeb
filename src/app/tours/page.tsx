@@ -30,10 +30,16 @@ const destinationLabels: Record<string, string> = {
   "north-bali": "North Bali",
   "ubud-adventure": "Rafting, ATV & Ubud",
   "private-driver": "Private driver",
-  "attraction-tickets": "Attraction tickets",
+  "experience-days": "Experience days",
+  "attraction-tickets": "Experience days",
   "bali-safari": "Bali Safari",
   "bali-zoo": "Bali Zoo",
   waterbom: "Waterbom Bali",
+  "bird-park": "Bali Bird Park",
+  "uluwatu-kecak": "Uluwatu & Kecak",
+  "cooking-class": "Balinese cooking class",
+  "blue-lagoon": "Blue Lagoon snorkeling",
+  sidemen: "Sidemen",
 };
 const validDestinations = new Set(Object.keys(destinationLabels));
 const pageSize = 6;
@@ -71,10 +77,15 @@ function matchesDestination(tour: MockTour, destination?: string) {
   if (destination === "north-bali") return ["north bali", "buleleng", "munduk", "lovina", "sekumpul"].some((term) => text.includes(term));
   if (destination === "ubud-adventure") return ["rafting", "atv"].some((term) => text.includes(term));
   if (destination === "private-driver") return tour.category === "Car Charter" || text.includes("private car charter");
-  if (destination === "attraction-tickets") return tour.category === "Attraction Tickets";
+  if (destination === "experience-days" || destination === "attraction-tickets") return tour.category === "Experience Days";
   if (destination === "bali-safari") return tour.slug === "bali-safari-day-admission";
   if (destination === "bali-zoo") return tour.slug === "bali-zoo-general-admission";
   if (destination === "waterbom") return tour.slug === "waterbom-bali-single-day-pass";
+  if (destination === "bird-park") return tour.slug === "bali-bird-park-batubulan-day";
+  if (destination === "uluwatu-kecak") return tour.slug === "uluwatu-kecak-jimbaran-evening";
+  if (destination === "cooking-class") return tour.slug === "ubud-market-cooking-class";
+  if (destination === "blue-lagoon") return tour.slug === "blue-lagoon-snorkeling-tenganan";
+  if (destination === "sidemen") return tour.slug === "sidemen-cycling-village-lunch";
   return true;
 }
 

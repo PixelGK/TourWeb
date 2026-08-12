@@ -238,7 +238,7 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
     const mockCategory: Record<string, string> = {
       Trekking: "TREKKING", "Water Sports": "WATER_SPORTS", "Cultural tour": "CULTURAL_TOUR", "Cultural Tours": "CULTURAL_TOUR",
       "Car Charter": "CAR_CHARTER", "Multi-Day Trips": "MULTI_DAY_TRIP", "Custom Tour": "CUSTOM_TOUR", "Island Trips": "ISLAND_TRIP", Nature: "NATURE",
-      "Attraction Tickets": "ATTRACTION_TICKET",
+      "Experience Days": "EXPERIENCE_DAY",
     };
     return {
       id: tour.slug,
@@ -257,7 +257,7 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
       published: true,
       itinerary: detail.itinerary.map((stop) => ({ timeLabel: stop.time, title: stop.title, description: stop.description })),
       pricingTiers: detail.pricingTiers,
-      addons: getMockAddons(tour.category).map((addon) => ({ ...addon, description: addon.description })),
+      addons: getMockAddons(tour.category, tour.slug).map((addon) => ({ ...addon, description: addon.description })),
     };
   }
   const tour = await getPrisma().tour.findUnique({

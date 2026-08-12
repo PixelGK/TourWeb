@@ -22,7 +22,7 @@ const categories: Record<string, TourCategory> = {
   "Custom Tour": TourCategory.CUSTOM_TOUR,
   "Island Trips": TourCategory.ISLAND_TRIP,
   Nature: TourCategory.NATURE,
-  "Attraction Tickets": TourCategory.ATTRACTION_TICKET,
+  "Experience Days": TourCategory.EXPERIENCE_DAY,
 };
 
 function bookableDates(days = 366) {
@@ -96,7 +96,7 @@ async function main() {
     await prisma.tourPricingTier.createMany({
       data: detail.pricingTiers.map((tier) => ({ tourId: tour.id, minPax: tier.minPax, maxPax: tier.maxPax, perPersonIdr: tier.perPersonIdr })),
     });
-    for (const addon of getMockAddons(mockTour.category)) {
+    for (const addon of getMockAddons(mockTour.category, mockTour.slug)) {
       await prisma.tourAddon.upsert({
         where: { tourId_code: { tourId: tour.id, code: addon.code } },
         update: { title: addon.title, description: addon.description, priceIdr: addon.priceIdr, pricingMode: addon.pricingMode, active: true },
