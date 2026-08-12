@@ -5,7 +5,7 @@ const navigation = [
   { href: "/#top-picks", label: "Top tours" },
   { href: "/#experiences", label: "Experiences" },
   { href: "/#why-direct", label: "Why book direct" },
-  { href: "/#custom-tour", label: "Custom tour" },
+  { href: "/about", label: "About" },
 ];
 
 export function SiteHeader() {
@@ -30,7 +30,7 @@ export function SiteHeader() {
             ))}
           </nav>
 
-          <Link href="#footer-contact" className="hidden min-h-11 items-center gap-2 rounded-control border border-terrace bg-terrace px-4 text-sm font-semibold text-frangipani shadow-sun-dark transition-[background-color,box-shadow,transform] duration-fast hover:-translate-y-0.5 hover:bg-terrace-light focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus sm:inline-flex">
+          <Link href="/contact" className="hidden min-h-11 items-center gap-2 rounded-control border border-terrace bg-terrace px-4 text-sm font-semibold text-frangipani shadow-sun-dark transition-[background-color,box-shadow,transform] duration-fast hover:-translate-y-0.5 hover:bg-terrace-light focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus sm:inline-flex">
             <MessageCircle aria-hidden="true" className="size-4" />
             Ask a local
           </Link>

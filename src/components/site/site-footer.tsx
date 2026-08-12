@@ -19,10 +19,10 @@ export function SiteFooter() {
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold">Explore</p>
             <nav className="mt-4 flex flex-col gap-3 text-sm" aria-label="Footer navigation">
               <Link href="/#top-picks" className="hover:text-gold">Top tours</Link>
-              <Link href="/#experiences" className="hover:text-gold">All experiences</Link>
+              <Link href="/tours" className="hover:text-gold">All experiences</Link>
               <Link href="/#custom-tour" className="hover:text-gold">Custom tour</Link>
-              <Link href="/" className="hover:text-gold">Home</Link>
-              <a href="#footer-contact" className="hover:text-gold">WhatsApp contact</a>
+              <Link href="/about" className="hover:text-gold">About</Link>
+              <Link href="/contact" className="hover:text-gold">Contact</Link>
             </nav>
           </div>
           <div>
@@ -35,7 +35,11 @@ export function SiteFooter() {
       <div className="border-t border-frangipani/15 px-5 py-5 text-xs text-frangipani/55">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 sm:px-3 lg:px-7">
           <span>© 2026 BaliXperience</span>
-          <span>Prices shown in IDR · USD estimates for comparison</span>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <span>Prices shown in IDR · USD estimates for comparison</span>
+            <Link href="/terms" className="hover:text-gold">Terms</Link>
+            <Link href="/privacy" className="hover:text-gold">Privacy</Link>
+          </div>
         </div>
       </div>
     </footer>

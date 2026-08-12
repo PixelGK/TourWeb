@@ -12,6 +12,8 @@
 # local previews and generated artifacts
 /work/
 /outputs/
+/.tmp-skill-install/
+/.skill-source/
 
 # local environment files
 .env*

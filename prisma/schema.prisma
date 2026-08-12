@@ -165,6 +165,8 @@ model Booking {
   paidAt                  DateTime?           @map("paid_at")
   cancelledAt             DateTime?           @map("cancelled_at")
   confirmationEmailSentAt DateTime?           @map("confirmation_email_sent_at")
+  termsAcceptedAt         DateTime?           @map("terms_accepted_at")
+  termsVersion            String?             @map("terms_version")
   createdAt               DateTime            @default(now()) @map("created_at")
   updatedAt               DateTime            @updatedAt @map("updated_at")
   tour                    Tour                @relation(fields: [tourId], references: [id], onDelete: Restrict)

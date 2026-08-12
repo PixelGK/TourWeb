@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from "prisma/config";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -10,6 +10,6 @@ export default defineConfig({
   // Prisma CLI uses the direct/session connection. Runtime uses the pooled
   // DATABASE_URL through the pg adapter in src/lib/db.ts.
   datasource: {
-    url: env("DIRECT_URL"),
+    url: process.env.DIRECT_URL ?? process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/postgres",
   },
 });

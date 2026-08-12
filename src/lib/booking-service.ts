@@ -12,6 +12,7 @@ import {
 } from "@/generated/prisma/client";
 import type { CheckoutRequest } from "@/lib/checkout-validation";
 import { getPrisma } from "@/lib/db";
+import { TERMS_VERSION } from "@/lib/legal";
 import type { PaymentState } from "@/lib/payments/types";
 
 export class BookingError extends Error {
@@ -118,6 +119,8 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
         idempotencyKey,
         idempotencyRequestHash: fingerprint,
         heldUntil: new Date(Date.now() + 15 * 60 * 1000),
+        termsAcceptedAt: new Date(),
+        termsVersion: TERMS_VERSION,
         addons: { create: addonRows },
       },
       include: { tour: true, availability: true },

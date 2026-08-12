@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Check, LockKeyhole, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
   const hasLunchOption = addons.some((addon) => addon.code === "local-lunch");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
 
   const lunchAddon = addons.find((addon) => addon.code === "local-lunch");
@@ -68,13 +70,17 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
   }
 
   async function beginPayment() {
+    if (!termsAccepted) {
+      setError("Please accept the Booking Terms and Privacy Notice before continuing to payment.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
-        body: JSON.stringify({ tourSlug: tour.slug, date, pax, addonCodes: selectedAddons, traveler }),
+        body: JSON.stringify({ tourSlug: tour.slug, date, pax, addonCodes: selectedAddons, termsAccepted, traveler }),
       });
       const result = await response.json() as { error?: string; redirectUrl?: string };
       if (!response.ok || !result.redirectUrl) {
@@ -189,10 +195,14 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
               {lunchAddon ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? <>Included · <span className="tabular-nums">{idr.format(lunchAddon.priceIdr * pax)}</span></> : <>Choose your own · <span className="font-normal text-weathered">pay at restaurant</span></>}</dd></div> : null}
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold tabular-nums">{idr.format(addOnTotal - (lunchIncluded && lunchAddon ? lunchAddon.priceIdr * pax : 0))}</dd></div>
             </dl>
+            <label className="mt-6 flex cursor-pointer items-start gap-3 border border-charcoal/25 bg-frangipani p-4 text-sm leading-6 text-weathered">
+              <input type="checkbox" required checked={termsAccepted} onChange={(event) => setTermsAccepted(event.target.checked)} className="mt-0.5 size-5 shrink-0 accent-terrace" />
+              <span>I have read and accept the <Link href="/terms" target="_blank" className="font-semibold text-terrace underline underline-offset-4">Booking Terms</Link> and acknowledge the <Link href="/privacy" target="_blank" className="font-semibold text-terrace underline underline-offset-4">Privacy Notice</Link>.</span>
+            </label>
             {error ? <p role="alert" className="mt-5 border border-error/40 bg-error/8 p-4 text-sm font-semibold text-error">{error}</p> : null}
             <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
               <Button variant="ghost" size="lg" onClick={() => setStep(2)} disabled={loading}><ArrowLeft className="size-4" aria-hidden="true" /> Trip options</Button>
-              <Button size="lg" onClick={beginPayment} loading={loading}>Pay securely in IDR <ArrowRight className="size-4" aria-hidden="true" /></Button>
+              <Button size="lg" onClick={beginPayment} loading={loading} disabled={!termsAccepted}>Pay securely in IDR <ArrowRight className="size-4" aria-hidden="true" /></Button>
             </div>
           </section>
         ) : null}
