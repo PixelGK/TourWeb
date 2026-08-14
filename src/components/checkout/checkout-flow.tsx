@@ -30,9 +30,11 @@ interface CheckoutFlowProps {
   pax: number;
   pricingTiers: PricingTier[];
   addons: MockAddon[];
+  childPriceIdr: number | null;
+  childAgeLabel: string | null;
 }
 
-export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: CheckoutFlowProps) {
+export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPriceIdr, childAgeLabel }: CheckoutFlowProps) {
   const [step, setStep] = useState(1);
   const [traveler, setTraveler] = useState<TravelerState>({ name: "", email: "", phone: "", country: "", hotelName: "", notes: "" });
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
@@ -41,6 +43,11 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
   const [error, setError] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
+  const [adultCount, setAdultCount] = useState(pax);
+  const [childCount, setChildCount] = useState(0);
+  const [discountCode, setDiscountCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; percentOff: number } | null>(null);
+  const [discountLoading, setDiscountLoading] = useState(false);
 
   const lunchAddon = addons.find((addon) => addon.code === "local-lunch");
   const otherAddons = addons.filter((addon) => addon.code !== "local-lunch");
@@ -48,7 +55,9 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
   const selectedExtraCount = selectedAddons.filter((code) => code !== lunchAddon?.code).length;
   const perPersonIdr = pricingTiers.find((tier) => pax >= tier.minPax && pax <= tier.maxPax)?.perPersonIdr ?? pricingTiers.at(-1)?.perPersonIdr ?? 0;
   const addOnTotal = addons.filter((addon) => selectedAddons.includes(addon.code)).reduce((sum, addon) => sum + addon.priceIdr * (addon.pricingMode === "PER_PERSON" ? pax : 1), 0);
-  const totalIdr = perPersonIdr * pax + addOnTotal;
+  const packageSubtotalIdr = perPersonIdr * adultCount + (childPriceIdr ?? perPersonIdr) * childCount + addOnTotal;
+  const discountAmountIdr = appliedDiscount ? Math.floor(packageSubtotalIdr * appliedDiscount.percentOff / 100) : 0;
+  const totalIdr = packageSubtotalIdr - discountAmountIdr;
   const dateLabel = longDate.format(new Date(`${date}T00:00:00.000Z`));
 
   function updateTraveler(field: keyof TravelerState, value: string) {
@@ -69,6 +78,36 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
       : current.filter((code) => code !== lunchAddon.code));
   }
 
+  function updateTravelerCounts(adults: number, children: number) {
+    if (adults + children > pax) return;
+    setAdultCount(adults);
+    setChildCount(children);
+    setAppliedDiscount(null);
+  }
+
+  async function applyDiscount() {
+    const code = discountCode.trim().toUpperCase();
+    if (!code) return;
+    setDiscountLoading(true);
+    setError("");
+    try {
+      const response = await fetch("/api/discounts/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, tourSlug: tour.slug }),
+      });
+      const result = await response.json() as { error?: string; code?: string; percentOff?: number };
+      if (!response.ok || !result.code || !result.percentOff) throw new Error(result.error ?? "Discount code could not be applied");
+      setAppliedDiscount({ code: result.code, percentOff: result.percentOff });
+      setDiscountCode(result.code);
+    } catch (caught) {
+      setAppliedDiscount(null);
+      setError(caught instanceof Error ? caught.message : "Discount code could not be applied");
+    } finally {
+      setDiscountLoading(false);
+    }
+  }
+
   async function beginPayment() {
     if (!termsAccepted) {
       setError("Please accept the Booking Terms and Privacy Notice before continuing to payment.");
@@ -80,7 +119,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
-        body: JSON.stringify({ tourSlug: tour.slug, date, pax, addonCodes: selectedAddons, termsAccepted, traveler }),
+        body: JSON.stringify({ tourSlug: tour.slug, date, pax, adultCount, childCount, discountCode: appliedDiscount?.code ?? "", addonCodes: selectedAddons, termsAccepted, traveler }),
       });
       const result = await response.json() as { error?: string; redirectUrl?: string };
       if (!response.ok || !result.redirectUrl) {
@@ -89,7 +128,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
       }
 
       const redirect = new URL(result.redirectUrl);
-      if (!new Set(["app.midtrans.com", "app.sandbox.midtrans.com"]).has(redirect.hostname)) throw new Error("The payment destination was not recognized");
+      if (redirect.protocol !== "https:" || !new Set(["app.midtrans.com", "app.sandbox.midtrans.com"]).has(redirect.hostname)) throw new Error("The payment destination was not recognized");
       window.location.assign(redirect.toString());
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Secure payment could not be started");
@@ -135,6 +174,17 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
             <p className="text-xs font-bold uppercase tracking-[0.15em] text-clay">Step 2 of 3</p>
             <h1 id="addons-heading" className="mt-2 font-serif text-4xl sm:text-5xl">{hasLunchOption ? "Choose lunch and extras" : "Choose optional extras"}</h1>
             <p className="mt-3 text-weathered">{hasLunchOption ? "Lunch is optional. Every extra is priced in IDR before you pay." : "Add only what you need. Every extra is priced in IDR before you pay."}</p>
+
+            {childPriceIdr !== null ? (
+              <fieldset className="mt-8 border border-charcoal/25 bg-frangipani p-5">
+                <legend className="px-2 text-xs font-bold uppercase tracking-[0.14em] text-clay">Traveler prices</legend>
+                <p className="text-sm leading-6 text-weathered">This package has a separate child rate{childAgeLabel ? ` for ${childAgeLabel}` : ""}. At least one adult is required, and the total must remain {pax}.</p>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Input label="Adults" type="number" min={1} max={pax} value={adultCount} onChange={(event) => updateTravelerCounts(Number(event.target.value), pax - Number(event.target.value))} />
+                  <Input label="Children" type="number" min={0} max={pax - 1} value={childCount} onChange={(event) => updateTravelerCounts(pax - Number(event.target.value), Number(event.target.value))} />
+                </div>
+              </fieldset>
+            ) : null}
 
             {lunchAddon ? (
               <fieldset className="mt-8">
@@ -191,10 +241,19 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
             </div>
             <dl className="mt-8 divide-y divide-charcoal/20 border-y border-charcoal/25">
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lead traveler</dt><dd className="text-right font-semibold">{traveler.name}<br /><span className="font-normal text-weathered">{traveler.email}</span></dd></div>
-              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Tour price</dt><dd className="font-semibold tabular-nums">{idr.format(perPersonIdr * pax)}</dd></div>
+              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Package price</dt><dd className="font-semibold tabular-nums">{idr.format(perPersonIdr * adultCount + (childPriceIdr ?? perPersonIdr) * childCount)}</dd></div>
               {lunchAddon ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? <>Included · <span className="tabular-nums">{idr.format(lunchAddon.priceIdr * pax)}</span></> : <>Choose your own · <span className="font-normal text-weathered">pay at restaurant</span></>}</dd></div> : null}
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold tabular-nums">{idr.format(addOnTotal - (lunchIncluded && lunchAddon ? lunchAddon.priceIdr * pax : 0))}</dd></div>
+              {appliedDiscount ? <div className="flex justify-between gap-5 py-4 text-success"><dt>Discount · {appliedDiscount.code}</dt><dd className="font-semibold tabular-nums">− {idr.format(discountAmountIdr)}</dd></div> : null}
             </dl>
+            <div className="mt-6 border border-charcoal/25 bg-frangipani p-4">
+              <label htmlFor="discount-code" className="text-sm font-semibold">Discount code</label>
+              <div className="mt-2 flex gap-2">
+                <input id="discount-code" value={discountCode} onChange={(event) => { setDiscountCode(event.target.value.toUpperCase()); setAppliedDiscount(null); }} maxLength={30} className="min-h-11 min-w-0 flex-1 rounded-field border border-charcoal/35 bg-limestone px-3.5 font-mono uppercase outline-none focus:border-terrace focus:ring-3 focus:ring-gold/30" />
+                <Button type="button" variant="outline" onClick={applyDiscount} loading={discountLoading}>Apply</Button>
+              </div>
+              <p className="mt-2 text-xs text-weathered">One code per booking. Discounts cannot be combined.</p>
+            </div>
             <label className="mt-6 flex cursor-pointer items-start gap-3 border border-charcoal/25 bg-frangipani p-4 text-sm leading-6 text-weathered">
               <input type="checkbox" required checked={termsAccepted} onChange={(event) => setTermsAccepted(event.target.checked)} className="mt-0.5 size-5 shrink-0 accent-terrace" />
               <span>I have read and accept the <Link href="/terms" target="_blank" className="font-semibold text-terrace underline underline-offset-4">Booking Terms</Link> and acknowledge the <Link href="/privacy" target="_blank" className="font-semibold text-terrace underline underline-offset-4">Privacy Notice</Link>.</span>
@@ -215,6 +274,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons }: Checkout
         <dl className="mt-5 space-y-3 border-y border-charcoal/20 py-4 text-sm">
           <div className="flex justify-between gap-4"><dt className="text-weathered">Date</dt><dd className="text-right font-semibold">{dateLabel}</dd></div>
           <div className="flex justify-between gap-4"><dt className="text-weathered">Travelers</dt><dd className="font-semibold">{pax}</dd></div>
+          {childPriceIdr !== null ? <div className="flex justify-between gap-4"><dt className="text-weathered">Mix</dt><dd className="font-semibold">{adultCount} adult · {childCount} child</dd></div> : null}
           {lunchAddon ? <div className="flex justify-between gap-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? "Included" : "Choose & pay directly"}</dd></div> : null}
           <div className="flex justify-between gap-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold">{selectedExtraCount || "None"}</dd></div>
         </dl>

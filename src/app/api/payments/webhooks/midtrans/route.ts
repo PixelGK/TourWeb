@@ -1,7 +1,7 @@
 import { BookingStatus } from "@/generated/prisma/client";
 import { after } from "next/server";
-import { applyVerifiedPaymentStatus, markConfirmationEmailSent } from "@/lib/booking-service";
-import { sendBookingConfirmation } from "@/lib/email";
+import { applyVerifiedPaymentStatus, markPaymentReceiptEmailSent } from "@/lib/booking-service";
+import { sendPaymentReceipt } from "@/lib/email";
 import { getPaymentProvider } from "@/lib/payments/provider";
 import { PaymentProviderError } from "@/lib/payments/types";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -26,11 +26,11 @@ export async function POST(request: Request) {
     }
 
     const booking = await applyVerifiedPaymentStatus(verified.transactionId, verified.state, verified.grossAmountIdr);
-    if (booking.status === BookingStatus.PAID && !booking.confirmationEmailSentAt) {
+    if (booking.status === BookingStatus.PAID && !booking.paymentReceiptEmailSentAt) {
       after(async () => {
         try {
-          await sendBookingConfirmation(booking);
-          await markConfirmationEmailSent(booking.id);
+          await sendPaymentReceipt(booking);
+          await markPaymentReceiptEmailSent(booking.id);
         } catch (error) {
           // Resend's idempotency key makes a later replay safe.
           console.error("Booking confirmation email failed", error instanceof Error ? error.name : "UnknownError");

@@ -7,22 +7,23 @@ import { SiteHeader } from "@/components/site/site-header";
 
 export const metadata: Metadata = {
   title: "Booking Terms",
-  description: "The booking, payment, cancellation, supplier, and guest terms for BaliXperience tours and experiences.",
+  description: "The booking, payment, cancellation, supplier, and guest terms for BaliXperience driver and experience packages.",
 };
 
 const sections = [
   {
     title: "1. Who these terms cover",
     paragraphs: [
-      "These terms apply when you browse, reserve, or take part in a tour, driver charter, activity, or hosted experience arranged through BaliXperience. The person making the booking confirms that they are at least 18 and have authority to accept these terms for everyone included in the booking.",
-      "BaliXperience is currently a business name used by a Bali-based independent operator and is not yet an incorporated Indonesian PT. Some parts of an experience—such as attraction entry, rafting, vehicle hire, meals, or specialist guiding—may be delivered by an independent local supplier.",
+      "These terms apply when you browse, reserve, or take part in a private driver day, driver charter, activity package, or attraction-inclusive experience arranged through BaliXperience. The person making the booking confirms that they are at least 18 and have authority to accept these terms for everyone included in the booking.",
+      "BaliXperience is currently a business name used by a Bali-based independent operator and is not yet an incorporated Indonesian PT. BaliXperience provides experienced local drivers and coordinates package arrangements. We do not represent drivers as licensed tour guides. Attractions, activities, meals, and any required certified guide or trained instructor are delivered by independent specialist suppliers.",
     ],
   },
   {
     title: "2. Booking and confirmation",
     paragraphs: [
-      "Submitting traveler details or reaching a payment page does not by itself confirm a booking. A booking is confirmed only after the payment provider reports a successful payment to BaliXperience and you receive a confirmation from us.",
-      "Some activities and attraction-inclusive days require a separate supplier check. If the selected date cannot be fulfilled after payment, we will offer a reasonable alternative date or experience, or refund the affected amount.",
+      "Submitting traveler details or reaching a payment page does not confirm a booking. After the payment provider verifies payment, we send a receipt and BaliXperience booking reference. We then confirm the driver and any included supplier arrangements within 12 hours.",
+      "If the selected package cannot be confirmed within 12 hours after payment, we will offer a reasonable alternative or provide a full refund. The customer is never required to accept the alternative.",
+      "Online checkout closes 12 hours before the package's expected pickup time. Later requests may be discussed on WhatsApp, but are not accepted until BaliXperience confirms availability and price.",
       "Please check names, date, traveler count, pickup area, and contact details before paying. Contact us promptly if anything is wrong.",
     ],
   },
@@ -37,23 +38,23 @@ const sections = [
   {
     title: "4. Changes, cancellations, and refunds",
     paragraphs: [
-      "The cancellation policy shown on the selected tour or experience applies to that booking. Supplier-issued tickets, vouchers, or limited-capacity activities may become non-refundable or date-restricted once issued; we will identify material restrictions before payment where they apply.",
+      "You may cancel for a full refund until 24 hours before the confirmed pickup time. Customer-requested cancellations within 24 hours of pickup are non-refundable. The timing of an admission voucher being issued does not reduce this cancellation right.",
       "A request to change a date, route, pickup, or traveler count is subject to availability and may change the price. A change is accepted only when confirmed by BaliXperience in writing or on WhatsApp.",
-      "If BaliXperience or a supplier must cancel a material part of the booking, we may offer a comparable alternative, a new date, or a refund for the affected service. Approved refunds are initiated within 2–3 business days; your bank or payment provider may take longer to return the funds. We are not responsible for separate flights, hotels, visas, or other costs you arranged independently.",
+      "If BaliXperience or a supplier cannot provide a confirmed material part of the package, you may choose a comparable alternative, a new date, or a full refund. Approved refunds are initiated within 2–3 business days; your bank or payment provider may take longer to return the funds. We are not responsible for separate flights, hotels, visas, or other costs you arranged independently.",
     ],
   },
   {
     title: "5. Pickup, timing, and itinerary changes",
     paragraphs: [
       "You must be ready at the confirmed pickup point and time. Significant lateness or an unreachable guest may shorten the itinerary or be treated as a no-show where the service can no longer reasonably operate.",
-      "Bali traffic, weather, ceremonies, road access, attraction queues, and supplier operations can change without notice. The driver, guide, or activity operator may adjust the sequence, timing, or a stop when reasonably necessary for safety or to keep the day workable. A comparable stop may be offered where practical.",
+      "Bali traffic, weather, ceremonies, road access, attraction queues, and supplier operations can change without notice. The driver or specialist activity operator may adjust the sequence, timing, or a stop when reasonably necessary for safety or to keep the day workable. A comparable stop may be offered where practical.",
     ],
   },
   {
     title: "6. Guest responsibilities and safety",
     paragraphs: [
       "Tell us before booking about relevant mobility needs, medical conditions, pregnancy, ages of children, dietary needs, or other circumstances that may affect safe participation. Activity suppliers may apply age, weight, health, footwear, or conduct rules.",
-      "Follow reasonable safety instructions from drivers, guides, venues, and activity staff. A supplier or BaliXperience may refuse or stop participation where behavior creates a safety risk, is unlawful, or seriously disrupts others; a refund may not be available in that situation.",
+      "Follow reasonable safety instructions from drivers, venue staff, certified supplier guides, and activity instructors. A supplier or BaliXperience may refuse or stop participation where behavior creates a safety risk, is unlawful, or seriously disrupts others; a refund may not be available in that situation.",
       "Travel carries ordinary risks, including changing weather, uneven ground, water activities, traffic, and wildlife. Appropriate travel insurance, including activity and medical cover, is strongly recommended.",
     ],
   },
@@ -72,7 +73,7 @@ const sections = [
   {
     title: "9. Events outside reasonable control",
     paragraphs: [
-      "Neither party is responsible for failure caused by events that could not reasonably be controlled, such as severe weather, natural disaster, government action, epidemic, road closure, civil disruption, or a widespread transport interruption. We will try to reschedule or find a fair practical solution, taking into account costs already committed to suppliers.",
+      "Neither party is responsible for failure caused by events that could not reasonably be controlled, such as severe weather, natural disaster, government action, epidemic, road closure, civil disruption, Nyepi transport restrictions, or a widespread transport interruption. Official Nyepi dates are unavailable for driver transport. If an unexpected event affects a confirmed booking, we will offer rescheduling or a full refund for the package we cannot deliver.",
     ],
   },
   {
@@ -97,7 +98,7 @@ export default function TermsPage() {
         eyebrow="Booking terms"
         title="The practical rules behind your booking."
         description="These terms explain when a booking is confirmed, what your price covers, how changes work, and where independent activity or attraction suppliers are involved."
-        aside={<p className="text-sm leading-6 text-weathered"><strong className="block text-charcoal">Last updated</strong>12 August 2026</p>}
+        aside={<p className="text-sm leading-6 text-weathered"><strong className="block text-charcoal">Last updated</strong>14 August 2026</p>}
       />
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 lg:grid-cols-12 lg:px-12 lg:py-20">
         <aside className="lg:col-span-3">

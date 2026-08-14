@@ -9,7 +9,7 @@ import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "How BaliXperience plans private Bali tours, activity days, and driver hire with one local point of contact.",
+  description: "How BaliXperience plans private driver days and activity packages with one local point of contact.",
 };
 
 const principles = [
@@ -40,7 +40,7 @@ export default function AboutPage() {
       <PageIntro
         eyebrow="About BaliXperience"
         title="A smaller way to plan a better Bali day."
-        description="BaliXperience is a Bali-based tour and driver-hire operator. You book directly, speak to a local contact, and get a route shaped around where you are staying—not a one-size-fits-all bus itinerary."
+        description="BaliXperience arranges private Bali day trips with experienced local drivers. You book directly, speak to a local contact, and get a route shaped around where you are staying—not a one-size-fits-all bus itinerary."
         aside={<p className="text-sm leading-6 text-weathered"><strong className="block text-charcoal">Small by design.</strong> One clear contact before pickup and while you are out exploring.</p>}
       />
 
@@ -73,7 +73,7 @@ export default function AboutPage() {
           </div>
           <div className="space-y-5 text-base leading-7 text-frangipani/80 lg:col-span-7 lg:pl-8">
             <p>We will not guarantee perfect weather, empty roads, or every stop running exactly on schedule. We will explain what is realistic and help adjust when Bali changes the plan.</p>
-            <p>We also do not treat every driver as a specialist guide. Where an attraction or activity requires a local guide or trained instructor, that person is arranged as part of the experience and identified in the inclusions.</p>
+            <p>Our drivers provide transport, route planning, and practical local help; they are not presented as licensed tour guides. Where an attraction or activity requires a certified guide or trained instructor, the specialist supplier provides that person and the inclusion is stated clearly.</p>
           </div>
         </div>
       </section>

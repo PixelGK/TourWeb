@@ -24,6 +24,7 @@ export default async function ConfirmationPage({ searchParams }: { searchParams:
     : null;
 
   const isPaid = booking?.status === BookingStatus.PAID;
+  const isConfirmed = Boolean(isPaid && booking?.confirmedAt);
   const isClosed = booking?.status === BookingStatus.CANCELLED || booking?.status === BookingStatus.REFUNDED;
   const isPending = Boolean(booking && !isPaid && !isClosed);
   const Icon = isPaid ? CheckCircle2 : isClosed ? XCircle : Clock3;
@@ -35,13 +36,15 @@ export default async function ConfirmationPage({ searchParams }: { searchParams:
       <main className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
         <div className="border border-charcoal/25 bg-frangipani p-6 shadow-sun sm:p-10">
           <Icon aria-hidden="true" className={`size-12 ${isPaid ? "text-terrace" : isClosed ? "text-error" : "text-gold-dark"}`} />
-          <Badge className="mt-6">{isPaid ? "Payment verified" : isClosed ? "Booking not active" : "Checking payment"}</Badge>
+          <Badge className="mt-6">{isConfirmed ? "Package confirmed" : isPaid ? "Payment verified" : isClosed ? "Booking not active" : "Checking payment"}</Badge>
           <h1 className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">
-            {isPaid ? "Your Bali day is confirmed." : isClosed ? "This booking is not active." : "We’re confirming your payment."}
+            {isConfirmed ? "Your Bali day is confirmed." : isPaid ? "We’re arranging your Bali day." : isClosed ? "This booking is not active." : "We’re confirming your payment."}
           </h1>
           <p className="mt-4 text-lg leading-8 text-weathered">
-            {isPaid
-              ? "Midtrans has confirmed the payment through its signed server notification. Your confirmation email is on its way."
+            {isConfirmed
+              ? "Your driver and included arrangements are confirmed. Your driver will carry any admission voucher and assist with entry."
+              : isPaid
+              ? "Midtrans has verified your payment. We will confirm the driver and any included admission within 12 hours, or issue a full refund."
               : isClosed
                 ? "No paid booking was confirmed for this reference. If money left your account, message us and we’ll check it directly with Midtrans."
                 : "A return from the payment page is not proof of payment. This page updates only after Midtrans’s signed server notification reaches us—usually within seconds."}

@@ -531,10 +531,6 @@ export type TourAddonUncheckedUpdateManyWithoutTourNestedInput = {
   deleteMany?: Prisma.TourAddonScalarWhereInput | Prisma.TourAddonScalarWhereInput[]
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type EnumAddonPricingModeFieldUpdateOperationsInput = {
   set?: $Enums.AddonPricingMode
 }

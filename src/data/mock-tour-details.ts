@@ -39,6 +39,8 @@ export interface MockTourDetail extends MockTour {
   reviews: TourReview[];
 }
 
+const STANDARD_CANCELLATION_POLICY = "Cancel at least 24 hours before pickup for a full refund. Customer cancellations within 24 hours are non-refundable. If BaliXperience or a supplier cannot deliver a confirmed part of the package, you may reschedule or receive a full refund.";
+
 const imageLibrary = {
   baturRidge: "https://images.unsplash.com/photo-1761566688762-d4c3259899af?auto=format&fit=crop&w=1400&q=82",
   baturSilhouette: "https://images.unsplash.com/photo-1489493459015-55d3e7ddda71?auto=format&fit=crop&w=1400&q=82",
@@ -432,7 +434,7 @@ export function getTourDetail(tour: MockTour): MockTourDetail {
     pricingTiers: contentOverride?.pricingTiers ?? buildPricing(tour.priceIdr),
     meetingPoint: contentOverride?.meetingPoint ?? "Your hotel or villa lobby",
     meetingNote: contentOverride?.meetingNote ?? `Pickup is included in the main Bali service areas. The exact time for ${tour.location} is confirmed by WhatsApp the evening before. Remote pickups may require a clearly quoted supplement.`,
-    cancellationPolicy: contentOverride?.cancellationPolicy ?? "Cancel at least 24 hours before pickup for a full refund. Cancellations within 24 hours are non-refundable. If unsafe weather or local restrictions prevent the tour from operating, you may reschedule or receive a full refund.",
+    cancellationPolicy: STANDARD_CANCELLATION_POLICY,
     maxGroupSize: 6,
     reviews: [
       { author: "Maya R.", country: "Australia", rating: 5, date: "July 2026", body: "The pickup instructions were exact and we never felt rushed. Our guide found a quieter place for sunrise and checked in with us throughout the climb." },

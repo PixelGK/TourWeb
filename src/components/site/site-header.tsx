@@ -12,7 +12,7 @@ export function SiteHeader() {
   return (
     <>
       <div className="bg-charcoal px-5 py-2 text-center text-xs font-semibold tracking-[0.04em] text-frangipani/80">
-        Private Bali tours · Clear IDR pricing · One local contact
+        Private Bali drivers · Clear IDR pricing · One local contact
       </div>
       <header className="relative z-40 border-b border-charcoal/20 bg-limestone/95 backdrop-blur-md">
         <div className="mx-auto flex min-h-18 max-w-7xl items-center justify-between gap-6 px-5 sm:px-8 lg:px-12">

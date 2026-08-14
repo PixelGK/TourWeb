@@ -34,6 +34,7 @@ export interface AdminBookingRow {
   totalAmountIdr: number;
   status: string;
   paymentStatus: string;
+  confirmed: boolean;
   createdAt: string;
 }
 
@@ -62,6 +63,8 @@ export interface AdminTourEditorData {
   category: string;
   durationMinutes: number;
   basePriceIdr: number;
+  childPriceIdr: number | null;
+  childAgeLabel: string | null;
   images: string[];
   inclusions: string[];
   exclusions: string[];
@@ -119,7 +122,7 @@ export async function getAdminBookings(filters: BookingFilters = {}): Promise<Ad
       (!filters.status || filters.status === "ALL" || booking.status === filters.status) &&
       (!filters.tourId || filters.tourId === "ALL" || booking.tourId === filters.tourId) &&
       (!filters.query || `${booking.reference} ${booking.customerName} ${booking.customerEmail}`.toLowerCase().includes(filters.query.toLowerCase())),
-    ).map((booking) => ({ ...booking }));
+    ).map((booking) => ({ ...booking, confirmed: booking.status === "PAID" }));
   }
 
   const validStatus = filters.status && filters.status !== "ALL" && Object.values(BookingStatus).includes(filters.status as BookingStatus)
@@ -153,6 +156,7 @@ export async function getAdminBookings(filters: BookingFilters = {}): Promise<Ad
     totalAmountIdr: booking.totalAmountIdr,
     status: booking.status,
     paymentStatus: booking.paymentStatus,
+    confirmed: Boolean(booking.confirmedAt),
     createdAt: booking.createdAt.toISOString(),
   }));
 }
@@ -226,7 +230,7 @@ export async function getAdminTourDetail(id: string) {
 export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorData> {
   if (!id) {
     return {
-      title: "", slug: "", description: "", category: "CUSTOM_TOUR", durationMinutes: 480, basePriceIdr: 0,
+      title: "", slug: "", description: "", category: "CUSTOM_TOUR", durationMinutes: 480, basePriceIdr: 0, childPriceIdr: null, childAgeLabel: null,
       images: [], inclusions: [], exclusions: [], meetingPoint: "Your hotel or villa lobby", cancellationPolicy: "", maxGroupSize: 6,
       published: false, itinerary: [], pricingTiers: [], addons: [],
     };
@@ -248,6 +252,8 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
       category: mockCategory[tour.category] ?? "CUSTOM_TOUR",
       durationMinutes: tour.durationHours * 60,
       basePriceIdr: tour.priceIdr,
+      childPriceIdr: null,
+      childAgeLabel: null,
       images: detail.gallery.map((image) => image.src),
       inclusions: detail.inclusions,
       exclusions: detail.exclusions,
@@ -273,6 +279,8 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
     category: tour.category,
     durationMinutes: tour.durationMinutes,
     basePriceIdr: tour.basePriceIdr,
+    childPriceIdr: tour.childPriceIdr,
+    childAgeLabel: tour.childAgeLabel,
     images: tour.images,
     inclusions: tour.inclusions,
     exclusions: tour.exclusions,
@@ -283,6 +291,29 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
     itinerary: tour.itinerary.map((stop) => ({ timeLabel: stop.timeLabel, title: stop.title, description: stop.description })),
     pricingTiers: tour.pricingTiers,
     addons: tour.addons.map((addon) => ({ code: addon.code, title: addon.title, priceIdr: addon.priceIdr, pricingMode: addon.pricingMode, description: addon.description })),
+  };
+}
+
+export async function getAdminCommerce() {
+  if (!hasDatabaseConfiguration()) return { discounts: [], blackouts: [] };
+  const [discounts, blackouts] = await Promise.all([
+    getPrisma().discountCode.findMany({ include: { tours: { include: { tour: { select: { title: true } } } } }, orderBy: { createdAt: "desc" } }),
+    getPrisma().globalBlackoutDate.findMany({ orderBy: { date: "asc" } }),
+  ]);
+  return {
+    discounts: discounts.map((discount) => ({
+      id: discount.id,
+      code: discount.code,
+      percentOff: discount.percentOff,
+      startsAt: discount.startsAt?.toISOString().slice(0, 10) ?? null,
+      endsAt: discount.endsAt?.toISOString().slice(0, 10) ?? null,
+      usageLimit: discount.usageLimit,
+      timesUsed: discount.timesUsed,
+      active: discount.active,
+      appliesToAll: discount.appliesToAll,
+      tourTitles: discount.tours.map((item) => item.tour.title),
+    })),
+    blackouts: blackouts.map((blackout) => ({ date: blackout.date.toISOString().slice(0, 10), reason: blackout.reason })),
   };
 }
 

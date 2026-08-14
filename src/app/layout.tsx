@@ -17,10 +17,10 @@ const sourceSans = Source_Sans_3({
 
 export const metadata: Metadata = {
   title: {
-    default: "BaliXperience — Private Bali Tours & Drivers",
+    default: "BaliXperience — Private Bali Drivers & Experience Days",
     template: "%s | BaliXperience",
   },
-  description: "Private Bali tours, day trips, activities, and driver hire booked directly with a local operator.",
+  description: "Private Bali day trips with experienced local drivers, plus clearly bundled attraction and activity experiences.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

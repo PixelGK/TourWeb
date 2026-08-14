@@ -403,6 +403,9 @@ export const ModelName = {
   Availability: 'Availability',
   TourAddon: 'TourAddon',
   Booking: 'Booking',
+  DiscountCode: 'DiscountCode',
+  DiscountCodeTour: 'DiscountCodeTour',
+  GlobalBlackoutDate: 'GlobalBlackoutDate',
   BookingAddon: 'BookingAddon',
   User: 'User',
   RateLimitBucket: 'RateLimitBucket'
@@ -421,7 +424,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tour" | "tourPricingTier" | "tourItineraryStop" | "availability" | "tourAddon" | "booking" | "bookingAddon" | "user" | "rateLimitBucket"
+    modelProps: "tour" | "tourPricingTier" | "tourItineraryStop" | "availability" | "tourAddon" | "booking" | "discountCode" | "discountCodeTour" | "globalBlackoutDate" | "bookingAddon" | "user" | "rateLimitBucket"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -869,6 +872,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DiscountCode: {
+      payload: Prisma.$DiscountCodePayload<ExtArgs>
+      fields: Prisma.DiscountCodeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DiscountCodeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DiscountCodeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodePayload>
+        }
+        findFirst: {
+          args: Prisma.DiscountCodeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DiscountCodeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodePayload>
+        }
+        findMany: {
+          args: Prisma.DiscountCodeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodePayload>[]
+        }
+        create: {
+          args: Prisma.DiscountCodeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodePayload>
+        }
+        createMany: {
+          args: Prisma.DiscountCodeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DiscountCodeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodePayload>[]
+        }
+        delete: {
+          args: Prisma.DiscountCodeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodePayload>
+        }
+        update: {
+          args: Prisma.DiscountCodeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodePayload>
+        }
+        deleteMany: {
+          args: Prisma.DiscountCodeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DiscountCodeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DiscountCodeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodePayload>[]
+        }
+        upsert: {
+          args: Prisma.DiscountCodeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodePayload>
+        }
+        aggregate: {
+          args: Prisma.DiscountCodeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDiscountCode>
+        }
+        groupBy: {
+          args: Prisma.DiscountCodeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DiscountCodeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DiscountCodeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DiscountCodeCountAggregateOutputType> | number
+        }
+      }
+    }
+    DiscountCodeTour: {
+      payload: Prisma.$DiscountCodeTourPayload<ExtArgs>
+      fields: Prisma.DiscountCodeTourFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DiscountCodeTourFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodeTourPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DiscountCodeTourFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodeTourPayload>
+        }
+        findFirst: {
+          args: Prisma.DiscountCodeTourFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodeTourPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DiscountCodeTourFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodeTourPayload>
+        }
+        findMany: {
+          args: Prisma.DiscountCodeTourFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodeTourPayload>[]
+        }
+        create: {
+          args: Prisma.DiscountCodeTourCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodeTourPayload>
+        }
+        createMany: {
+          args: Prisma.DiscountCodeTourCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DiscountCodeTourCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodeTourPayload>[]
+        }
+        delete: {
+          args: Prisma.DiscountCodeTourDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodeTourPayload>
+        }
+        update: {
+          args: Prisma.DiscountCodeTourUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodeTourPayload>
+        }
+        deleteMany: {
+          args: Prisma.DiscountCodeTourDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DiscountCodeTourUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DiscountCodeTourUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodeTourPayload>[]
+        }
+        upsert: {
+          args: Prisma.DiscountCodeTourUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DiscountCodeTourPayload>
+        }
+        aggregate: {
+          args: Prisma.DiscountCodeTourAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDiscountCodeTour>
+        }
+        groupBy: {
+          args: Prisma.DiscountCodeTourGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DiscountCodeTourGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DiscountCodeTourCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DiscountCodeTourCountAggregateOutputType> | number
+        }
+      }
+    }
+    GlobalBlackoutDate: {
+      payload: Prisma.$GlobalBlackoutDatePayload<ExtArgs>
+      fields: Prisma.GlobalBlackoutDateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GlobalBlackoutDateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalBlackoutDatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GlobalBlackoutDateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalBlackoutDatePayload>
+        }
+        findFirst: {
+          args: Prisma.GlobalBlackoutDateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalBlackoutDatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GlobalBlackoutDateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalBlackoutDatePayload>
+        }
+        findMany: {
+          args: Prisma.GlobalBlackoutDateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalBlackoutDatePayload>[]
+        }
+        create: {
+          args: Prisma.GlobalBlackoutDateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalBlackoutDatePayload>
+        }
+        createMany: {
+          args: Prisma.GlobalBlackoutDateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GlobalBlackoutDateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalBlackoutDatePayload>[]
+        }
+        delete: {
+          args: Prisma.GlobalBlackoutDateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalBlackoutDatePayload>
+        }
+        update: {
+          args: Prisma.GlobalBlackoutDateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalBlackoutDatePayload>
+        }
+        deleteMany: {
+          args: Prisma.GlobalBlackoutDateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GlobalBlackoutDateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GlobalBlackoutDateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalBlackoutDatePayload>[]
+        }
+        upsert: {
+          args: Prisma.GlobalBlackoutDateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalBlackoutDatePayload>
+        }
+        aggregate: {
+          args: Prisma.GlobalBlackoutDateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGlobalBlackoutDate>
+        }
+        groupBy: {
+          args: Prisma.GlobalBlackoutDateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GlobalBlackoutDateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GlobalBlackoutDateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GlobalBlackoutDateCountAggregateOutputType> | number
+        }
+      }
+    }
     BookingAddon: {
       payload: Prisma.$BookingAddonPayload<ExtArgs>
       fields: Prisma.BookingAddonFieldRefs
@@ -1138,6 +1363,8 @@ export const TourScalarFieldEnum = {
   category: 'category',
   durationMinutes: 'durationMinutes',
   basePriceIdr: 'basePriceIdr',
+  childPriceIdr: 'childPriceIdr',
+  childAgeLabel: 'childAgeLabel',
   images: 'images',
   inclusions: 'inclusions',
   exclusions: 'exclusions',
@@ -1211,6 +1438,8 @@ export const BookingScalarFieldEnum = {
   tourId: 'tourId',
   availabilityId: 'availabilityId',
   paxCount: 'paxCount',
+  adultCount: 'adultCount',
+  childCount: 'childCount',
   customerName: 'customerName',
   customerEmail: 'customerEmail',
   customerPhone: 'customerPhone',
@@ -1219,6 +1448,9 @@ export const BookingScalarFieldEnum = {
   notes: 'notes',
   status: 'status',
   totalAmountIdr: 'totalAmountIdr',
+  discountCodeId: 'discountCodeId',
+  discountPercent: 'discountPercent',
+  discountAmountIdr: 'discountAmountIdr',
   currency: 'currency',
   paymentProvider: 'paymentProvider',
   paymentStatus: 'paymentStatus',
@@ -1229,6 +1461,8 @@ export const BookingScalarFieldEnum = {
   paidAt: 'paidAt',
   cancelledAt: 'cancelledAt',
   confirmationEmailSentAt: 'confirmationEmailSentAt',
+  paymentReceiptEmailSentAt: 'paymentReceiptEmailSentAt',
+  confirmedAt: 'confirmedAt',
   termsAcceptedAt: 'termsAcceptedAt',
   termsVersion: 'termsVersion',
   createdAt: 'createdAt',
@@ -1236,6 +1470,40 @@ export const BookingScalarFieldEnum = {
 } as const
 
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
+
+
+export const DiscountCodeScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  percentOff: 'percentOff',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  usageLimit: 'usageLimit',
+  timesUsed: 'timesUsed',
+  active: 'active',
+  appliesToAll: 'appliesToAll',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DiscountCodeScalarFieldEnum = (typeof DiscountCodeScalarFieldEnum)[keyof typeof DiscountCodeScalarFieldEnum]
+
+
+export const DiscountCodeTourScalarFieldEnum = {
+  discountCodeId: 'discountCodeId',
+  tourId: 'tourId'
+} as const
+
+export type DiscountCodeTourScalarFieldEnum = (typeof DiscountCodeTourScalarFieldEnum)[keyof typeof DiscountCodeTourScalarFieldEnum]
+
+
+export const GlobalBlackoutDateScalarFieldEnum = {
+  date: 'date',
+  reason: 'reason',
+  createdAt: 'createdAt'
+} as const
+
+export type GlobalBlackoutDateScalarFieldEnum = (typeof GlobalBlackoutDateScalarFieldEnum)[keyof typeof GlobalBlackoutDateScalarFieldEnum]
 
 
 export const BookingAddonScalarFieldEnum = {
@@ -1605,6 +1873,9 @@ export type GlobalOmitConfig = {
   availability?: Prisma.AvailabilityOmit
   tourAddon?: Prisma.TourAddonOmit
   booking?: Prisma.BookingOmit
+  discountCode?: Prisma.DiscountCodeOmit
+  discountCodeTour?: Prisma.DiscountCodeTourOmit
+  globalBlackoutDate?: Prisma.GlobalBlackoutDateOmit
   bookingAddon?: Prisma.BookingAddonOmit
   user?: Prisma.UserOmit
   rateLimitBucket?: Prisma.RateLimitBucketOmit

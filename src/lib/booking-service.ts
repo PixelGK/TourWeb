@@ -59,11 +59,23 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
         pricingTiers: { orderBy: { minPax: "asc" } },
         addons: { where: { active: true, code: { in: input.addonCodes } } },
         availability: { where: { date, isOpen: true }, take: 1 },
+        itinerary: { orderBy: { position: "asc" }, take: 1, select: { timeLabel: true } },
       },
     });
     if (!tour?.published) throw new BookingError("This tour is not available for online booking", "NOT_FOUND", 404);
     if (input.pax > tour.maxGroupSize) throw new BookingError(`This tour accepts up to ${tour.maxGroupSize} travelers`, "INVALID");
     if (tour.addons.length !== input.addonCodes.length) throw new BookingError("One or more selected add-ons are unavailable", "INVALID");
+
+    const pickupTime = tour.itinerary[0]?.timeLabel.match(/(?:^|\D)([01]\d|2[0-3]):([0-5]\d)(?:\D|$)/);
+    const pickupHour = pickupTime?.[1] ?? "08";
+    const pickupMinute = pickupTime?.[2] ?? "00";
+    const pickupAt = new Date(`${input.date}T${pickupHour}:${pickupMinute}:00+08:00`);
+    if (pickupAt.getTime() - Date.now() < 12 * 60 * 60 * 1000) {
+      throw new BookingError("Online booking closes 12 hours before pickup. Please ask us on WhatsApp for a last-minute request.", "INVALID", 409);
+    }
+
+    const blackout = await tx.globalBlackoutDate.findUnique({ where: { date }, select: { reason: true } });
+    if (blackout) throw new BookingError(`${input.date} is unavailable: ${blackout.reason}`, "INVALID", 409);
 
     const availability = tour.availability[0];
     if (!availability) throw new BookingError("That date is not open for booking", "SOLD_OUT", 409);
@@ -81,18 +93,45 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
         where: { id: { in: expiredIds }, status: BookingStatus.PENDING },
         data: { status: BookingStatus.CANCELLED, paymentStatus: PaymentStatus.EXPIRED, cancelledAt: new Date() },
       });
+      const expiredDiscounts = await tx.booking.groupBy({
+        by: ["discountCodeId"],
+        where: { id: { in: expiredIds }, discountCodeId: { not: null } },
+        _count: { _all: true },
+      });
+      for (const item of expiredDiscounts) {
+        if (item.discountCodeId) await tx.discountCode.update({ where: { id: item.discountCodeId }, data: { timesUsed: { decrement: item._count._all } } });
+      }
       await tx.availability.update({ where: { id: availability.id }, data: { spotsRemaining: { increment: releasedPax } } });
     }
 
     const tier = tour.pricingTiers.find((item) => input.pax >= item.minPax && input.pax <= item.maxPax);
     const perPersonIdr = tier?.perPersonIdr ?? tour.basePriceIdr;
+    const childPriceIdr = tour.childPriceIdr ?? perPersonIdr;
     const addonRows = tour.addons.map((addon) => ({
       addonId: addon.id,
       quantity: addon.pricingMode === AddonPricingMode.PER_PERSON ? input.pax : 1,
       unitPriceIdr: addon.priceIdr,
     }));
     const addonTotal = addonRows.reduce((sum, addon) => sum + addon.quantity * addon.unitPriceIdr, 0);
-    const totalAmountIdr = perPersonIdr * input.pax + addonTotal;
+    const subtotalIdr = perPersonIdr * input.adultCount + childPriceIdr * input.childCount + addonTotal;
+
+    let discount: { id: string; percentOff: number } | null = null;
+    if (input.discountCode) {
+      const candidate = await tx.discountCode.findUnique({
+        where: { code: input.discountCode },
+        include: { tours: { where: { tourId: tour.id }, select: { tourId: true } } },
+      });
+      const now = new Date();
+      if (!candidate || !candidate.active || (candidate.startsAt && candidate.startsAt > now) || (candidate.endsAt && candidate.endsAt < now) || (!candidate.appliesToAll && candidate.tours.length === 0)) {
+        throw new BookingError("That discount code is not valid for this package", "INVALID");
+      }
+      await tx.$queryRaw(Prisma.sql`select id from public.discount_codes where id = ${candidate.id}::uuid for update`);
+      const locked = await tx.discountCode.findUniqueOrThrow({ where: { id: candidate.id } });
+      if (locked.usageLimit !== null && locked.timesUsed >= locked.usageLimit) throw new BookingError("That discount code has reached its usage limit", "INVALID");
+      discount = { id: locked.id, percentOff: locked.percentOff };
+    }
+    const discountAmountIdr = discount ? Math.floor(subtotalIdr * discount.percentOff / 100) : 0;
+    const totalAmountIdr = subtotalIdr - discountAmountIdr;
 
     const reserved = await tx.availability.updateMany({
       where: { id: availability.id, isOpen: true, spotsRemaining: { gte: input.pax } },
@@ -107,6 +146,8 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
         tourId: tour.id,
         availabilityId: availability.id,
         paxCount: input.pax,
+        adultCount: input.adultCount,
+        childCount: input.childCount,
         customerName: input.traveler.name,
         customerEmail: input.traveler.email,
         customerPhone: input.traveler.phone,
@@ -114,6 +155,9 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
         hotelName: input.traveler.hotelName || null,
         notes: input.traveler.notes || null,
         totalAmountIdr,
+        discountCodeId: discount?.id,
+        discountPercent: discount?.percentOff,
+        discountAmountIdr,
         paymentProvider: PaymentProviderName.MIDTRANS,
         paymentTransactionId: reference,
         idempotencyKey,
@@ -125,6 +169,7 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
       },
       include: { tour: true, availability: true },
     });
+    if (discount) await tx.discountCode.update({ where: { id: discount.id }, data: { timesUsed: { increment: 1 } } });
     return { booking, created: true };
   }, {
     isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
@@ -136,14 +181,17 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
 export async function releasePendingBooking(reference: string, paymentStatus: PaymentStatus = PaymentStatus.FAILED) {
   const prisma = getPrisma();
   return prisma.$transaction(async (tx) => {
-    const booking = await tx.booking.findUnique({ where: { reference }, select: { id: true, availabilityId: true, paxCount: true } });
+    const booking = await tx.booking.findUnique({ where: { reference }, select: { id: true, availabilityId: true, paxCount: true, discountCodeId: true } });
     if (!booking) return false;
     await tx.$queryRaw(Prisma.sql`select id from public.availability where id = ${booking.availabilityId}::uuid for update`);
     const cancelled = await tx.booking.updateMany({
       where: { id: booking.id, status: BookingStatus.PENDING },
       data: { status: BookingStatus.CANCELLED, paymentStatus, cancelledAt: new Date() },
     });
-    if (cancelled.count === 1) await tx.availability.update({ where: { id: booking.availabilityId }, data: { spotsRemaining: { increment: booking.paxCount } } });
+    if (cancelled.count === 1) {
+      await tx.availability.update({ where: { id: booking.availabilityId }, data: { spotsRemaining: { increment: booking.paxCount } } });
+      if (booking.discountCodeId) await tx.discountCode.update({ where: { id: booking.discountCodeId }, data: { timesUsed: { decrement: 1 } } });
+    }
     return cancelled.count === 1;
   });
 }
@@ -205,6 +253,13 @@ export async function markConfirmationEmailSent(bookingId: string) {
   return getPrisma().booking.updateMany({
     where: { id: bookingId, confirmationEmailSentAt: null },
     data: { confirmationEmailSentAt: new Date() },
+  });
+}
+
+export async function markPaymentReceiptEmailSent(bookingId: string) {
+  return getPrisma().booking.updateMany({
+    where: { id: bookingId, paymentReceiptEmailSentAt: null },
+    data: { paymentReceiptEmailSentAt: new Date() },
   });
 }
 
