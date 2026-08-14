@@ -57,6 +57,9 @@ export const ModelName = {
   Availability: 'Availability',
   TourAddon: 'TourAddon',
   Booking: 'Booking',
+  DiscountCode: 'DiscountCode',
+  DiscountCodeTour: 'DiscountCodeTour',
+  GlobalBlackoutDate: 'GlobalBlackoutDate',
   BookingAddon: 'BookingAddon',
   User: 'User',
   RateLimitBucket: 'RateLimitBucket'
@@ -86,6 +89,8 @@ export const TourScalarFieldEnum = {
   category: 'category',
   durationMinutes: 'durationMinutes',
   basePriceIdr: 'basePriceIdr',
+  childPriceIdr: 'childPriceIdr',
+  childAgeLabel: 'childAgeLabel',
   images: 'images',
   inclusions: 'inclusions',
   exclusions: 'exclusions',
@@ -159,6 +164,8 @@ export const BookingScalarFieldEnum = {
   tourId: 'tourId',
   availabilityId: 'availabilityId',
   paxCount: 'paxCount',
+  adultCount: 'adultCount',
+  childCount: 'childCount',
   customerName: 'customerName',
   customerEmail: 'customerEmail',
   customerPhone: 'customerPhone',
@@ -167,6 +174,9 @@ export const BookingScalarFieldEnum = {
   notes: 'notes',
   status: 'status',
   totalAmountIdr: 'totalAmountIdr',
+  discountCodeId: 'discountCodeId',
+  discountPercent: 'discountPercent',
+  discountAmountIdr: 'discountAmountIdr',
   currency: 'currency',
   paymentProvider: 'paymentProvider',
   paymentStatus: 'paymentStatus',
@@ -177,6 +187,8 @@ export const BookingScalarFieldEnum = {
   paidAt: 'paidAt',
   cancelledAt: 'cancelledAt',
   confirmationEmailSentAt: 'confirmationEmailSentAt',
+  paymentReceiptEmailSentAt: 'paymentReceiptEmailSentAt',
+  confirmedAt: 'confirmedAt',
   termsAcceptedAt: 'termsAcceptedAt',
   termsVersion: 'termsVersion',
   createdAt: 'createdAt',
@@ -184,6 +196,40 @@ export const BookingScalarFieldEnum = {
 } as const
 
 export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
+
+
+export const DiscountCodeScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  percentOff: 'percentOff',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  usageLimit: 'usageLimit',
+  timesUsed: 'timesUsed',
+  active: 'active',
+  appliesToAll: 'appliesToAll',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DiscountCodeScalarFieldEnum = (typeof DiscountCodeScalarFieldEnum)[keyof typeof DiscountCodeScalarFieldEnum]
+
+
+export const DiscountCodeTourScalarFieldEnum = {
+  discountCodeId: 'discountCodeId',
+  tourId: 'tourId'
+} as const
+
+export type DiscountCodeTourScalarFieldEnum = (typeof DiscountCodeTourScalarFieldEnum)[keyof typeof DiscountCodeTourScalarFieldEnum]
+
+
+export const GlobalBlackoutDateScalarFieldEnum = {
+  date: 'date',
+  reason: 'reason',
+  createdAt: 'createdAt'
+} as const
+
+export type GlobalBlackoutDateScalarFieldEnum = (typeof GlobalBlackoutDateScalarFieldEnum)[keyof typeof GlobalBlackoutDateScalarFieldEnum]
 
 
 export const BookingAddonScalarFieldEnum = {

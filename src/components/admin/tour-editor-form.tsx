@@ -41,6 +41,8 @@ export function TourEditorForm({ tour, preview }: { tour: AdminTourEditorData; p
               <Select label="Category" name="category" required defaultValue={tour.category}>{categories.map((category) => <option key={category} value={category}>{category.replaceAll("_", " ")}</option>)}</Select>
               <Input label="Duration in minutes" name="durationMinutes" type="number" min={30} required defaultValue={tour.durationMinutes} />
               <Input label="Base price in IDR" name="basePriceIdr" type="number" min={0} step={5000} required defaultValue={tour.basePriceIdr} />
+              <Input label="Optional child price in IDR" name="childPriceIdr" type="number" min={0} step={5000} defaultValue={tour.childPriceIdr ?? ""} hint="Leave empty to charge the adult rate." />
+              <Input label="Child age label" name="childAgeLabel" defaultValue={tour.childAgeLabel ?? ""} hint="For example: ages 3–12." />
               <Input label="Maximum group size" name="maxGroupSize" type="number" min={1} max={50} required defaultValue={tour.maxGroupSize} />
               <label className="flex min-h-12 items-center gap-3 border border-charcoal/25 bg-frangipani px-4 sm:self-end"><input type="checkbox" name="published" defaultChecked={tour.published} className="size-5 accent-terrace" /><span><strong className="block text-sm">Published</strong><span className="text-xs text-weathered">Visible and bookable on the public site</span></span></label>
               <div className="sm:col-span-2"><FieldLabel htmlFor="description">Description</FieldLabel><textarea id="description" name="description" required rows={5} defaultValue={tour.description} className={textAreaClass} /></div>

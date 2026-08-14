@@ -21,8 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { topTours } from "@/data/mock-tours";
 
 export const metadata: Metadata = {
-  title: "Private Bali Tours & Drivers",
-  description: "Book private Bali day tours, hosted experience days, sunrise treks, island trips, activities, and car charters directly with a trusted local operator.",
+  title: "Private Bali Drivers & Experience Days",
+  description: "Book private Bali day trips with an experienced local driver, including clearly bundled attraction and activity experiences.",
 };
 
 const categories = [

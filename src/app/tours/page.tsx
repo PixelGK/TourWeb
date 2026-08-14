@@ -14,7 +14,7 @@ import { hasDatabaseConfiguration } from "@/lib/server-env";
 
 export const metadata: Metadata = {
   title: "Bali Tours & Private Experiences",
-  description: "Compare private Bali tours, cultural day trips, trekking, water sports, car charters, and multi-day routes with clear IDR pricing.",
+  description: "Compare private Bali driver days, activity packages, trekking, water sports, car charters, and multi-day routes with clear IDR pricing.",
 };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -168,7 +168,7 @@ export default async function ToursPage({ searchParams }: { searchParams: Search
               <Link href="/" className="hover:text-gold">Home</Link><span aria-hidden="true">/</span><span aria-current="page">Tours</span>
             </nav>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-gold">Day tours, drivers and activities</p>
-            <h1 className="mt-3 max-w-4xl font-serif text-5xl leading-[0.95] sm:text-6xl lg:text-7xl">Private Bali tours</h1>
+            <h1 className="mt-3 max-w-4xl font-serif text-5xl leading-[0.95] sm:text-6xl lg:text-7xl">Private Bali day trips</h1>
           </div>
           <div className="flex items-center gap-3 border-l-2 border-gold pl-4 text-sm text-frangipani/70 lg:max-w-xs">
             <Compass aria-hidden="true" className="size-5 shrink-0 text-gold" /> Choose a ready-made route or ask us to adjust the stops.

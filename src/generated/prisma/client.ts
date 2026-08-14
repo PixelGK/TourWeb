@@ -72,6 +72,21 @@ export type TourAddon = Prisma.TourAddonModel
  */
 export type Booking = Prisma.BookingModel
 /**
+ * Model DiscountCode
+ * 
+ */
+export type DiscountCode = Prisma.DiscountCodeModel
+/**
+ * Model DiscountCodeTour
+ * 
+ */
+export type DiscountCodeTour = Prisma.DiscountCodeTourModel
+/**
+ * Model GlobalBlackoutDate
+ * 
+ */
+export type GlobalBlackoutDate = Prisma.GlobalBlackoutDateModel
+/**
  * Model BookingAddon
  * 
  */

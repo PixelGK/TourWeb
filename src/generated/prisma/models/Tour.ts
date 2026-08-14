@@ -29,12 +29,14 @@ export type AggregateTour = {
 export type TourAvgAggregateOutputType = {
   durationMinutes: number | null
   basePriceIdr: number | null
+  childPriceIdr: number | null
   maxGroupSize: number | null
 }
 
 export type TourSumAggregateOutputType = {
   durationMinutes: number | null
   basePriceIdr: number | null
+  childPriceIdr: number | null
   maxGroupSize: number | null
 }
 
@@ -46,6 +48,8 @@ export type TourMinAggregateOutputType = {
   category: $Enums.TourCategory | null
   durationMinutes: number | null
   basePriceIdr: number | null
+  childPriceIdr: number | null
+  childAgeLabel: string | null
   meetingPoint: string | null
   cancellationPolicy: string | null
   maxGroupSize: number | null
@@ -62,6 +66,8 @@ export type TourMaxAggregateOutputType = {
   category: $Enums.TourCategory | null
   durationMinutes: number | null
   basePriceIdr: number | null
+  childPriceIdr: number | null
+  childAgeLabel: string | null
   meetingPoint: string | null
   cancellationPolicy: string | null
   maxGroupSize: number | null
@@ -78,6 +84,8 @@ export type TourCountAggregateOutputType = {
   category: number
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr: number
+  childAgeLabel: number
   images: number
   inclusions: number
   exclusions: number
@@ -94,12 +102,14 @@ export type TourCountAggregateOutputType = {
 export type TourAvgAggregateInputType = {
   durationMinutes?: true
   basePriceIdr?: true
+  childPriceIdr?: true
   maxGroupSize?: true
 }
 
 export type TourSumAggregateInputType = {
   durationMinutes?: true
   basePriceIdr?: true
+  childPriceIdr?: true
   maxGroupSize?: true
 }
 
@@ -111,6 +121,8 @@ export type TourMinAggregateInputType = {
   category?: true
   durationMinutes?: true
   basePriceIdr?: true
+  childPriceIdr?: true
+  childAgeLabel?: true
   meetingPoint?: true
   cancellationPolicy?: true
   maxGroupSize?: true
@@ -127,6 +139,8 @@ export type TourMaxAggregateInputType = {
   category?: true
   durationMinutes?: true
   basePriceIdr?: true
+  childPriceIdr?: true
+  childAgeLabel?: true
   meetingPoint?: true
   cancellationPolicy?: true
   maxGroupSize?: true
@@ -143,6 +157,8 @@ export type TourCountAggregateInputType = {
   category?: true
   durationMinutes?: true
   basePriceIdr?: true
+  childPriceIdr?: true
+  childAgeLabel?: true
   images?: true
   inclusions?: true
   exclusions?: true
@@ -249,6 +265,8 @@ export type TourGroupByOutputType = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr: number | null
+  childAgeLabel: string | null
   images: string[]
   inclusions: string[]
   exclusions: string[]
@@ -291,6 +309,8 @@ export type TourWhereInput = {
   category?: Prisma.EnumTourCategoryFilter<"Tour"> | $Enums.TourCategory
   durationMinutes?: Prisma.IntFilter<"Tour"> | number
   basePriceIdr?: Prisma.IntFilter<"Tour"> | number
+  childPriceIdr?: Prisma.IntNullableFilter<"Tour"> | number | null
+  childAgeLabel?: Prisma.StringNullableFilter<"Tour"> | string | null
   images?: Prisma.StringNullableListFilter<"Tour">
   inclusions?: Prisma.StringNullableListFilter<"Tour">
   exclusions?: Prisma.StringNullableListFilter<"Tour">
@@ -305,6 +325,7 @@ export type TourWhereInput = {
   availability?: Prisma.AvailabilityListRelationFilter
   bookings?: Prisma.BookingListRelationFilter
   addons?: Prisma.TourAddonListRelationFilter
+  discountCodes?: Prisma.DiscountCodeTourListRelationFilter
 }
 
 export type TourOrderByWithRelationInput = {
@@ -315,6 +336,8 @@ export type TourOrderByWithRelationInput = {
   category?: Prisma.SortOrder
   durationMinutes?: Prisma.SortOrder
   basePriceIdr?: Prisma.SortOrder
+  childPriceIdr?: Prisma.SortOrderInput | Prisma.SortOrder
+  childAgeLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   images?: Prisma.SortOrder
   inclusions?: Prisma.SortOrder
   exclusions?: Prisma.SortOrder
@@ -329,6 +352,7 @@ export type TourOrderByWithRelationInput = {
   availability?: Prisma.AvailabilityOrderByRelationAggregateInput
   bookings?: Prisma.BookingOrderByRelationAggregateInput
   addons?: Prisma.TourAddonOrderByRelationAggregateInput
+  discountCodes?: Prisma.DiscountCodeTourOrderByRelationAggregateInput
 }
 
 export type TourWhereUniqueInput = Prisma.AtLeast<{
@@ -342,6 +366,8 @@ export type TourWhereUniqueInput = Prisma.AtLeast<{
   category?: Prisma.EnumTourCategoryFilter<"Tour"> | $Enums.TourCategory
   durationMinutes?: Prisma.IntFilter<"Tour"> | number
   basePriceIdr?: Prisma.IntFilter<"Tour"> | number
+  childPriceIdr?: Prisma.IntNullableFilter<"Tour"> | number | null
+  childAgeLabel?: Prisma.StringNullableFilter<"Tour"> | string | null
   images?: Prisma.StringNullableListFilter<"Tour">
   inclusions?: Prisma.StringNullableListFilter<"Tour">
   exclusions?: Prisma.StringNullableListFilter<"Tour">
@@ -356,6 +382,7 @@ export type TourWhereUniqueInput = Prisma.AtLeast<{
   availability?: Prisma.AvailabilityListRelationFilter
   bookings?: Prisma.BookingListRelationFilter
   addons?: Prisma.TourAddonListRelationFilter
+  discountCodes?: Prisma.DiscountCodeTourListRelationFilter
 }, "id" | "slug">
 
 export type TourOrderByWithAggregationInput = {
@@ -366,6 +393,8 @@ export type TourOrderByWithAggregationInput = {
   category?: Prisma.SortOrder
   durationMinutes?: Prisma.SortOrder
   basePriceIdr?: Prisma.SortOrder
+  childPriceIdr?: Prisma.SortOrderInput | Prisma.SortOrder
+  childAgeLabel?: Prisma.SortOrderInput | Prisma.SortOrder
   images?: Prisma.SortOrder
   inclusions?: Prisma.SortOrder
   exclusions?: Prisma.SortOrder
@@ -393,6 +422,8 @@ export type TourScalarWhereWithAggregatesInput = {
   category?: Prisma.EnumTourCategoryWithAggregatesFilter<"Tour"> | $Enums.TourCategory
   durationMinutes?: Prisma.IntWithAggregatesFilter<"Tour"> | number
   basePriceIdr?: Prisma.IntWithAggregatesFilter<"Tour"> | number
+  childPriceIdr?: Prisma.IntNullableWithAggregatesFilter<"Tour"> | number | null
+  childAgeLabel?: Prisma.StringNullableWithAggregatesFilter<"Tour"> | string | null
   images?: Prisma.StringNullableListFilter<"Tour">
   inclusions?: Prisma.StringNullableListFilter<"Tour">
   exclusions?: Prisma.StringNullableListFilter<"Tour">
@@ -412,6 +443,8 @@ export type TourCreateInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -426,6 +459,7 @@ export type TourCreateInput = {
   availability?: Prisma.AvailabilityCreateNestedManyWithoutTourInput
   bookings?: Prisma.BookingCreateNestedManyWithoutTourInput
   addons?: Prisma.TourAddonCreateNestedManyWithoutTourInput
+  discountCodes?: Prisma.DiscountCodeTourCreateNestedManyWithoutTourInput
 }
 
 export type TourUncheckedCreateInput = {
@@ -436,6 +470,8 @@ export type TourUncheckedCreateInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -450,6 +486,7 @@ export type TourUncheckedCreateInput = {
   availability?: Prisma.AvailabilityUncheckedCreateNestedManyWithoutTourInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutTourInput
   addons?: Prisma.TourAddonUncheckedCreateNestedManyWithoutTourInput
+  discountCodes?: Prisma.DiscountCodeTourUncheckedCreateNestedManyWithoutTourInput
 }
 
 export type TourUpdateInput = {
@@ -460,6 +497,8 @@ export type TourUpdateInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -474,6 +513,7 @@ export type TourUpdateInput = {
   availability?: Prisma.AvailabilityUpdateManyWithoutTourNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutTourNestedInput
   addons?: Prisma.TourAddonUpdateManyWithoutTourNestedInput
+  discountCodes?: Prisma.DiscountCodeTourUpdateManyWithoutTourNestedInput
 }
 
 export type TourUncheckedUpdateInput = {
@@ -484,6 +524,8 @@ export type TourUncheckedUpdateInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -498,6 +540,7 @@ export type TourUncheckedUpdateInput = {
   availability?: Prisma.AvailabilityUncheckedUpdateManyWithoutTourNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutTourNestedInput
   addons?: Prisma.TourAddonUncheckedUpdateManyWithoutTourNestedInput
+  discountCodes?: Prisma.DiscountCodeTourUncheckedUpdateManyWithoutTourNestedInput
 }
 
 export type TourCreateManyInput = {
@@ -508,6 +551,8 @@ export type TourCreateManyInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -527,6 +572,8 @@ export type TourUpdateManyMutationInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -546,6 +593,8 @@ export type TourUncheckedUpdateManyInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -573,6 +622,8 @@ export type TourCountOrderByAggregateInput = {
   category?: Prisma.SortOrder
   durationMinutes?: Prisma.SortOrder
   basePriceIdr?: Prisma.SortOrder
+  childPriceIdr?: Prisma.SortOrder
+  childAgeLabel?: Prisma.SortOrder
   images?: Prisma.SortOrder
   inclusions?: Prisma.SortOrder
   exclusions?: Prisma.SortOrder
@@ -587,6 +638,7 @@ export type TourCountOrderByAggregateInput = {
 export type TourAvgOrderByAggregateInput = {
   durationMinutes?: Prisma.SortOrder
   basePriceIdr?: Prisma.SortOrder
+  childPriceIdr?: Prisma.SortOrder
   maxGroupSize?: Prisma.SortOrder
 }
 
@@ -598,6 +650,8 @@ export type TourMaxOrderByAggregateInput = {
   category?: Prisma.SortOrder
   durationMinutes?: Prisma.SortOrder
   basePriceIdr?: Prisma.SortOrder
+  childPriceIdr?: Prisma.SortOrder
+  childAgeLabel?: Prisma.SortOrder
   meetingPoint?: Prisma.SortOrder
   cancellationPolicy?: Prisma.SortOrder
   maxGroupSize?: Prisma.SortOrder
@@ -614,6 +668,8 @@ export type TourMinOrderByAggregateInput = {
   category?: Prisma.SortOrder
   durationMinutes?: Prisma.SortOrder
   basePriceIdr?: Prisma.SortOrder
+  childPriceIdr?: Prisma.SortOrder
+  childAgeLabel?: Prisma.SortOrder
   meetingPoint?: Prisma.SortOrder
   cancellationPolicy?: Prisma.SortOrder
   maxGroupSize?: Prisma.SortOrder
@@ -625,6 +681,7 @@ export type TourMinOrderByAggregateInput = {
 export type TourSumOrderByAggregateInput = {
   durationMinutes?: Prisma.SortOrder
   basePriceIdr?: Prisma.SortOrder
+  childPriceIdr?: Prisma.SortOrder
   maxGroupSize?: Prisma.SortOrder
 }
 
@@ -659,6 +716,18 @@ export type IntFieldUpdateOperationsInput = {
   decrement?: number
   multiply?: number
   divide?: number
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 export type TourUpdateimagesInput = {
@@ -754,6 +823,20 @@ export type TourUpdateOneRequiredWithoutBookingsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TourUpdateToOneWithWhereWithoutBookingsInput, Prisma.TourUpdateWithoutBookingsInput>, Prisma.TourUncheckedUpdateWithoutBookingsInput>
 }
 
+export type TourCreateNestedOneWithoutDiscountCodesInput = {
+  create?: Prisma.XOR<Prisma.TourCreateWithoutDiscountCodesInput, Prisma.TourUncheckedCreateWithoutDiscountCodesInput>
+  connectOrCreate?: Prisma.TourCreateOrConnectWithoutDiscountCodesInput
+  connect?: Prisma.TourWhereUniqueInput
+}
+
+export type TourUpdateOneRequiredWithoutDiscountCodesNestedInput = {
+  create?: Prisma.XOR<Prisma.TourCreateWithoutDiscountCodesInput, Prisma.TourUncheckedCreateWithoutDiscountCodesInput>
+  connectOrCreate?: Prisma.TourCreateOrConnectWithoutDiscountCodesInput
+  upsert?: Prisma.TourUpsertWithoutDiscountCodesInput
+  connect?: Prisma.TourWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TourUpdateToOneWithWhereWithoutDiscountCodesInput, Prisma.TourUpdateWithoutDiscountCodesInput>, Prisma.TourUncheckedUpdateWithoutDiscountCodesInput>
+}
+
 export type TourCreateWithoutPricingTiersInput = {
   id?: string
   title: string
@@ -762,6 +845,8 @@ export type TourCreateWithoutPricingTiersInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -775,6 +860,7 @@ export type TourCreateWithoutPricingTiersInput = {
   availability?: Prisma.AvailabilityCreateNestedManyWithoutTourInput
   bookings?: Prisma.BookingCreateNestedManyWithoutTourInput
   addons?: Prisma.TourAddonCreateNestedManyWithoutTourInput
+  discountCodes?: Prisma.DiscountCodeTourCreateNestedManyWithoutTourInput
 }
 
 export type TourUncheckedCreateWithoutPricingTiersInput = {
@@ -785,6 +871,8 @@ export type TourUncheckedCreateWithoutPricingTiersInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -798,6 +886,7 @@ export type TourUncheckedCreateWithoutPricingTiersInput = {
   availability?: Prisma.AvailabilityUncheckedCreateNestedManyWithoutTourInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutTourInput
   addons?: Prisma.TourAddonUncheckedCreateNestedManyWithoutTourInput
+  discountCodes?: Prisma.DiscountCodeTourUncheckedCreateNestedManyWithoutTourInput
 }
 
 export type TourCreateOrConnectWithoutPricingTiersInput = {
@@ -824,6 +913,8 @@ export type TourUpdateWithoutPricingTiersInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -837,6 +928,7 @@ export type TourUpdateWithoutPricingTiersInput = {
   availability?: Prisma.AvailabilityUpdateManyWithoutTourNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutTourNestedInput
   addons?: Prisma.TourAddonUpdateManyWithoutTourNestedInput
+  discountCodes?: Prisma.DiscountCodeTourUpdateManyWithoutTourNestedInput
 }
 
 export type TourUncheckedUpdateWithoutPricingTiersInput = {
@@ -847,6 +939,8 @@ export type TourUncheckedUpdateWithoutPricingTiersInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -860,6 +954,7 @@ export type TourUncheckedUpdateWithoutPricingTiersInput = {
   availability?: Prisma.AvailabilityUncheckedUpdateManyWithoutTourNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutTourNestedInput
   addons?: Prisma.TourAddonUncheckedUpdateManyWithoutTourNestedInput
+  discountCodes?: Prisma.DiscountCodeTourUncheckedUpdateManyWithoutTourNestedInput
 }
 
 export type TourCreateWithoutItineraryInput = {
@@ -870,6 +965,8 @@ export type TourCreateWithoutItineraryInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -883,6 +980,7 @@ export type TourCreateWithoutItineraryInput = {
   availability?: Prisma.AvailabilityCreateNestedManyWithoutTourInput
   bookings?: Prisma.BookingCreateNestedManyWithoutTourInput
   addons?: Prisma.TourAddonCreateNestedManyWithoutTourInput
+  discountCodes?: Prisma.DiscountCodeTourCreateNestedManyWithoutTourInput
 }
 
 export type TourUncheckedCreateWithoutItineraryInput = {
@@ -893,6 +991,8 @@ export type TourUncheckedCreateWithoutItineraryInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -906,6 +1006,7 @@ export type TourUncheckedCreateWithoutItineraryInput = {
   availability?: Prisma.AvailabilityUncheckedCreateNestedManyWithoutTourInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutTourInput
   addons?: Prisma.TourAddonUncheckedCreateNestedManyWithoutTourInput
+  discountCodes?: Prisma.DiscountCodeTourUncheckedCreateNestedManyWithoutTourInput
 }
 
 export type TourCreateOrConnectWithoutItineraryInput = {
@@ -932,6 +1033,8 @@ export type TourUpdateWithoutItineraryInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -945,6 +1048,7 @@ export type TourUpdateWithoutItineraryInput = {
   availability?: Prisma.AvailabilityUpdateManyWithoutTourNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutTourNestedInput
   addons?: Prisma.TourAddonUpdateManyWithoutTourNestedInput
+  discountCodes?: Prisma.DiscountCodeTourUpdateManyWithoutTourNestedInput
 }
 
 export type TourUncheckedUpdateWithoutItineraryInput = {
@@ -955,6 +1059,8 @@ export type TourUncheckedUpdateWithoutItineraryInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -968,6 +1074,7 @@ export type TourUncheckedUpdateWithoutItineraryInput = {
   availability?: Prisma.AvailabilityUncheckedUpdateManyWithoutTourNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutTourNestedInput
   addons?: Prisma.TourAddonUncheckedUpdateManyWithoutTourNestedInput
+  discountCodes?: Prisma.DiscountCodeTourUncheckedUpdateManyWithoutTourNestedInput
 }
 
 export type TourCreateWithoutAvailabilityInput = {
@@ -978,6 +1085,8 @@ export type TourCreateWithoutAvailabilityInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -991,6 +1100,7 @@ export type TourCreateWithoutAvailabilityInput = {
   pricingTiers?: Prisma.TourPricingTierCreateNestedManyWithoutTourInput
   bookings?: Prisma.BookingCreateNestedManyWithoutTourInput
   addons?: Prisma.TourAddonCreateNestedManyWithoutTourInput
+  discountCodes?: Prisma.DiscountCodeTourCreateNestedManyWithoutTourInput
 }
 
 export type TourUncheckedCreateWithoutAvailabilityInput = {
@@ -1001,6 +1111,8 @@ export type TourUncheckedCreateWithoutAvailabilityInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -1014,6 +1126,7 @@ export type TourUncheckedCreateWithoutAvailabilityInput = {
   pricingTiers?: Prisma.TourPricingTierUncheckedCreateNestedManyWithoutTourInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutTourInput
   addons?: Prisma.TourAddonUncheckedCreateNestedManyWithoutTourInput
+  discountCodes?: Prisma.DiscountCodeTourUncheckedCreateNestedManyWithoutTourInput
 }
 
 export type TourCreateOrConnectWithoutAvailabilityInput = {
@@ -1040,6 +1153,8 @@ export type TourUpdateWithoutAvailabilityInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -1053,6 +1168,7 @@ export type TourUpdateWithoutAvailabilityInput = {
   pricingTiers?: Prisma.TourPricingTierUpdateManyWithoutTourNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutTourNestedInput
   addons?: Prisma.TourAddonUpdateManyWithoutTourNestedInput
+  discountCodes?: Prisma.DiscountCodeTourUpdateManyWithoutTourNestedInput
 }
 
 export type TourUncheckedUpdateWithoutAvailabilityInput = {
@@ -1063,6 +1179,8 @@ export type TourUncheckedUpdateWithoutAvailabilityInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -1076,6 +1194,7 @@ export type TourUncheckedUpdateWithoutAvailabilityInput = {
   pricingTiers?: Prisma.TourPricingTierUncheckedUpdateManyWithoutTourNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutTourNestedInput
   addons?: Prisma.TourAddonUncheckedUpdateManyWithoutTourNestedInput
+  discountCodes?: Prisma.DiscountCodeTourUncheckedUpdateManyWithoutTourNestedInput
 }
 
 export type TourCreateWithoutAddonsInput = {
@@ -1086,6 +1205,8 @@ export type TourCreateWithoutAddonsInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -1099,6 +1220,7 @@ export type TourCreateWithoutAddonsInput = {
   pricingTiers?: Prisma.TourPricingTierCreateNestedManyWithoutTourInput
   availability?: Prisma.AvailabilityCreateNestedManyWithoutTourInput
   bookings?: Prisma.BookingCreateNestedManyWithoutTourInput
+  discountCodes?: Prisma.DiscountCodeTourCreateNestedManyWithoutTourInput
 }
 
 export type TourUncheckedCreateWithoutAddonsInput = {
@@ -1109,6 +1231,8 @@ export type TourUncheckedCreateWithoutAddonsInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -1122,6 +1246,7 @@ export type TourUncheckedCreateWithoutAddonsInput = {
   pricingTiers?: Prisma.TourPricingTierUncheckedCreateNestedManyWithoutTourInput
   availability?: Prisma.AvailabilityUncheckedCreateNestedManyWithoutTourInput
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutTourInput
+  discountCodes?: Prisma.DiscountCodeTourUncheckedCreateNestedManyWithoutTourInput
 }
 
 export type TourCreateOrConnectWithoutAddonsInput = {
@@ -1148,6 +1273,8 @@ export type TourUpdateWithoutAddonsInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -1161,6 +1288,7 @@ export type TourUpdateWithoutAddonsInput = {
   pricingTiers?: Prisma.TourPricingTierUpdateManyWithoutTourNestedInput
   availability?: Prisma.AvailabilityUpdateManyWithoutTourNestedInput
   bookings?: Prisma.BookingUpdateManyWithoutTourNestedInput
+  discountCodes?: Prisma.DiscountCodeTourUpdateManyWithoutTourNestedInput
 }
 
 export type TourUncheckedUpdateWithoutAddonsInput = {
@@ -1171,6 +1299,8 @@ export type TourUncheckedUpdateWithoutAddonsInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -1184,6 +1314,7 @@ export type TourUncheckedUpdateWithoutAddonsInput = {
   pricingTiers?: Prisma.TourPricingTierUncheckedUpdateManyWithoutTourNestedInput
   availability?: Prisma.AvailabilityUncheckedUpdateManyWithoutTourNestedInput
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutTourNestedInput
+  discountCodes?: Prisma.DiscountCodeTourUncheckedUpdateManyWithoutTourNestedInput
 }
 
 export type TourCreateWithoutBookingsInput = {
@@ -1194,6 +1325,8 @@ export type TourCreateWithoutBookingsInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -1207,6 +1340,7 @@ export type TourCreateWithoutBookingsInput = {
   pricingTiers?: Prisma.TourPricingTierCreateNestedManyWithoutTourInput
   availability?: Prisma.AvailabilityCreateNestedManyWithoutTourInput
   addons?: Prisma.TourAddonCreateNestedManyWithoutTourInput
+  discountCodes?: Prisma.DiscountCodeTourCreateNestedManyWithoutTourInput
 }
 
 export type TourUncheckedCreateWithoutBookingsInput = {
@@ -1217,6 +1351,8 @@ export type TourUncheckedCreateWithoutBookingsInput = {
   category: $Enums.TourCategory
   durationMinutes: number
   basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
   images?: Prisma.TourCreateimagesInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
@@ -1230,6 +1366,7 @@ export type TourUncheckedCreateWithoutBookingsInput = {
   pricingTiers?: Prisma.TourPricingTierUncheckedCreateNestedManyWithoutTourInput
   availability?: Prisma.AvailabilityUncheckedCreateNestedManyWithoutTourInput
   addons?: Prisma.TourAddonUncheckedCreateNestedManyWithoutTourInput
+  discountCodes?: Prisma.DiscountCodeTourUncheckedCreateNestedManyWithoutTourInput
 }
 
 export type TourCreateOrConnectWithoutBookingsInput = {
@@ -1256,6 +1393,8 @@ export type TourUpdateWithoutBookingsInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -1269,6 +1408,7 @@ export type TourUpdateWithoutBookingsInput = {
   pricingTiers?: Prisma.TourPricingTierUpdateManyWithoutTourNestedInput
   availability?: Prisma.AvailabilityUpdateManyWithoutTourNestedInput
   addons?: Prisma.TourAddonUpdateManyWithoutTourNestedInput
+  discountCodes?: Prisma.DiscountCodeTourUpdateManyWithoutTourNestedInput
 }
 
 export type TourUncheckedUpdateWithoutBookingsInput = {
@@ -1279,6 +1419,8 @@ export type TourUncheckedUpdateWithoutBookingsInput = {
   category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
   durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   images?: Prisma.TourUpdateimagesInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
@@ -1291,6 +1433,127 @@ export type TourUncheckedUpdateWithoutBookingsInput = {
   itinerary?: Prisma.TourItineraryStopUncheckedUpdateManyWithoutTourNestedInput
   pricingTiers?: Prisma.TourPricingTierUncheckedUpdateManyWithoutTourNestedInput
   availability?: Prisma.AvailabilityUncheckedUpdateManyWithoutTourNestedInput
+  addons?: Prisma.TourAddonUncheckedUpdateManyWithoutTourNestedInput
+  discountCodes?: Prisma.DiscountCodeTourUncheckedUpdateManyWithoutTourNestedInput
+}
+
+export type TourCreateWithoutDiscountCodesInput = {
+  id?: string
+  title: string
+  slug: string
+  description: string
+  category: $Enums.TourCategory
+  durationMinutes: number
+  basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
+  images?: Prisma.TourCreateimagesInput | string[]
+  inclusions?: Prisma.TourCreateinclusionsInput | string[]
+  exclusions?: Prisma.TourCreateexclusionsInput | string[]
+  meetingPoint: string
+  cancellationPolicy: string
+  maxGroupSize: number
+  published?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  itinerary?: Prisma.TourItineraryStopCreateNestedManyWithoutTourInput
+  pricingTiers?: Prisma.TourPricingTierCreateNestedManyWithoutTourInput
+  availability?: Prisma.AvailabilityCreateNestedManyWithoutTourInput
+  bookings?: Prisma.BookingCreateNestedManyWithoutTourInput
+  addons?: Prisma.TourAddonCreateNestedManyWithoutTourInput
+}
+
+export type TourUncheckedCreateWithoutDiscountCodesInput = {
+  id?: string
+  title: string
+  slug: string
+  description: string
+  category: $Enums.TourCategory
+  durationMinutes: number
+  basePriceIdr: number
+  childPriceIdr?: number | null
+  childAgeLabel?: string | null
+  images?: Prisma.TourCreateimagesInput | string[]
+  inclusions?: Prisma.TourCreateinclusionsInput | string[]
+  exclusions?: Prisma.TourCreateexclusionsInput | string[]
+  meetingPoint: string
+  cancellationPolicy: string
+  maxGroupSize: number
+  published?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  itinerary?: Prisma.TourItineraryStopUncheckedCreateNestedManyWithoutTourInput
+  pricingTiers?: Prisma.TourPricingTierUncheckedCreateNestedManyWithoutTourInput
+  availability?: Prisma.AvailabilityUncheckedCreateNestedManyWithoutTourInput
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutTourInput
+  addons?: Prisma.TourAddonUncheckedCreateNestedManyWithoutTourInput
+}
+
+export type TourCreateOrConnectWithoutDiscountCodesInput = {
+  where: Prisma.TourWhereUniqueInput
+  create: Prisma.XOR<Prisma.TourCreateWithoutDiscountCodesInput, Prisma.TourUncheckedCreateWithoutDiscountCodesInput>
+}
+
+export type TourUpsertWithoutDiscountCodesInput = {
+  update: Prisma.XOR<Prisma.TourUpdateWithoutDiscountCodesInput, Prisma.TourUncheckedUpdateWithoutDiscountCodesInput>
+  create: Prisma.XOR<Prisma.TourCreateWithoutDiscountCodesInput, Prisma.TourUncheckedCreateWithoutDiscountCodesInput>
+  where?: Prisma.TourWhereInput
+}
+
+export type TourUpdateToOneWithWhereWithoutDiscountCodesInput = {
+  where?: Prisma.TourWhereInput
+  data: Prisma.XOR<Prisma.TourUpdateWithoutDiscountCodesInput, Prisma.TourUncheckedUpdateWithoutDiscountCodesInput>
+}
+
+export type TourUpdateWithoutDiscountCodesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
+  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
+  basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  images?: Prisma.TourUpdateimagesInput | string[]
+  inclusions?: Prisma.TourUpdateinclusionsInput | string[]
+  exclusions?: Prisma.TourUpdateexclusionsInput | string[]
+  meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
+  cancellationPolicy?: Prisma.StringFieldUpdateOperationsInput | string
+  maxGroupSize?: Prisma.IntFieldUpdateOperationsInput | number
+  published?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  itinerary?: Prisma.TourItineraryStopUpdateManyWithoutTourNestedInput
+  pricingTiers?: Prisma.TourPricingTierUpdateManyWithoutTourNestedInput
+  availability?: Prisma.AvailabilityUpdateManyWithoutTourNestedInput
+  bookings?: Prisma.BookingUpdateManyWithoutTourNestedInput
+  addons?: Prisma.TourAddonUpdateManyWithoutTourNestedInput
+}
+
+export type TourUncheckedUpdateWithoutDiscountCodesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.EnumTourCategoryFieldUpdateOperationsInput | $Enums.TourCategory
+  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
+  basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
+  childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  images?: Prisma.TourUpdateimagesInput | string[]
+  inclusions?: Prisma.TourUpdateinclusionsInput | string[]
+  exclusions?: Prisma.TourUpdateexclusionsInput | string[]
+  meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
+  cancellationPolicy?: Prisma.StringFieldUpdateOperationsInput | string
+  maxGroupSize?: Prisma.IntFieldUpdateOperationsInput | number
+  published?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  itinerary?: Prisma.TourItineraryStopUncheckedUpdateManyWithoutTourNestedInput
+  pricingTiers?: Prisma.TourPricingTierUncheckedUpdateManyWithoutTourNestedInput
+  availability?: Prisma.AvailabilityUncheckedUpdateManyWithoutTourNestedInput
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutTourNestedInput
   addons?: Prisma.TourAddonUncheckedUpdateManyWithoutTourNestedInput
 }
 
@@ -1305,6 +1568,7 @@ export type TourCountOutputType = {
   availability: number
   bookings: number
   addons: number
+  discountCodes: number
 }
 
 export type TourCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1313,6 +1577,7 @@ export type TourCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   availability?: boolean | TourCountOutputTypeCountAvailabilityArgs
   bookings?: boolean | TourCountOutputTypeCountBookingsArgs
   addons?: boolean | TourCountOutputTypeCountAddonsArgs
+  discountCodes?: boolean | TourCountOutputTypeCountDiscountCodesArgs
 }
 
 /**
@@ -1360,6 +1625,13 @@ export type TourCountOutputTypeCountAddonsArgs<ExtArgs extends runtime.Types.Ext
   where?: Prisma.TourAddonWhereInput
 }
 
+/**
+ * TourCountOutputType without action
+ */
+export type TourCountOutputTypeCountDiscountCodesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DiscountCodeTourWhereInput
+}
+
 
 export type TourSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1369,6 +1641,8 @@ export type TourSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   category?: boolean
   durationMinutes?: boolean
   basePriceIdr?: boolean
+  childPriceIdr?: boolean
+  childAgeLabel?: boolean
   images?: boolean
   inclusions?: boolean
   exclusions?: boolean
@@ -1383,6 +1657,7 @@ export type TourSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   availability?: boolean | Prisma.Tour$availabilityArgs<ExtArgs>
   bookings?: boolean | Prisma.Tour$bookingsArgs<ExtArgs>
   addons?: boolean | Prisma.Tour$addonsArgs<ExtArgs>
+  discountCodes?: boolean | Prisma.Tour$discountCodesArgs<ExtArgs>
   _count?: boolean | Prisma.TourCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tour"]>
 
@@ -1394,6 +1669,8 @@ export type TourSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   category?: boolean
   durationMinutes?: boolean
   basePriceIdr?: boolean
+  childPriceIdr?: boolean
+  childAgeLabel?: boolean
   images?: boolean
   inclusions?: boolean
   exclusions?: boolean
@@ -1413,6 +1690,8 @@ export type TourSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   category?: boolean
   durationMinutes?: boolean
   basePriceIdr?: boolean
+  childPriceIdr?: boolean
+  childAgeLabel?: boolean
   images?: boolean
   inclusions?: boolean
   exclusions?: boolean
@@ -1432,6 +1711,8 @@ export type TourSelectScalar = {
   category?: boolean
   durationMinutes?: boolean
   basePriceIdr?: boolean
+  childPriceIdr?: boolean
+  childAgeLabel?: boolean
   images?: boolean
   inclusions?: boolean
   exclusions?: boolean
@@ -1443,13 +1724,14 @@ export type TourSelectScalar = {
   updatedAt?: boolean
 }
 
-export type TourOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "description" | "category" | "durationMinutes" | "basePriceIdr" | "images" | "inclusions" | "exclusions" | "meetingPoint" | "cancellationPolicy" | "maxGroupSize" | "published" | "createdAt" | "updatedAt", ExtArgs["result"]["tour"]>
+export type TourOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "description" | "category" | "durationMinutes" | "basePriceIdr" | "childPriceIdr" | "childAgeLabel" | "images" | "inclusions" | "exclusions" | "meetingPoint" | "cancellationPolicy" | "maxGroupSize" | "published" | "createdAt" | "updatedAt", ExtArgs["result"]["tour"]>
 export type TourInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   itinerary?: boolean | Prisma.Tour$itineraryArgs<ExtArgs>
   pricingTiers?: boolean | Prisma.Tour$pricingTiersArgs<ExtArgs>
   availability?: boolean | Prisma.Tour$availabilityArgs<ExtArgs>
   bookings?: boolean | Prisma.Tour$bookingsArgs<ExtArgs>
   addons?: boolean | Prisma.Tour$addonsArgs<ExtArgs>
+  discountCodes?: boolean | Prisma.Tour$discountCodesArgs<ExtArgs>
   _count?: boolean | Prisma.TourCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TourIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1463,6 +1745,7 @@ export type $TourPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     availability: Prisma.$AvailabilityPayload<ExtArgs>[]
     bookings: Prisma.$BookingPayload<ExtArgs>[]
     addons: Prisma.$TourAddonPayload<ExtArgs>[]
+    discountCodes: Prisma.$DiscountCodeTourPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1472,6 +1755,8 @@ export type $TourPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     category: $Enums.TourCategory
     durationMinutes: number
     basePriceIdr: number
+    childPriceIdr: number | null
+    childAgeLabel: string | null
     images: string[]
     inclusions: string[]
     exclusions: string[]
@@ -1880,6 +2165,7 @@ export interface Prisma__TourClient<T, Null = never, ExtArgs extends runtime.Typ
   availability<T extends Prisma.Tour$availabilityArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tour$availabilityArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AvailabilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   bookings<T extends Prisma.Tour$bookingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tour$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   addons<T extends Prisma.Tour$addonsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tour$addonsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TourAddonPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  discountCodes<T extends Prisma.Tour$discountCodesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tour$discountCodesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DiscountCodeTourPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1916,6 +2202,8 @@ export interface TourFieldRefs {
   readonly category: Prisma.FieldRef<"Tour", 'TourCategory'>
   readonly durationMinutes: Prisma.FieldRef<"Tour", 'Int'>
   readonly basePriceIdr: Prisma.FieldRef<"Tour", 'Int'>
+  readonly childPriceIdr: Prisma.FieldRef<"Tour", 'Int'>
+  readonly childAgeLabel: Prisma.FieldRef<"Tour", 'String'>
   readonly images: Prisma.FieldRef<"Tour", 'String[]'>
   readonly inclusions: Prisma.FieldRef<"Tour", 'String[]'>
   readonly exclusions: Prisma.FieldRef<"Tour", 'String[]'>
@@ -2435,6 +2723,30 @@ export type Tour$addonsArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   distinct?: Prisma.TourAddonScalarFieldEnum | Prisma.TourAddonScalarFieldEnum[]
+}
+
+/**
+ * Tour.discountCodes
+ */
+export type Tour$discountCodesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DiscountCodeTour
+   */
+  select?: Prisma.DiscountCodeTourSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DiscountCodeTour
+   */
+  omit?: Prisma.DiscountCodeTourOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DiscountCodeTourInclude<ExtArgs> | null
+  where?: Prisma.DiscountCodeTourWhereInput
+  orderBy?: Prisma.DiscountCodeTourOrderByWithRelationInput | Prisma.DiscountCodeTourOrderByWithRelationInput[]
+  cursor?: Prisma.DiscountCodeTourWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DiscountCodeTourScalarFieldEnum | Prisma.DiscountCodeTourScalarFieldEnum[]
 }
 
 /**

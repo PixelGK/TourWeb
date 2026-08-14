@@ -58,6 +58,8 @@ model Tour {
   category           TourCategory
   durationMinutes    Int                 @map("duration_minutes")
   basePriceIdr       Int                 @map("base_price_idr")
+  childPriceIdr      Int?                @map("child_price_idr")
+  childAgeLabel      String?             @map("child_age_label")
   images             String[]
   inclusions         String[]
   exclusions         String[]
@@ -72,6 +74,7 @@ model Tour {
   availability       Availability[]
   bookings           Booking[]
   addons             TourAddon[]
+  discountCodes      DiscountCodeTour[]
 
   @@index([category, published])
   @@map("tours")
@@ -142,42 +145,89 @@ model TourAddon {
 }
 
 model Booking {
-  id                      String              @id @default(uuid()) @db.Uuid
-  reference               String              @unique
-  tourId                  String              @map("tour_id") @db.Uuid
-  availabilityId          String              @map("availability_id") @db.Uuid
-  paxCount                Int                 @map("pax_count")
-  customerName            String              @map("customer_name")
-  customerEmail           String              @map("customer_email")
-  customerPhone           String              @map("customer_phone")
-  customerCountry         String              @map("customer_country")
-  hotelName               String?             @map("hotel_name")
-  notes                   String?
-  status                  BookingStatus       @default(PENDING)
-  totalAmountIdr          Int                 @map("total_amount_idr")
-  currency                String              @default("IDR")
-  paymentProvider         PaymentProviderName @map("payment_provider")
-  paymentStatus           PaymentStatus       @default(PENDING) @map("payment_status")
-  paymentTransactionId    String?             @unique @map("payment_transaction_id")
-  idempotencyKey          String              @unique @map("idempotency_key")
-  idempotencyRequestHash  String              @map("idempotency_request_hash")
-  heldUntil               DateTime            @map("held_until")
-  paidAt                  DateTime?           @map("paid_at")
-  cancelledAt             DateTime?           @map("cancelled_at")
-  confirmationEmailSentAt DateTime?           @map("confirmation_email_sent_at")
-  termsAcceptedAt         DateTime?           @map("terms_accepted_at")
-  termsVersion            String?             @map("terms_version")
-  createdAt               DateTime            @default(now()) @map("created_at")
-  updatedAt               DateTime            @updatedAt @map("updated_at")
-  tour                    Tour                @relation(fields: [tourId], references: [id], onDelete: Restrict)
-  availability            Availability        @relation(fields: [availabilityId], references: [id], onDelete: Restrict)
-  addons                  BookingAddon[]
+  id                        String              @id @default(uuid()) @db.Uuid
+  reference                 String              @unique
+  tourId                    String              @map("tour_id") @db.Uuid
+  availabilityId            String              @map("availability_id") @db.Uuid
+  paxCount                  Int                 @map("pax_count")
+  adultCount                Int                 @default(0) @map("adult_count")
+  childCount                Int                 @default(0) @map("child_count")
+  customerName              String              @map("customer_name")
+  customerEmail             String              @map("customer_email")
+  customerPhone             String              @map("customer_phone")
+  customerCountry           String              @map("customer_country")
+  hotelName                 String?             @map("hotel_name")
+  notes                     String?
+  status                    BookingStatus       @default(PENDING)
+  totalAmountIdr            Int                 @map("total_amount_idr")
+  discountCodeId            String?             @map("discount_code_id") @db.Uuid
+  discountPercent           Int?                @map("discount_percent")
+  discountAmountIdr         Int                 @default(0) @map("discount_amount_idr")
+  currency                  String              @default("IDR")
+  paymentProvider           PaymentProviderName @map("payment_provider")
+  paymentStatus             PaymentStatus       @default(PENDING) @map("payment_status")
+  paymentTransactionId      String?             @unique @map("payment_transaction_id")
+  idempotencyKey            String              @unique @map("idempotency_key")
+  idempotencyRequestHash    String              @map("idempotency_request_hash")
+  heldUntil                 DateTime            @map("held_until")
+  paidAt                    DateTime?           @map("paid_at")
+  cancelledAt               DateTime?           @map("cancelled_at")
+  confirmationEmailSentAt   DateTime?           @map("confirmation_email_sent_at")
+  paymentReceiptEmailSentAt DateTime?           @map("payment_receipt_email_sent_at")
+  confirmedAt               DateTime?           @map("confirmed_at")
+  termsAcceptedAt           DateTime?           @map("terms_accepted_at")
+  termsVersion              String?             @map("terms_version")
+  createdAt                 DateTime            @default(now()) @map("created_at")
+  updatedAt                 DateTime            @updatedAt @map("updated_at")
+  tour                      Tour                @relation(fields: [tourId], references: [id], onDelete: Restrict)
+  availability              Availability        @relation(fields: [availabilityId], references: [id], onDelete: Restrict)
+  addons                    BookingAddon[]
+  discountCode              DiscountCode?       @relation(fields: [discountCodeId], references: [id], onDelete: SetNull)
 
   @@index([availabilityId, status])
   @@index([tourId])
   @@index([status, createdAt])
   @@index([customerEmail])
+  @@index([discountCodeId])
   @@map("bookings")
+}
+
+model DiscountCode {
+  id           String             @id @default(uuid()) @db.Uuid
+  code         String             @unique
+  percentOff   Int                @map("percent_off")
+  startsAt     DateTime?          @map("starts_at")
+  endsAt       DateTime?          @map("ends_at")
+  usageLimit   Int?               @map("usage_limit")
+  timesUsed    Int                @default(0) @map("times_used")
+  active       Boolean            @default(true)
+  appliesToAll Boolean            @default(true) @map("applies_to_all")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  tours        DiscountCodeTour[]
+  bookings     Booking[]
+
+  @@index([active, startsAt, endsAt])
+  @@map("discount_codes")
+}
+
+model DiscountCodeTour {
+  discountCodeId String       @map("discount_code_id") @db.Uuid
+  tourId         String       @map("tour_id") @db.Uuid
+  discountCode   DiscountCode @relation(fields: [discountCodeId], references: [id], onDelete: Cascade)
+  tour           Tour         @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@id([discountCodeId, tourId])
+  @@index([tourId])
+  @@map("discount_code_tours")
+}
+
+model GlobalBlackoutDate {
+  date      DateTime @id @db.Date
+  reason    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("global_blackout_dates")
 }
 
 model BookingAddon {

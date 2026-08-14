@@ -12,10 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { getTourDetail } from "@/data/mock-tour-details";
 import { allTours } from "@/data/mock-tours";
 import { isInsideBookingWindow } from "@/lib/booking-window";
+import { getPrisma } from "@/lib/db";
+import { hasDatabaseConfiguration } from "@/lib/server-env";
 
 type PageProps = { params: Promise<{ slug: string }>; searchParams: Promise<{ date?: string; pax?: string }> };
 
-export const revalidate = 86400;
+export const revalidate = 300;
 
 const idrFormatter = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
 const usdFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -47,6 +49,12 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
   const baseTour = findTour(slug);
   if (!baseTour) notFound();
   const tour = getTourDetail(baseTour);
+  const [blackoutDates, databasePricing] = hasDatabaseConfiguration()
+    ? await Promise.all([
+        getPrisma().globalBlackoutDate.findMany({ select: { date: true }, orderBy: { date: "asc" } }).then((rows) => rows.map((row) => row.date.toISOString().slice(0, 10))).catch(() => []),
+        getPrisma().tour.findUnique({ where: { slug }, select: { childPriceIdr: true, childAgeLabel: true } }).catch(() => null),
+      ])
+    : [[], null];
   const isExperienceDay = tour.category === "Experience Days";
   const initialDate = query.date && /^\d{4}-\d{2}-\d{2}$/.test(query.date) && isInsideBookingWindow(query.date) ? query.date : undefined;
   const requestedPax = Number(query.pax);
@@ -138,6 +146,13 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
                   <span className="text-right text-weathered">≈ {usdFormatter.format(tier.perPersonIdr / 16500)}</span>
                 </div>
               ))}
+              {databasePricing?.childPriceIdr !== null && databasePricing?.childPriceIdr !== undefined ? (
+                <div className="grid min-h-14 grid-cols-[1fr_1fr_0.8fr] items-center border-t border-charcoal/20 bg-limestone/60 px-4 text-sm sm:px-6">
+                  <span className="font-semibold">Child <span className="font-normal text-weathered">{databasePricing.childAgeLabel ?? "supplier age band"}</span></span>
+                  <span className="font-serif text-lg font-semibold tabular-nums">{idrFormatter.format(databasePricing.childPriceIdr)}</span>
+                  <span className="text-right text-weathered">≈ {usdFormatter.format(databasePricing.childPriceIdr / 16500)}</span>
+                </div>
+              ) : null}
             </div>
             <p className="mt-3 text-xs leading-5 text-weathered">USD values are estimates for comparison. Your payment and receipt use IDR.</p>
           </section>
@@ -164,7 +179,7 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
           </section>
         </div>
 
-        <BookingWidget tourSlug={tour.slug} pricingTiers={tour.pricingTiers} maxGroupSize={tour.maxGroupSize} initialDate={initialDate} initialPax={initialPax} />
+        <BookingWidget tourSlug={tour.slug} pricingTiers={tour.pricingTiers} maxGroupSize={tour.maxGroupSize} blackoutDates={blackoutDates} initialDate={initialDate} initialPax={initialPax} />
       </div>
 
       <SiteFooter />
