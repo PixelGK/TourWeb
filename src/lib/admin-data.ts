@@ -169,16 +169,23 @@ export async function getAdminBookings(filters: BookingFilters = {}): Promise<Ad
   }));
 }
 
-export async function getAdminAvailability(tourId?: string): Promise<AdminAvailabilityRow[]> {
-  if (!hasDatabaseConfiguration()) return mockUpcomingAvailability().filter((row) => !tourId || tourId === "ALL" || row.tourId === tourId);
+export async function getAdminAvailability(tourId?: string, month?: string): Promise<AdminAvailabilityRow[]> {
+  if (!hasDatabaseConfiguration()) return mockUpcomingAvailability().filter((row) =>
+    (!tourId || tourId === "ALL" || row.tourId === tourId) && (!month || row.date.startsWith(month)),
+  );
+  const monthStart = month ? new Date(`${month}-01T00:00:00Z`) : null;
+  const monthEnd = monthStart ? new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 1)) : null;
   const rows = await getPrisma().availability.findMany({
-    where: { date: { gte: new Date() }, tourId: tourId && tourId !== "ALL" ? tourId : undefined },
+    where: {
+      date: monthStart && monthEnd ? { gte: monthStart, lt: monthEnd } : { gte: new Date() },
+      tourId: tourId && tourId !== "ALL" ? tourId : undefined,
+    },
     include: {
       tour: true,
       bookings: { where: { status: { in: [BookingStatus.PENDING, BookingStatus.PAID, BookingStatus.CONFIRMED] } }, select: { id: true } },
     },
     orderBy: [{ date: "asc" }, { tour: { title: "asc" } }],
-    take: 180,
+    take: month ? 100 : 180,
   });
   return rows.map((row) => ({
     id: row.id,
