@@ -4,7 +4,7 @@ import { BookingStatus, Prisma } from "@/generated/prisma/client";
 import { mockAdminBookings, mockUpcomingAvailability } from "@/data/mock-admin";
 import { getMockAddons } from "@/data/mock-addons";
 import { getTourDetail } from "@/data/mock-tour-details";
-import { allTours } from "@/data/mock-tours";
+import { allTours, topTours } from "@/data/mock-tours";
 import { getPrisma } from "@/lib/db";
 import { hasDatabaseConfiguration } from "@/lib/server-env";
 
@@ -35,6 +35,8 @@ export interface AdminBookingRow {
   status: string;
   paymentStatus: string;
   confirmed: boolean;
+  requestEmailSent: boolean;
+  confirmationEmailSent: boolean;
   createdAt: string;
 }
 
@@ -65,7 +67,11 @@ export interface AdminTourEditorData {
   basePriceIdr: number;
   childPriceIdr: number | null;
   childAgeLabel: string | null;
+  location: string;
+  cardNote: string;
+  featured: boolean;
   images: string[];
+  imageAlts: string[];
   inclusions: string[];
   exclusions: string[];
   meetingPoint: string;
@@ -122,7 +128,7 @@ export async function getAdminBookings(filters: BookingFilters = {}): Promise<Ad
       (!filters.status || filters.status === "ALL" || booking.status === filters.status) &&
       (!filters.tourId || filters.tourId === "ALL" || booking.tourId === filters.tourId) &&
       (!filters.query || `${booking.reference} ${booking.customerName} ${booking.customerEmail}`.toLowerCase().includes(filters.query.toLowerCase())),
-    ).map((booking) => ({ ...booking, confirmed: booking.status === "PAID" }));
+    ).map((booking) => ({ ...booking, confirmed: booking.status === "PAID", requestEmailSent: true, confirmationEmailSent: booking.status === "PAID" }));
   }
 
   const validStatus = filters.status && filters.status !== "ALL" && Object.values(BookingStatus).includes(filters.status as BookingStatus)
@@ -157,6 +163,8 @@ export async function getAdminBookings(filters: BookingFilters = {}): Promise<Ad
     status: booking.status,
     paymentStatus: booking.paymentStatus,
     confirmed: Boolean(booking.confirmedAt),
+    requestEmailSent: Boolean(booking.bookingRequestEmailSentAt),
+    confirmationEmailSent: Boolean(booking.confirmationEmailSentAt),
     createdAt: booking.createdAt.toISOString(),
   }));
 }
@@ -231,7 +239,7 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
   if (!id) {
     return {
       title: "", slug: "", description: "", category: "CUSTOM_TOUR", durationMinutes: 480, basePriceIdr: 0, childPriceIdr: null, childAgeLabel: null,
-      images: [], inclusions: [], exclusions: [], meetingPoint: "Your hotel or villa lobby", cancellationPolicy: "", maxGroupSize: 6,
+      location: "Bali", cardNote: "Private driver and direct support", featured: false, images: [], imageAlts: [], inclusions: [], exclusions: [], meetingPoint: "Your hotel or villa lobby", cancellationPolicy: "", maxGroupSize: 6,
       published: false, itinerary: [], pricingTiers: [], addons: [],
     };
   }
@@ -254,7 +262,11 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
       basePriceIdr: tour.priceIdr,
       childPriceIdr: null,
       childAgeLabel: null,
+      location: tour.location,
+      cardNote: tour.note,
+      featured: topTours.some((item) => item.slug === tour.slug),
       images: detail.gallery.map((image) => image.src),
+      imageAlts: detail.gallery.map((image) => image.alt),
       inclusions: detail.inclusions,
       exclusions: detail.exclusions,
       meetingPoint: detail.meetingPoint,
@@ -271,6 +283,8 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
     include: { itinerary: { orderBy: { position: "asc" } }, pricingTiers: { orderBy: { minPax: "asc" } }, addons: { where: { active: true }, orderBy: { title: "asc" } } },
   });
   if (!tour) return getAdminTourEditor();
+  const knownTour = allTours.find((item) => item.slug === tour.slug);
+  const knownDetail = knownTour ? getTourDetail(knownTour) : null;
   return {
     id: tour.id,
     title: tour.title,
@@ -281,7 +295,11 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
     basePriceIdr: tour.basePriceIdr,
     childPriceIdr: tour.childPriceIdr,
     childAgeLabel: tour.childAgeLabel,
+    location: tour.location === "Bali" ? knownTour?.location ?? tour.location : tour.location,
+    cardNote: tour.cardNote ?? knownTour?.note ?? "Private driver and direct support",
+    featured: tour.featured,
     images: tour.images,
+    imageAlts: tour.imageAlts.length ? tour.imageAlts : knownDetail?.gallery.map((image) => image.alt) ?? tour.images.map((_, index) => `${tour.title} — photo ${index + 1}`),
     inclusions: tour.inclusions,
     exclusions: tour.exclusions,
     meetingPoint: tour.meetingPoint,

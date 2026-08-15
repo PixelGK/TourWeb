@@ -18,8 +18,8 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { TourCard } from "@/components/site/tour-card";
 import { Badge } from "@/components/ui/badge";
-import { topTours } from "@/data/mock-tours";
 import { bestAutomaticOffer, getAutomaticDiscountOffers } from "@/lib/automatic-discounts";
+import { getFeaturedPublicTours } from "@/lib/public-tour-data";
 
 export const metadata: Metadata = {
   title: "Private Bali Drivers & Experience Days",
@@ -66,6 +66,7 @@ const directReasons = [
 ] as const;
 
 export default async function HomePage() {
+  const topTours = await getFeaturedPublicTours(4);
   const automaticOffers = await getAutomaticDiscountOffers(topTours.map((tour) => tour.slug));
 
   return (

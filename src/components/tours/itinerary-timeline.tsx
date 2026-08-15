@@ -1,4 +1,4 @@
-import type { ItineraryStop } from "@/data/mock-tour-details";
+import type { ItineraryStop } from "@/types/public-tour";
 
 export function ItineraryTimeline({ stops }: { stops: ItineraryStop[] }) {
   return (

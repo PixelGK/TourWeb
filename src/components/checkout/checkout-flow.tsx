@@ -6,7 +6,7 @@ import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { PricingTier } from "@/data/mock-tour-details";
+import type { PricingTier } from "@/types/public-tour";
 import type { MockAddon } from "@/data/mock-addons";
 import { cn } from "@/lib/utils";
 
@@ -290,6 +290,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
           <div className="flex justify-between gap-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold">{selectedExtraCount || "None"}</dd></div>
         </dl>
         <div className="mt-5 flex items-end justify-between gap-3"><span className="text-sm text-weathered">{mode === "request" ? "Quoted total" : "Total"}</span><strong className="font-serif text-3xl tabular-nums">{idr.format(totalIdr)}</strong></div>
+        {activeDiscount ? <p className="mt-2 border-l-3 border-gold pl-3 text-xs font-bold leading-5 text-terrace">{activeDiscount.label} · {activeDiscount.percentOff}% off is included</p> : null}
         <p className="mt-1 text-right text-xs text-weathered">≈ {usd.format(totalIdr / idrPerUsdEstimate)} estimate</p>
         <p className="mt-5 flex gap-2 text-xs leading-5 text-weathered"><ShieldCheck className="size-4 shrink-0 text-terrace" aria-hidden="true" />{mode === "request" ? "No payment is taken when you submit. Any later payment arrangement will be stated clearly before you commit." : "The actual charge and settlement currency is IDR. Your bank determines any conversion rate or foreign transaction fee."}</p>
       </aside>

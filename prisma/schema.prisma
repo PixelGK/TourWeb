@@ -64,7 +64,11 @@ model Tour {
   basePriceIdr       Int                 @map("base_price_idr")
   childPriceIdr      Int?                @map("child_price_idr")
   childAgeLabel      String?             @map("child_age_label")
+  location           String              @default("Bali")
+  cardNote           String?             @map("card_note")
+  featured           Boolean             @default(false)
   images             String[]
+  imageAlts          String[]            @default([]) @map("image_alts")
   inclusions         String[]
   exclusions         String[]
   meetingPoint       String              @map("meeting_point")
@@ -81,6 +85,7 @@ model Tour {
   discountCodes      DiscountCodeTour[]
 
   @@index([category, published])
+  @@index([featured, published])
   @@map("tours")
 }
 
@@ -177,6 +182,7 @@ model Booking {
   paidAt                    DateTime?           @map("paid_at")
   cancelledAt               DateTime?           @map("cancelled_at")
   confirmationEmailSentAt   DateTime?           @map("confirmation_email_sent_at")
+  bookingRequestEmailSentAt DateTime?           @map("booking_request_email_sent_at")
   paymentReceiptEmailSentAt DateTime?           @map("payment_receipt_email_sent_at")
   confirmedAt               DateTime?           @map("confirmed_at")
   termsAcceptedAt           DateTime?           @map("terms_accepted_at")

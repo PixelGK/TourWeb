@@ -73,6 +73,7 @@ export type BookingMinAggregateOutputType = {
   paidAt: Date | null
   cancelledAt: Date | null
   confirmationEmailSentAt: Date | null
+  bookingRequestEmailSentAt: Date | null
   paymentReceiptEmailSentAt: Date | null
   confirmedAt: Date | null
   termsAcceptedAt: Date | null
@@ -110,6 +111,7 @@ export type BookingMaxAggregateOutputType = {
   paidAt: Date | null
   cancelledAt: Date | null
   confirmationEmailSentAt: Date | null
+  bookingRequestEmailSentAt: Date | null
   paymentReceiptEmailSentAt: Date | null
   confirmedAt: Date | null
   termsAcceptedAt: Date | null
@@ -147,6 +149,7 @@ export type BookingCountAggregateOutputType = {
   paidAt: number
   cancelledAt: number
   confirmationEmailSentAt: number
+  bookingRequestEmailSentAt: number
   paymentReceiptEmailSentAt: number
   confirmedAt: number
   termsAcceptedAt: number
@@ -204,6 +207,7 @@ export type BookingMinAggregateInputType = {
   paidAt?: true
   cancelledAt?: true
   confirmationEmailSentAt?: true
+  bookingRequestEmailSentAt?: true
   paymentReceiptEmailSentAt?: true
   confirmedAt?: true
   termsAcceptedAt?: true
@@ -241,6 +245,7 @@ export type BookingMaxAggregateInputType = {
   paidAt?: true
   cancelledAt?: true
   confirmationEmailSentAt?: true
+  bookingRequestEmailSentAt?: true
   paymentReceiptEmailSentAt?: true
   confirmedAt?: true
   termsAcceptedAt?: true
@@ -278,6 +283,7 @@ export type BookingCountAggregateInputType = {
   paidAt?: true
   cancelledAt?: true
   confirmationEmailSentAt?: true
+  bookingRequestEmailSentAt?: true
   paymentReceiptEmailSentAt?: true
   confirmedAt?: true
   termsAcceptedAt?: true
@@ -402,6 +408,7 @@ export type BookingGroupByOutputType = {
   paidAt: Date | null
   cancelledAt: Date | null
   confirmationEmailSentAt: Date | null
+  bookingRequestEmailSentAt: Date | null
   paymentReceiptEmailSentAt: Date | null
   confirmedAt: Date | null
   termsAcceptedAt: Date | null
@@ -462,6 +469,7 @@ export type BookingWhereInput = {
   paidAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   cancelledAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   confirmationEmailSentAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   termsAcceptedAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
@@ -503,6 +511,7 @@ export type BookingOrderByWithRelationInput = {
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmationEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  bookingRequestEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentReceiptEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   termsAcceptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -547,6 +556,7 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   paidAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   cancelledAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   confirmationEmailSentAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   termsAcceptedAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
@@ -588,6 +598,7 @@ export type BookingOrderByWithAggregationInput = {
   paidAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmationEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  bookingRequestEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   paymentReceiptEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   termsAcceptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -633,6 +644,7 @@ export type BookingScalarWhereWithAggregatesInput = {
   paidAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
   cancelledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
   confirmationEmailSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
   termsAcceptedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
@@ -667,6 +679,7 @@ export type BookingCreateInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -708,6 +721,7 @@ export type BookingUncheckedCreateInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -743,6 +757,7 @@ export type BookingUpdateInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -784,6 +799,7 @@ export type BookingUncheckedUpdateInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -822,6 +838,7 @@ export type BookingCreateManyInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -856,6 +873,7 @@ export type BookingUpdateManyMutationInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -893,6 +911,7 @@ export type BookingUncheckedUpdateManyInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -940,6 +959,7 @@ export type BookingCountOrderByAggregateInput = {
   paidAt?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
   confirmationEmailSentAt?: Prisma.SortOrder
+  bookingRequestEmailSentAt?: Prisma.SortOrder
   paymentReceiptEmailSentAt?: Prisma.SortOrder
   confirmedAt?: Prisma.SortOrder
   termsAcceptedAt?: Prisma.SortOrder
@@ -986,6 +1006,7 @@ export type BookingMaxOrderByAggregateInput = {
   paidAt?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
   confirmationEmailSentAt?: Prisma.SortOrder
+  bookingRequestEmailSentAt?: Prisma.SortOrder
   paymentReceiptEmailSentAt?: Prisma.SortOrder
   confirmedAt?: Prisma.SortOrder
   termsAcceptedAt?: Prisma.SortOrder
@@ -1023,6 +1044,7 @@ export type BookingMinOrderByAggregateInput = {
   paidAt?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
   confirmationEmailSentAt?: Prisma.SortOrder
+  bookingRequestEmailSentAt?: Prisma.SortOrder
   paymentReceiptEmailSentAt?: Prisma.SortOrder
   confirmedAt?: Prisma.SortOrder
   termsAcceptedAt?: Prisma.SortOrder
@@ -1227,6 +1249,7 @@ export type BookingCreateWithoutTourInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -1266,6 +1289,7 @@ export type BookingUncheckedCreateWithoutTourInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -1333,6 +1357,7 @@ export type BookingScalarWhereInput = {
   paidAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   cancelledAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   confirmationEmailSentAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   confirmedAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
   termsAcceptedAt?: Prisma.DateTimeNullableFilter<"Booking"> | Date | string | null
@@ -1367,6 +1392,7 @@ export type BookingCreateWithoutAvailabilityInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -1406,6 +1432,7 @@ export type BookingUncheckedCreateWithoutAvailabilityInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -1467,6 +1494,7 @@ export type BookingCreateWithoutDiscountCodeInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -1506,6 +1534,7 @@ export type BookingUncheckedCreateWithoutDiscountCodeInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -1567,6 +1596,7 @@ export type BookingCreateWithoutAddonsInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -1607,6 +1637,7 @@ export type BookingUncheckedCreateWithoutAddonsInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -1657,6 +1688,7 @@ export type BookingUpdateWithoutAddonsInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1697,6 +1729,7 @@ export type BookingUncheckedUpdateWithoutAddonsInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1733,6 +1766,7 @@ export type BookingCreateManyTourInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -1767,6 +1801,7 @@ export type BookingUpdateWithoutTourInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1806,6 +1841,7 @@ export type BookingUncheckedUpdateWithoutTourInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1843,6 +1879,7 @@ export type BookingUncheckedUpdateManyWithoutTourInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1879,6 +1916,7 @@ export type BookingCreateManyAvailabilityInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -1913,6 +1951,7 @@ export type BookingUpdateWithoutAvailabilityInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1952,6 +1991,7 @@ export type BookingUncheckedUpdateWithoutAvailabilityInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1989,6 +2029,7 @@ export type BookingUncheckedUpdateManyWithoutAvailabilityInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2025,6 +2066,7 @@ export type BookingCreateManyDiscountCodeInput = {
   paidAt?: Date | string | null
   cancelledAt?: Date | string | null
   confirmationEmailSentAt?: Date | string | null
+  bookingRequestEmailSentAt?: Date | string | null
   paymentReceiptEmailSentAt?: Date | string | null
   confirmedAt?: Date | string | null
   termsAcceptedAt?: Date | string | null
@@ -2059,6 +2101,7 @@ export type BookingUpdateWithoutDiscountCodeInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2098,6 +2141,7 @@ export type BookingUncheckedUpdateWithoutDiscountCodeInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2135,6 +2179,7 @@ export type BookingUncheckedUpdateManyWithoutDiscountCodeInput = {
   paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmationEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bookingRequestEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   paymentReceiptEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   termsAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2203,6 +2248,7 @@ export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   paidAt?: boolean
   cancelledAt?: boolean
   confirmationEmailSentAt?: boolean
+  bookingRequestEmailSentAt?: boolean
   paymentReceiptEmailSentAt?: boolean
   confirmedAt?: boolean
   termsAcceptedAt?: boolean
@@ -2245,6 +2291,7 @@ export type BookingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   paidAt?: boolean
   cancelledAt?: boolean
   confirmationEmailSentAt?: boolean
+  bookingRequestEmailSentAt?: boolean
   paymentReceiptEmailSentAt?: boolean
   confirmedAt?: boolean
   termsAcceptedAt?: boolean
@@ -2285,6 +2332,7 @@ export type BookingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   paidAt?: boolean
   cancelledAt?: boolean
   confirmationEmailSentAt?: boolean
+  bookingRequestEmailSentAt?: boolean
   paymentReceiptEmailSentAt?: boolean
   confirmedAt?: boolean
   termsAcceptedAt?: boolean
@@ -2325,6 +2373,7 @@ export type BookingSelectScalar = {
   paidAt?: boolean
   cancelledAt?: boolean
   confirmationEmailSentAt?: boolean
+  bookingRequestEmailSentAt?: boolean
   paymentReceiptEmailSentAt?: boolean
   confirmedAt?: boolean
   termsAcceptedAt?: boolean
@@ -2333,7 +2382,7 @@ export type BookingSelectScalar = {
   updatedAt?: boolean
 }
 
-export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reference" | "tourId" | "availabilityId" | "paxCount" | "adultCount" | "childCount" | "customerName" | "customerEmail" | "customerPhone" | "customerCountry" | "hotelName" | "notes" | "status" | "totalAmountIdr" | "discountCodeId" | "discountPercent" | "discountAmountIdr" | "currency" | "paymentProvider" | "paymentStatus" | "paymentTransactionId" | "idempotencyKey" | "idempotencyRequestHash" | "heldUntil" | "paidAt" | "cancelledAt" | "confirmationEmailSentAt" | "paymentReceiptEmailSentAt" | "confirmedAt" | "termsAcceptedAt" | "termsVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
+export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reference" | "tourId" | "availabilityId" | "paxCount" | "adultCount" | "childCount" | "customerName" | "customerEmail" | "customerPhone" | "customerCountry" | "hotelName" | "notes" | "status" | "totalAmountIdr" | "discountCodeId" | "discountPercent" | "discountAmountIdr" | "currency" | "paymentProvider" | "paymentStatus" | "paymentTransactionId" | "idempotencyKey" | "idempotencyRequestHash" | "heldUntil" | "paidAt" | "cancelledAt" | "confirmationEmailSentAt" | "bookingRequestEmailSentAt" | "paymentReceiptEmailSentAt" | "confirmedAt" | "termsAcceptedAt" | "termsVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
 export type BookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tour?: boolean | Prisma.TourDefaultArgs<ExtArgs>
   availability?: boolean | Prisma.AvailabilityDefaultArgs<ExtArgs>
@@ -2389,6 +2438,7 @@ export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     paidAt: Date | null
     cancelledAt: Date | null
     confirmationEmailSentAt: Date | null
+    bookingRequestEmailSentAt: Date | null
     paymentReceiptEmailSentAt: Date | null
     confirmedAt: Date | null
     termsAcceptedAt: Date | null
@@ -2850,6 +2900,7 @@ export interface BookingFieldRefs {
   readonly paidAt: Prisma.FieldRef<"Booking", 'DateTime'>
   readonly cancelledAt: Prisma.FieldRef<"Booking", 'DateTime'>
   readonly confirmationEmailSentAt: Prisma.FieldRef<"Booking", 'DateTime'>
+  readonly bookingRequestEmailSentAt: Prisma.FieldRef<"Booking", 'DateTime'>
   readonly paymentReceiptEmailSentAt: Prisma.FieldRef<"Booking", 'DateTime'>
   readonly confirmedAt: Prisma.FieldRef<"Booking", 'DateTime'>
   readonly termsAcceptedAt: Prisma.FieldRef<"Booking", 'DateTime'>

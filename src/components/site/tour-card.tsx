@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { PriceTag } from "@/components/ui/price-tag";
-import type { MockTour } from "@/data/mock-tours";
+import type { PublicTourCard } from "@/types/public-tour";
 
 interface TourCardPromotion {
   name: string;
@@ -12,7 +12,7 @@ interface TourCardPromotion {
   exactForSelectedDate: boolean;
 }
 
-export function TourCard({ tour, priority = false, bookingQuery, promotion }: { tour: MockTour; priority?: boolean; bookingQuery?: string; promotion?: TourCardPromotion | null }) {
+export function TourCard({ tour, priority = false, bookingQuery, promotion }: { tour: PublicTourCard; priority?: boolean; bookingQuery?: string; promotion?: TourCardPromotion | null }) {
   const href = bookingQuery ? `/tours/${tour.slug}?${bookingQuery}` : `/tours/${tour.slug}`;
 
   return (

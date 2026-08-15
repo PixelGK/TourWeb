@@ -9,9 +9,9 @@ import { z } from "zod";
 import { AddonPricingMode, BookingStatus, PaymentStatus, Prisma, TourCategory } from "@/generated/prisma/client";
 import type { AdminActionState } from "@/lib/admin-action-state";
 import { requireAdminPageSession } from "@/lib/admin-auth";
-import { applyVerifiedPaymentStatus, cancelBookingRequest, confirmBookingRequest, markConfirmationEmailSent, markPaymentReceiptEmailSent, releasePendingBooking } from "@/lib/booking-service";
+import { applyVerifiedPaymentStatus, cancelBookingRequest, confirmBookingRequest, markBookingRequestEmailSent, markConfirmationEmailSent, markPaymentReceiptEmailSent, releasePendingBooking } from "@/lib/booking-service";
 import { getPrisma } from "@/lib/db";
-import { sendBookingConfirmation, sendPaymentReceipt } from "@/lib/email";
+import { sendBookingConfirmation, sendBookingRequestEmails, sendPaymentReceipt } from "@/lib/email";
 import { getPaymentProvider } from "@/lib/payments/provider";
 
 function lines(value: FormDataEntryValue | null) {
@@ -63,6 +63,9 @@ const tourSchema = z.object({
   basePriceIdr: z.coerce.number().int().min(0).max(2_000_000_000),
   childPriceIdr: z.union([z.literal(""), z.coerce.number().int().min(0).max(2_000_000_000)]),
   childAgeLabel: z.string().trim().max(80),
+  location: z.string().trim().min(2).max(120),
+  cardNote: z.string().trim().min(3).max(120),
+  featured: z.boolean(),
   meetingPoint: z.string().trim().min(3).max(500),
   cancellationPolicy: z.string().trim().min(20).max(3_000),
   maxGroupSize: z.coerce.number().int().min(1).max(50),
@@ -89,18 +92,28 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
       basePriceIdr: formData.get("basePriceIdr"),
       childPriceIdr: formData.get("childPriceIdr"),
       childAgeLabel: formData.get("childAgeLabel"),
+      location: formData.get("location"),
+      cardNote: formData.get("cardNote"),
+      featured: formData.get("featured") === "on",
       meetingPoint: formData.get("meetingPoint"),
       cancellationPolicy: formData.get("cancellationPolicy"),
       maxGroupSize: formData.get("maxGroupSize"),
       published: formData.get("published") === "on",
     });
     const images = lines(formData.get("images"));
+    const imageAlts = lines(formData.get("imageAlts"));
     const inclusions = lines(formData.get("inclusions"));
     const exclusions = lines(formData.get("exclusions"));
     const itinerary = parseItinerary(formData.get("itinerary"));
     const pricingTiers = parsePricing(formData.get("pricingTiers"));
     const addons = parseAddons(formData.get("addons"));
     if (!images.length || !itinerary.length || !pricingTiers.length) throw new Error("Add at least one image, itinerary stop, and pricing tier");
+    if (images.some((image) => { try { const url = new URL(image); return !["http:", "https:"].includes(url.protocol); } catch { return true; } })) throw new Error("Every image must be a valid http or https URL");
+    if (imageAlts.length !== images.length) throw new Error("Add one image description for each image URL");
+    const orderedTiers = pricingTiers.toSorted((a, b) => a.minPax - b.minPax);
+    if (orderedTiers[0].minPax !== 1 || orderedTiers.some((tier, index) => index > 0 && tier.minPax !== orderedTiers[index - 1].maxPax + 1) || orderedTiers.at(-1)!.maxPax < input.maxGroupSize) {
+      throw new Error(`Pricing tiers must cover every group size from 1 to ${input.maxGroupSize} without gaps or overlaps`);
+    }
 
     const prisma = getPrisma();
     const record = await prisma.$transaction(async (tx) => {
@@ -113,7 +126,11 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
         basePriceIdr: input.basePriceIdr,
         childPriceIdr: input.childPriceIdr === "" ? null : input.childPriceIdr,
         childAgeLabel: input.childPriceIdr === "" ? null : input.childAgeLabel || null,
+        location: input.location,
+        cardNote: input.cardNote,
+        featured: input.featured,
         images,
+        imageAlts,
         inclusions,
         exclusions,
         meetingPoint: input.meetingPoint,
@@ -144,6 +161,10 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
 
     revalidatePath("/admin");
     revalidatePath("/admin/tours");
+    revalidatePath("/");
+    revalidatePath("/tours");
+    revalidatePath("/checkout");
+    revalidatePath("/tours/[slug]", "page");
     revalidatePath(`/tours/${record.slug}`);
     return { ok: true, message: input.id ? "Tour updated" : "Tour created", recordId: record.id };
   } catch (error) {
@@ -241,7 +262,7 @@ export async function updateBookingAction(_previous: AdminActionState, formData:
   try {
     await mutableSession();
     const id = z.string().uuid().parse(formData.get("id"));
-    const action = z.enum(["cancel", "recheck", "confirm"]).parse(formData.get("action"));
+    const action = z.enum(["cancel", "recheck", "confirm", "resend_request", "resend_confirmation"]).parse(formData.get("action"));
     const prisma = getPrisma();
     const booking = await prisma.booking.findUnique({ where: { id }, include: { tour: true, availability: true } });
     if (!booking) throw new Error("Booking was not found");
@@ -255,6 +276,22 @@ export async function updateBookingAction(_previous: AdminActionState, formData:
       }
       revalidatePath("/admin/bookings");
       return { ok: true, message: "Booking cancelled; reserved capacity was restored when applicable" };
+    }
+
+    if (action === "resend_request") {
+      if (booking.status !== BookingStatus.REQUESTED) throw new Error("Only an open request can receive the request email");
+      await sendBookingRequestEmails(booking);
+      await markBookingRequestEmailSent(booking.id);
+      revalidatePath("/admin/bookings");
+      return { ok: true, message: "Request email sent to the guest and operator" };
+    }
+
+    if (action === "resend_confirmation") {
+      if (booking.status !== BookingStatus.CONFIRMED && !booking.confirmedAt) throw new Error("Confirm the package before sending its confirmation email");
+      await sendBookingConfirmation(booking);
+      await markConfirmationEmailSent(booking.id);
+      revalidatePath("/admin/bookings");
+      return { ok: true, message: "Confirmation email sent" };
     }
 
     if (action === "confirm") {

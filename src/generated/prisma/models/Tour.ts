@@ -50,6 +50,9 @@ export type TourMinAggregateOutputType = {
   basePriceIdr: number | null
   childPriceIdr: number | null
   childAgeLabel: string | null
+  location: string | null
+  cardNote: string | null
+  featured: boolean | null
   meetingPoint: string | null
   cancellationPolicy: string | null
   maxGroupSize: number | null
@@ -68,6 +71,9 @@ export type TourMaxAggregateOutputType = {
   basePriceIdr: number | null
   childPriceIdr: number | null
   childAgeLabel: string | null
+  location: string | null
+  cardNote: string | null
+  featured: boolean | null
   meetingPoint: string | null
   cancellationPolicy: string | null
   maxGroupSize: number | null
@@ -86,7 +92,11 @@ export type TourCountAggregateOutputType = {
   basePriceIdr: number
   childPriceIdr: number
   childAgeLabel: number
+  location: number
+  cardNote: number
+  featured: number
   images: number
+  imageAlts: number
   inclusions: number
   exclusions: number
   meetingPoint: number
@@ -123,6 +133,9 @@ export type TourMinAggregateInputType = {
   basePriceIdr?: true
   childPriceIdr?: true
   childAgeLabel?: true
+  location?: true
+  cardNote?: true
+  featured?: true
   meetingPoint?: true
   cancellationPolicy?: true
   maxGroupSize?: true
@@ -141,6 +154,9 @@ export type TourMaxAggregateInputType = {
   basePriceIdr?: true
   childPriceIdr?: true
   childAgeLabel?: true
+  location?: true
+  cardNote?: true
+  featured?: true
   meetingPoint?: true
   cancellationPolicy?: true
   maxGroupSize?: true
@@ -159,7 +175,11 @@ export type TourCountAggregateInputType = {
   basePriceIdr?: true
   childPriceIdr?: true
   childAgeLabel?: true
+  location?: true
+  cardNote?: true
+  featured?: true
   images?: true
+  imageAlts?: true
   inclusions?: true
   exclusions?: true
   meetingPoint?: true
@@ -267,7 +287,11 @@ export type TourGroupByOutputType = {
   basePriceIdr: number
   childPriceIdr: number | null
   childAgeLabel: string | null
+  location: string
+  cardNote: string | null
+  featured: boolean
   images: string[]
+  imageAlts: string[]
   inclusions: string[]
   exclusions: string[]
   meetingPoint: string
@@ -311,7 +335,11 @@ export type TourWhereInput = {
   basePriceIdr?: Prisma.IntFilter<"Tour"> | number
   childPriceIdr?: Prisma.IntNullableFilter<"Tour"> | number | null
   childAgeLabel?: Prisma.StringNullableFilter<"Tour"> | string | null
+  location?: Prisma.StringFilter<"Tour"> | string
+  cardNote?: Prisma.StringNullableFilter<"Tour"> | string | null
+  featured?: Prisma.BoolFilter<"Tour"> | boolean
   images?: Prisma.StringNullableListFilter<"Tour">
+  imageAlts?: Prisma.StringNullableListFilter<"Tour">
   inclusions?: Prisma.StringNullableListFilter<"Tour">
   exclusions?: Prisma.StringNullableListFilter<"Tour">
   meetingPoint?: Prisma.StringFilter<"Tour"> | string
@@ -338,7 +366,11 @@ export type TourOrderByWithRelationInput = {
   basePriceIdr?: Prisma.SortOrder
   childPriceIdr?: Prisma.SortOrderInput | Prisma.SortOrder
   childAgeLabel?: Prisma.SortOrderInput | Prisma.SortOrder
+  location?: Prisma.SortOrder
+  cardNote?: Prisma.SortOrderInput | Prisma.SortOrder
+  featured?: Prisma.SortOrder
   images?: Prisma.SortOrder
+  imageAlts?: Prisma.SortOrder
   inclusions?: Prisma.SortOrder
   exclusions?: Prisma.SortOrder
   meetingPoint?: Prisma.SortOrder
@@ -368,7 +400,11 @@ export type TourWhereUniqueInput = Prisma.AtLeast<{
   basePriceIdr?: Prisma.IntFilter<"Tour"> | number
   childPriceIdr?: Prisma.IntNullableFilter<"Tour"> | number | null
   childAgeLabel?: Prisma.StringNullableFilter<"Tour"> | string | null
+  location?: Prisma.StringFilter<"Tour"> | string
+  cardNote?: Prisma.StringNullableFilter<"Tour"> | string | null
+  featured?: Prisma.BoolFilter<"Tour"> | boolean
   images?: Prisma.StringNullableListFilter<"Tour">
+  imageAlts?: Prisma.StringNullableListFilter<"Tour">
   inclusions?: Prisma.StringNullableListFilter<"Tour">
   exclusions?: Prisma.StringNullableListFilter<"Tour">
   meetingPoint?: Prisma.StringFilter<"Tour"> | string
@@ -395,7 +431,11 @@ export type TourOrderByWithAggregationInput = {
   basePriceIdr?: Prisma.SortOrder
   childPriceIdr?: Prisma.SortOrderInput | Prisma.SortOrder
   childAgeLabel?: Prisma.SortOrderInput | Prisma.SortOrder
+  location?: Prisma.SortOrder
+  cardNote?: Prisma.SortOrderInput | Prisma.SortOrder
+  featured?: Prisma.SortOrder
   images?: Prisma.SortOrder
+  imageAlts?: Prisma.SortOrder
   inclusions?: Prisma.SortOrder
   exclusions?: Prisma.SortOrder
   meetingPoint?: Prisma.SortOrder
@@ -424,7 +464,11 @@ export type TourScalarWhereWithAggregatesInput = {
   basePriceIdr?: Prisma.IntWithAggregatesFilter<"Tour"> | number
   childPriceIdr?: Prisma.IntNullableWithAggregatesFilter<"Tour"> | number | null
   childAgeLabel?: Prisma.StringNullableWithAggregatesFilter<"Tour"> | string | null
+  location?: Prisma.StringWithAggregatesFilter<"Tour"> | string
+  cardNote?: Prisma.StringNullableWithAggregatesFilter<"Tour"> | string | null
+  featured?: Prisma.BoolWithAggregatesFilter<"Tour"> | boolean
   images?: Prisma.StringNullableListFilter<"Tour">
+  imageAlts?: Prisma.StringNullableListFilter<"Tour">
   inclusions?: Prisma.StringNullableListFilter<"Tour">
   exclusions?: Prisma.StringNullableListFilter<"Tour">
   meetingPoint?: Prisma.StringWithAggregatesFilter<"Tour"> | string
@@ -445,7 +489,11 @@ export type TourCreateInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -472,7 +520,11 @@ export type TourUncheckedCreateInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -499,7 +551,11 @@ export type TourUpdateInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -526,7 +582,11 @@ export type TourUncheckedUpdateInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -553,7 +613,11 @@ export type TourCreateManyInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -574,7 +638,11 @@ export type TourUpdateManyMutationInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -595,7 +663,11 @@ export type TourUncheckedUpdateManyInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -624,7 +696,11 @@ export type TourCountOrderByAggregateInput = {
   basePriceIdr?: Prisma.SortOrder
   childPriceIdr?: Prisma.SortOrder
   childAgeLabel?: Prisma.SortOrder
+  location?: Prisma.SortOrder
+  cardNote?: Prisma.SortOrder
+  featured?: Prisma.SortOrder
   images?: Prisma.SortOrder
+  imageAlts?: Prisma.SortOrder
   inclusions?: Prisma.SortOrder
   exclusions?: Prisma.SortOrder
   meetingPoint?: Prisma.SortOrder
@@ -652,6 +728,9 @@ export type TourMaxOrderByAggregateInput = {
   basePriceIdr?: Prisma.SortOrder
   childPriceIdr?: Prisma.SortOrder
   childAgeLabel?: Prisma.SortOrder
+  location?: Prisma.SortOrder
+  cardNote?: Prisma.SortOrder
+  featured?: Prisma.SortOrder
   meetingPoint?: Prisma.SortOrder
   cancellationPolicy?: Prisma.SortOrder
   maxGroupSize?: Prisma.SortOrder
@@ -670,6 +749,9 @@ export type TourMinOrderByAggregateInput = {
   basePriceIdr?: Prisma.SortOrder
   childPriceIdr?: Prisma.SortOrder
   childAgeLabel?: Prisma.SortOrder
+  location?: Prisma.SortOrder
+  cardNote?: Prisma.SortOrder
+  featured?: Prisma.SortOrder
   meetingPoint?: Prisma.SortOrder
   cancellationPolicy?: Prisma.SortOrder
   maxGroupSize?: Prisma.SortOrder
@@ -691,6 +773,10 @@ export type TourScalarRelationFilter = {
 }
 
 export type TourCreateimagesInput = {
+  set: string[]
+}
+
+export type TourCreateimageAltsInput = {
   set: string[]
 }
 
@@ -730,7 +816,16 @@ export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
 }
 
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
 export type TourUpdateimagesInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type TourUpdateimageAltsInput = {
   set?: string[]
   push?: string | string[]
 }
@@ -743,10 +838,6 @@ export type TourUpdateinclusionsInput = {
 export type TourUpdateexclusionsInput = {
   set?: string[]
   push?: string | string[]
-}
-
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -847,7 +938,11 @@ export type TourCreateWithoutPricingTiersInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -873,7 +968,11 @@ export type TourUncheckedCreateWithoutPricingTiersInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -915,7 +1014,11 @@ export type TourUpdateWithoutPricingTiersInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -941,7 +1044,11 @@ export type TourUncheckedUpdateWithoutPricingTiersInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -967,7 +1074,11 @@ export type TourCreateWithoutItineraryInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -993,7 +1104,11 @@ export type TourUncheckedCreateWithoutItineraryInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -1035,7 +1150,11 @@ export type TourUpdateWithoutItineraryInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1061,7 +1180,11 @@ export type TourUncheckedUpdateWithoutItineraryInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1087,7 +1210,11 @@ export type TourCreateWithoutAvailabilityInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -1113,7 +1240,11 @@ export type TourUncheckedCreateWithoutAvailabilityInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -1155,7 +1286,11 @@ export type TourUpdateWithoutAvailabilityInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1181,7 +1316,11 @@ export type TourUncheckedUpdateWithoutAvailabilityInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1207,7 +1346,11 @@ export type TourCreateWithoutAddonsInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -1233,7 +1376,11 @@ export type TourUncheckedCreateWithoutAddonsInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -1275,7 +1422,11 @@ export type TourUpdateWithoutAddonsInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1301,7 +1452,11 @@ export type TourUncheckedUpdateWithoutAddonsInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1327,7 +1482,11 @@ export type TourCreateWithoutBookingsInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -1353,7 +1512,11 @@ export type TourUncheckedCreateWithoutBookingsInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -1395,7 +1558,11 @@ export type TourUpdateWithoutBookingsInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1421,7 +1588,11 @@ export type TourUncheckedUpdateWithoutBookingsInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1447,7 +1618,11 @@ export type TourCreateWithoutDiscountCodesInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -1473,7 +1648,11 @@ export type TourUncheckedCreateWithoutDiscountCodesInput = {
   basePriceIdr: number
   childPriceIdr?: number | null
   childAgeLabel?: string | null
+  location?: string
+  cardNote?: string | null
+  featured?: boolean
   images?: Prisma.TourCreateimagesInput | string[]
+  imageAlts?: Prisma.TourCreateimageAltsInput | string[]
   inclusions?: Prisma.TourCreateinclusionsInput | string[]
   exclusions?: Prisma.TourCreateexclusionsInput | string[]
   meetingPoint: string
@@ -1515,7 +1694,11 @@ export type TourUpdateWithoutDiscountCodesInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1541,7 +1724,11 @@ export type TourUncheckedUpdateWithoutDiscountCodesInput = {
   basePriceIdr?: Prisma.IntFieldUpdateOperationsInput | number
   childPriceIdr?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   childAgeLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  cardNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   images?: Prisma.TourUpdateimagesInput | string[]
+  imageAlts?: Prisma.TourUpdateimageAltsInput | string[]
   inclusions?: Prisma.TourUpdateinclusionsInput | string[]
   exclusions?: Prisma.TourUpdateexclusionsInput | string[]
   meetingPoint?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1643,7 +1830,11 @@ export type TourSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   basePriceIdr?: boolean
   childPriceIdr?: boolean
   childAgeLabel?: boolean
+  location?: boolean
+  cardNote?: boolean
+  featured?: boolean
   images?: boolean
+  imageAlts?: boolean
   inclusions?: boolean
   exclusions?: boolean
   meetingPoint?: boolean
@@ -1671,7 +1862,11 @@ export type TourSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   basePriceIdr?: boolean
   childPriceIdr?: boolean
   childAgeLabel?: boolean
+  location?: boolean
+  cardNote?: boolean
+  featured?: boolean
   images?: boolean
+  imageAlts?: boolean
   inclusions?: boolean
   exclusions?: boolean
   meetingPoint?: boolean
@@ -1692,7 +1887,11 @@ export type TourSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   basePriceIdr?: boolean
   childPriceIdr?: boolean
   childAgeLabel?: boolean
+  location?: boolean
+  cardNote?: boolean
+  featured?: boolean
   images?: boolean
+  imageAlts?: boolean
   inclusions?: boolean
   exclusions?: boolean
   meetingPoint?: boolean
@@ -1713,7 +1912,11 @@ export type TourSelectScalar = {
   basePriceIdr?: boolean
   childPriceIdr?: boolean
   childAgeLabel?: boolean
+  location?: boolean
+  cardNote?: boolean
+  featured?: boolean
   images?: boolean
+  imageAlts?: boolean
   inclusions?: boolean
   exclusions?: boolean
   meetingPoint?: boolean
@@ -1724,7 +1927,7 @@ export type TourSelectScalar = {
   updatedAt?: boolean
 }
 
-export type TourOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "description" | "category" | "durationMinutes" | "basePriceIdr" | "childPriceIdr" | "childAgeLabel" | "images" | "inclusions" | "exclusions" | "meetingPoint" | "cancellationPolicy" | "maxGroupSize" | "published" | "createdAt" | "updatedAt", ExtArgs["result"]["tour"]>
+export type TourOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "description" | "category" | "durationMinutes" | "basePriceIdr" | "childPriceIdr" | "childAgeLabel" | "location" | "cardNote" | "featured" | "images" | "imageAlts" | "inclusions" | "exclusions" | "meetingPoint" | "cancellationPolicy" | "maxGroupSize" | "published" | "createdAt" | "updatedAt", ExtArgs["result"]["tour"]>
 export type TourInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   itinerary?: boolean | Prisma.Tour$itineraryArgs<ExtArgs>
   pricingTiers?: boolean | Prisma.Tour$pricingTiersArgs<ExtArgs>
@@ -1757,7 +1960,11 @@ export type $TourPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     basePriceIdr: number
     childPriceIdr: number | null
     childAgeLabel: string | null
+    location: string
+    cardNote: string | null
+    featured: boolean
     images: string[]
+    imageAlts: string[]
     inclusions: string[]
     exclusions: string[]
     meetingPoint: string
@@ -2204,7 +2411,11 @@ export interface TourFieldRefs {
   readonly basePriceIdr: Prisma.FieldRef<"Tour", 'Int'>
   readonly childPriceIdr: Prisma.FieldRef<"Tour", 'Int'>
   readonly childAgeLabel: Prisma.FieldRef<"Tour", 'String'>
+  readonly location: Prisma.FieldRef<"Tour", 'String'>
+  readonly cardNote: Prisma.FieldRef<"Tour", 'String'>
+  readonly featured: Prisma.FieldRef<"Tour", 'Boolean'>
   readonly images: Prisma.FieldRef<"Tour", 'String[]'>
+  readonly imageAlts: Prisma.FieldRef<"Tour", 'String[]'>
   readonly inclusions: Prisma.FieldRef<"Tour", 'String[]'>
   readonly exclusions: Prisma.FieldRef<"Tour", 'String[]'>
   readonly meetingPoint: Prisma.FieldRef<"Tour", 'String'>

@@ -4,8 +4,8 @@ import { ArrowRight, CalendarDays, Users } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import type { PricingTier } from "@/data/mock-tour-details";
 import { getBookingWindow } from "@/lib/booking-window";
+import type { PricingTier } from "@/types/public-tour";
 
 const idrFormatter = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
 const usdFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });

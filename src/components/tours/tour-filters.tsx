@@ -2,7 +2,6 @@ import { Filter, RotateCcw } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { tourCategories } from "@/data/mock-tours";
 
 export interface ActiveFilters {
   category?: string;
@@ -14,14 +13,14 @@ export interface ActiveFilters {
   pax?: string;
 }
 
-function FilterFields({ filters }: { filters: ActiveFilters }) {
+function FilterFields({ filters, categories }: { filters: ActiveFilters; categories: string[] }) {
   return (
     <div className="divide-y divide-charcoal/15">
       <fieldset className="pb-6">
         <legend className="mb-3 text-xs font-bold uppercase tracking-[0.13em] text-clay">Category</legend>
         <div className="space-y-2.5">
           <FilterRadio name="category" value="" label="All experiences" checked={!filters.category} />
-          {tourCategories.map((category) => (
+          {categories.map((category) => (
             <FilterRadio key={category} name="category" value={category.toLowerCase()} label={category} checked={filters.category === category.toLowerCase()} />
           ))}
         </div>
@@ -61,14 +60,14 @@ function FilterRadio({ name, value, label, checked }: { name: string; value: str
   );
 }
 
-function FilterForm({ filters }: { filters: ActiveFilters }) {
+function FilterForm({ filters, categories }: { filters: ActiveFilters; categories: string[] }) {
   return (
     <form action="/tours" method="get">
       {filters.sort && filters.sort !== "featured" ? <input type="hidden" name="sort" value={filters.sort} /> : null}
       {filters.destination && filters.destination !== "all" ? <input type="hidden" name="destination" value={filters.destination} /> : null}
       {filters.date ? <input type="hidden" name="date" value={filters.date} /> : null}
       {filters.pax ? <input type="hidden" name="pax" value={filters.pax} /> : null}
-      <FilterFields filters={filters} />
+      <FilterFields filters={filters} categories={categories} />
       <div className="flex gap-3 border-t border-charcoal/25 pt-5">
         <Button type="submit" className="flex-1">Apply filters</Button>
         <Link href="/tours" className="inline-flex size-11 items-center justify-center rounded-control border border-charcoal/35 text-charcoal hover:bg-charcoal hover:text-frangipani focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus" title="Clear all filters">
@@ -80,7 +79,7 @@ function FilterForm({ filters }: { filters: ActiveFilters }) {
   );
 }
 
-export function TourFilters({ filters }: { filters: ActiveFilters }) {
+export function TourFilters({ filters, categories }: { filters: ActiveFilters; categories: string[] }) {
   return (
     <>
       <details className="border border-charcoal/25 bg-frangipani lg:hidden">
@@ -88,7 +87,7 @@ export function TourFilters({ filters }: { filters: ActiveFilters }) {
           <span className="inline-flex items-center gap-2"><Filter aria-hidden="true" className="size-4 text-clay" /> Filter tours</span>
           <span className="text-xs font-bold uppercase tracking-[0.1em] text-weathered">Open</span>
         </summary>
-        <div className="border-t border-charcoal/20 p-5"><FilterForm filters={filters} /></div>
+        <div className="border-t border-charcoal/20 p-5"><FilterForm filters={filters} categories={categories} /></div>
       </details>
 
       <aside className="hidden lg:block" aria-label="Tour filters">
@@ -97,7 +96,7 @@ export function TourFilters({ filters }: { filters: ActiveFilters }) {
             <h2 className="inline-flex items-center gap-2 font-serif text-2xl"><Filter aria-hidden="true" className="size-4 text-clay" /> Filter tours</h2>
             <Link href="/tours" className="text-xs font-bold uppercase tracking-[0.1em] text-weathered underline decoration-charcoal/30 underline-offset-4 hover:text-clay">Clear</Link>
           </div>
-          <FilterForm filters={filters} />
+          <FilterForm filters={filters} categories={categories} />
         </div>
       </aside>
     </>
