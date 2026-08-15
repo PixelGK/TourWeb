@@ -1,5 +1,7 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -306,6 +308,46 @@ const discountSchema = z.object({
   appliesToAll: z.boolean(),
 });
 
+const seasonalDiscountSchema = z.object({
+  name: z.string().trim().min(3).max(80),
+  percentOff: z.coerce.number().int().min(1).max(50),
+  startsAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  endsAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  appliesToAll: z.boolean(),
+});
+
+export async function saveSeasonalDiscountAction(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    await mutableSession();
+    const input = seasonalDiscountSchema.parse({
+      name: formData.get("name"), percentOff: formData.get("percentOff"), startsAt: formData.get("startsAt"),
+      endsAt: formData.get("endsAt"), appliesToAll: formData.get("appliesToAll") === "on",
+    });
+    const tourIds = formData.getAll("tourIds").map(String).filter(Boolean);
+    if (!input.appliesToAll && tourIds.length === 0) throw new Error("Choose at least one package or apply the offer to all packages");
+    const startsAt = new Date(`${input.startsAt}T00:00:00+08:00`);
+    const endsAt = new Date(`${input.endsAt}T23:59:59+08:00`);
+    if (endsAt < startsAt) throw new Error("End date must be on or after the start date");
+    await getPrisma().discountCode.create({
+      data: {
+        code: `AUTO-${randomUUID().replaceAll("-", "").slice(0, 16).toUpperCase()}`,
+        name: input.name,
+        automatic: true,
+        percentOff: input.percentOff,
+        startsAt,
+        endsAt,
+        appliesToAll: input.appliesToAll,
+        tours: input.appliesToAll ? undefined : { create: tourIds.map((tourId) => ({ tourId })) },
+      },
+    });
+    revalidatePath("/admin/commerce");
+    revalidatePath("/checkout");
+    return { ok: true, message: `${input.name} will apply automatically` };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "Seasonal offer could not be created" };
+  }
+}
+
 export async function saveDiscountAction(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
   try {
     await mutableSession();
@@ -320,7 +362,7 @@ export async function saveDiscountAction(_previous: AdminActionState, formData: 
     if (startsAt && endsAt && endsAt < startsAt) throw new Error("End date must be on or after the start date");
     await getPrisma().discountCode.create({
       data: {
-        code: input.code, percentOff: input.percentOff, startsAt, endsAt,
+        code: input.code, automatic: false, percentOff: input.percentOff, startsAt, endsAt,
         usageLimit: input.usageLimit === "" ? null : input.usageLimit,
         appliesToAll: input.appliesToAll,
         tours: input.appliesToAll ? undefined : { create: tourIds.map((tourId) => ({ tourId })) },

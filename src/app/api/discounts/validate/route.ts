@@ -23,6 +23,7 @@ export async function POST(request: Request) {
       include: { tours: { where: { tour: { slug: input.tourSlug } }, select: { tourId: true } } },
     });
     const valid = discount?.active
+      && !discount.automatic
       && (!discount.startsAt || discount.startsAt <= now)
       && (!discount.endsAt || discount.endsAt >= now)
       && (discount.usageLimit === null || discount.timesUsed < discount.usageLimit)

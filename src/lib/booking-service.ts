@@ -114,24 +114,39 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
       unitPriceIdr: addon.priceIdr,
     }));
     const addonTotal = addonRows.reduce((sum, addon) => sum + addon.quantity * addon.unitPriceIdr, 0);
-    const subtotalIdr = perPersonIdr * input.adultCount + childPriceIdr * input.childCount + addonTotal;
+    const packageTotalIdr = perPersonIdr * input.adultCount + childPriceIdr * input.childCount;
+    const subtotalIdr = packageTotalIdr + addonTotal;
 
-    let discount: { id: string; percentOff: number } | null = null;
+    let enteredDiscount: { id: string; percentOff: number } | null = null;
     if (input.discountCode) {
       const candidate = await tx.discountCode.findUnique({
         where: { code: input.discountCode },
         include: { tours: { where: { tourId: tour.id }, select: { tourId: true } } },
       });
       const now = new Date();
-      if (!candidate || !candidate.active || (candidate.startsAt && candidate.startsAt > now) || (candidate.endsAt && candidate.endsAt < now) || (!candidate.appliesToAll && candidate.tours.length === 0)) {
+      if (!candidate || candidate.automatic || !candidate.active || (candidate.startsAt && candidate.startsAt > now) || (candidate.endsAt && candidate.endsAt < now) || (!candidate.appliesToAll && candidate.tours.length === 0)) {
         throw new BookingError("That discount code is not valid for this package", "INVALID");
       }
-      await tx.$queryRaw(Prisma.sql`select id from public.discount_codes where id = ${candidate.id}::uuid for update`);
-      const locked = await tx.discountCode.findUniqueOrThrow({ where: { id: candidate.id } });
-      if (locked.usageLimit !== null && locked.timesUsed >= locked.usageLimit) throw new BookingError("That discount code has reached its usage limit", "INVALID");
-      discount = { id: locked.id, percentOff: locked.percentOff };
+      enteredDiscount = { id: candidate.id, percentOff: candidate.percentOff };
     }
-    const discountAmountIdr = discount ? Math.floor(subtotalIdr * discount.percentOff / 100) : 0;
+    const automaticDiscount = await tx.discountCode.findFirst({
+      where: {
+        automatic: true, active: true, startsAt: { lte: date }, endsAt: { gte: date },
+        OR: [{ appliesToAll: true }, { tours: { some: { tourId: tour.id } } }],
+      },
+      orderBy: { percentOff: "desc" },
+      select: { id: true, percentOff: true },
+    });
+    const discount = enteredDiscount && (!automaticDiscount || enteredDiscount.percentOff >= automaticDiscount.percentOff)
+      ? enteredDiscount
+      : automaticDiscount;
+    if (discount) {
+      await tx.$queryRaw(Prisma.sql`select id from public.discount_codes where id = ${discount.id}::uuid for update`);
+      const locked = await tx.discountCode.findUniqueOrThrow({ where: { id: discount.id } });
+      if (!locked.active) throw new BookingError("That discount is no longer active", "INVALID");
+      if (locked.usageLimit !== null && locked.timesUsed >= locked.usageLimit) throw new BookingError("That discount has reached its usage limit", "INVALID");
+    }
+    const discountAmountIdr = discount ? Math.floor(packageTotalIdr * discount.percentOff / 100) : 0;
     const totalAmountIdr = subtotalIdr - discountAmountIdr;
 
     if (mode === "payment") {
