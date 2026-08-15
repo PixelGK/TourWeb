@@ -1475,6 +1475,8 @@ export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeo
 export const DiscountCodeScalarFieldEnum = {
   id: 'id',
   code: 'code',
+  name: 'name',
+  automatic: 'automatic',
   percentOff: 'percentOff',
   startsAt: 'startsAt',
   endsAt: 'endsAt',

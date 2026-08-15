@@ -32,10 +32,11 @@ interface CheckoutFlowProps {
   addons: MockAddon[];
   childPriceIdr: number | null;
   childAgeLabel: string | null;
+  automaticDiscount: { name: string; percentOff: number } | null;
   mode: "request" | "payment";
 }
 
-export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPriceIdr, childAgeLabel, mode }: CheckoutFlowProps) {
+export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPriceIdr, childAgeLabel, automaticDiscount, mode }: CheckoutFlowProps) {
   const [step, setStep] = useState(1);
   const [traveler, setTraveler] = useState<TravelerState>({ name: "", email: "", phone: "", country: "", hotelName: "", notes: "" });
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
@@ -47,7 +48,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
   const [adultCount, setAdultCount] = useState(pax);
   const [childCount, setChildCount] = useState(0);
   const [discountCode, setDiscountCode] = useState("");
-  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; percentOff: number } | null>(null);
+  const [promoDiscount, setPromoDiscount] = useState<{ code: string; percentOff: number } | null>(null);
   const [discountLoading, setDiscountLoading] = useState(false);
 
   const lunchAddon = addons.find((addon) => addon.code === "local-lunch");
@@ -56,8 +57,12 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
   const selectedExtraCount = selectedAddons.filter((code) => code !== lunchAddon?.code).length;
   const perPersonIdr = pricingTiers.find((tier) => pax >= tier.minPax && pax <= tier.maxPax)?.perPersonIdr ?? pricingTiers.at(-1)?.perPersonIdr ?? 0;
   const addOnTotal = addons.filter((addon) => selectedAddons.includes(addon.code)).reduce((sum, addon) => sum + addon.priceIdr * (addon.pricingMode === "PER_PERSON" ? pax : 1), 0);
-  const packageSubtotalIdr = perPersonIdr * adultCount + (childPriceIdr ?? perPersonIdr) * childCount + addOnTotal;
-  const discountAmountIdr = appliedDiscount ? Math.floor(packageSubtotalIdr * appliedDiscount.percentOff / 100) : 0;
+  const basePackageTotalIdr = perPersonIdr * adultCount + (childPriceIdr ?? perPersonIdr) * childCount;
+  const packageSubtotalIdr = basePackageTotalIdr + addOnTotal;
+  const activeDiscount = promoDiscount && (!automaticDiscount || promoDiscount.percentOff >= automaticDiscount.percentOff)
+    ? { label: promoDiscount.code, percentOff: promoDiscount.percentOff }
+    : automaticDiscount ? { label: automaticDiscount.name, percentOff: automaticDiscount.percentOff } : null;
+  const discountAmountIdr = activeDiscount ? Math.floor(basePackageTotalIdr * activeDiscount.percentOff / 100) : 0;
   const totalIdr = packageSubtotalIdr - discountAmountIdr;
   const dateLabel = longDate.format(new Date(`${date}T00:00:00.000Z`));
 
@@ -83,7 +88,6 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
     if (adults + children > pax) return;
     setAdultCount(adults);
     setChildCount(children);
-    setAppliedDiscount(null);
   }
 
   async function applyDiscount() {
@@ -99,10 +103,10 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
       });
       const result = await response.json() as { error?: string; code?: string; percentOff?: number };
       if (!response.ok || !result.code || !result.percentOff) throw new Error(result.error ?? "Discount code could not be applied");
-      setAppliedDiscount({ code: result.code, percentOff: result.percentOff });
+      setPromoDiscount({ code: result.code, percentOff: result.percentOff });
       setDiscountCode(result.code);
     } catch (caught) {
-      setAppliedDiscount(null);
+      setPromoDiscount(null);
       setError(caught instanceof Error ? caught.message : "Discount code could not be applied");
     } finally {
       setDiscountLoading(false);
@@ -120,7 +124,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
-        body: JSON.stringify({ tourSlug: tour.slug, date, pax, adultCount, childCount, discountCode: appliedDiscount?.code ?? "", addonCodes: selectedAddons, termsAccepted, traveler }),
+        body: JSON.stringify({ tourSlug: tour.slug, date, pax, adultCount, childCount, discountCode: promoDiscount?.code ?? "", addonCodes: selectedAddons, termsAccepted, traveler }),
       });
       const result = await response.json() as { error?: string; redirectUrl?: string; confirmationUrl?: string };
       const destination = mode === "request" ? result.confirmationUrl : result.redirectUrl;
@@ -250,15 +254,16 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Package price</dt><dd className="font-semibold tabular-nums">{idr.format(perPersonIdr * adultCount + (childPriceIdr ?? perPersonIdr) * childCount)}</dd></div>
               {lunchAddon ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? <>Included · <span className="tabular-nums">{idr.format(lunchAddon.priceIdr * pax)}</span></> : <>Choose your own · <span className="font-normal text-weathered">pay at restaurant</span></>}</dd></div> : null}
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold tabular-nums">{idr.format(addOnTotal - (lunchIncluded && lunchAddon ? lunchAddon.priceIdr * pax : 0))}</dd></div>
-              {appliedDiscount ? <div className="flex justify-between gap-5 py-4 text-success"><dt>Discount · {appliedDiscount.code}</dt><dd className="font-semibold tabular-nums">− {idr.format(discountAmountIdr)}</dd></div> : null}
+              {activeDiscount ? <div className="flex justify-between gap-5 py-4 text-success"><dt>Package discount · {activeDiscount.label}</dt><dd className="font-semibold tabular-nums">− {idr.format(discountAmountIdr)}</dd></div> : null}
             </dl>
             <div className="mt-6 border border-charcoal/25 bg-frangipani p-4">
+              {automaticDiscount ? <p className="mb-4 border-l-4 border-terrace bg-terrace/8 px-3 py-2 text-sm leading-6"><strong>{automaticDiscount.name}: {automaticDiscount.percentOff}% off</strong><span className="block text-weathered">Already applied for this travel date—no code needed.</span></p> : null}
               <label htmlFor="discount-code" className="text-sm font-semibold">Discount code</label>
               <div className="mt-2 flex gap-2">
-                <input id="discount-code" value={discountCode} onChange={(event) => { setDiscountCode(event.target.value.toUpperCase()); setAppliedDiscount(null); }} maxLength={30} className="min-h-11 min-w-0 flex-1 rounded-field border border-charcoal/35 bg-limestone px-3.5 font-mono uppercase outline-none focus:border-terrace focus:ring-3 focus:ring-gold/30" />
+                <input id="discount-code" value={discountCode} onChange={(event) => { setDiscountCode(event.target.value.toUpperCase()); setPromoDiscount(null); }} maxLength={30} className="min-h-11 min-w-0 flex-1 rounded-field border border-charcoal/35 bg-limestone px-3.5 font-mono uppercase outline-none focus:border-terrace focus:ring-3 focus:ring-gold/30" />
                 <Button type="button" variant="outline" onClick={applyDiscount} loading={discountLoading}>Apply</Button>
               </div>
-              <p className="mt-2 text-xs text-weathered">One code per booking. Discounts cannot be combined.</p>
+              {promoDiscount ? <p className="mt-2 text-xs font-semibold text-success">{activeDiscount?.label === promoDiscount.code ? `${promoDiscount.code} is applied to the package price.` : `${promoDiscount.code} is valid, but the seasonal offer gives you a better price.`}</p> : <p className="mt-2 text-xs text-weathered">Optional. Discounts apply to the package price, exclude optional extras, and do not stack.</p>}
             </div>
             <label className="mt-6 flex cursor-pointer items-start gap-3 border border-charcoal/25 bg-frangipani p-4 text-sm leading-6 text-weathered">
               <input type="checkbox" required checked={termsAccepted} onChange={(event) => setTermsAccepted(event.target.checked)} className="mt-0.5 size-5 shrink-0 accent-terrace" />

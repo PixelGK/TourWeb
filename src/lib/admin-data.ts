@@ -304,6 +304,8 @@ export async function getAdminCommerce() {
     discounts: discounts.map((discount) => ({
       id: discount.id,
       code: discount.code,
+      name: discount.name,
+      automatic: discount.automatic,
       percentOff: discount.percentOff,
       startsAt: discount.startsAt?.toISOString().slice(0, 10) ?? null,
       endsAt: discount.endsAt?.toISOString().slice(0, 10) ?? null,

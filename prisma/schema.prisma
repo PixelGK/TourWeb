@@ -199,6 +199,8 @@ model Booking {
 model DiscountCode {
   id           String             @id @default(uuid()) @db.Uuid
   code         String             @unique
+  name         String?
+  automatic    Boolean            @default(false)
   percentOff   Int                @map("percent_off")
   startsAt     DateTime?          @map("starts_at")
   endsAt       DateTime?          @map("ends_at")

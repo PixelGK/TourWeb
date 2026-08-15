@@ -41,6 +41,8 @@ export type DiscountCodeSumAggregateOutputType = {
 export type DiscountCodeMinAggregateOutputType = {
   id: string | null
   code: string | null
+  name: string | null
+  automatic: boolean | null
   percentOff: number | null
   startsAt: Date | null
   endsAt: Date | null
@@ -55,6 +57,8 @@ export type DiscountCodeMinAggregateOutputType = {
 export type DiscountCodeMaxAggregateOutputType = {
   id: string | null
   code: string | null
+  name: string | null
+  automatic: boolean | null
   percentOff: number | null
   startsAt: Date | null
   endsAt: Date | null
@@ -69,6 +73,8 @@ export type DiscountCodeMaxAggregateOutputType = {
 export type DiscountCodeCountAggregateOutputType = {
   id: number
   code: number
+  name: number
+  automatic: number
   percentOff: number
   startsAt: number
   endsAt: number
@@ -97,6 +103,8 @@ export type DiscountCodeSumAggregateInputType = {
 export type DiscountCodeMinAggregateInputType = {
   id?: true
   code?: true
+  name?: true
+  automatic?: true
   percentOff?: true
   startsAt?: true
   endsAt?: true
@@ -111,6 +119,8 @@ export type DiscountCodeMinAggregateInputType = {
 export type DiscountCodeMaxAggregateInputType = {
   id?: true
   code?: true
+  name?: true
+  automatic?: true
   percentOff?: true
   startsAt?: true
   endsAt?: true
@@ -125,6 +135,8 @@ export type DiscountCodeMaxAggregateInputType = {
 export type DiscountCodeCountAggregateInputType = {
   id?: true
   code?: true
+  name?: true
+  automatic?: true
   percentOff?: true
   startsAt?: true
   endsAt?: true
@@ -226,6 +238,8 @@ export type DiscountCodeGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 export type DiscountCodeGroupByOutputType = {
   id: string
   code: string
+  name: string | null
+  automatic: boolean
   percentOff: number
   startsAt: Date | null
   endsAt: Date | null
@@ -263,6 +277,8 @@ export type DiscountCodeWhereInput = {
   NOT?: Prisma.DiscountCodeWhereInput | Prisma.DiscountCodeWhereInput[]
   id?: Prisma.UuidFilter<"DiscountCode"> | string
   code?: Prisma.StringFilter<"DiscountCode"> | string
+  name?: Prisma.StringNullableFilter<"DiscountCode"> | string | null
+  automatic?: Prisma.BoolFilter<"DiscountCode"> | boolean
   percentOff?: Prisma.IntFilter<"DiscountCode"> | number
   startsAt?: Prisma.DateTimeNullableFilter<"DiscountCode"> | Date | string | null
   endsAt?: Prisma.DateTimeNullableFilter<"DiscountCode"> | Date | string | null
@@ -279,6 +295,8 @@ export type DiscountCodeWhereInput = {
 export type DiscountCodeOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  automatic?: Prisma.SortOrder
   percentOff?: Prisma.SortOrder
   startsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   endsAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -298,6 +316,8 @@ export type DiscountCodeWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.DiscountCodeWhereInput | Prisma.DiscountCodeWhereInput[]
   OR?: Prisma.DiscountCodeWhereInput[]
   NOT?: Prisma.DiscountCodeWhereInput | Prisma.DiscountCodeWhereInput[]
+  name?: Prisma.StringNullableFilter<"DiscountCode"> | string | null
+  automatic?: Prisma.BoolFilter<"DiscountCode"> | boolean
   percentOff?: Prisma.IntFilter<"DiscountCode"> | number
   startsAt?: Prisma.DateTimeNullableFilter<"DiscountCode"> | Date | string | null
   endsAt?: Prisma.DateTimeNullableFilter<"DiscountCode"> | Date | string | null
@@ -314,6 +334,8 @@ export type DiscountCodeWhereUniqueInput = Prisma.AtLeast<{
 export type DiscountCodeOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  automatic?: Prisma.SortOrder
   percentOff?: Prisma.SortOrder
   startsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   endsAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -336,6 +358,8 @@ export type DiscountCodeScalarWhereWithAggregatesInput = {
   NOT?: Prisma.DiscountCodeScalarWhereWithAggregatesInput | Prisma.DiscountCodeScalarWhereWithAggregatesInput[]
   id?: Prisma.UuidWithAggregatesFilter<"DiscountCode"> | string
   code?: Prisma.StringWithAggregatesFilter<"DiscountCode"> | string
+  name?: Prisma.StringNullableWithAggregatesFilter<"DiscountCode"> | string | null
+  automatic?: Prisma.BoolWithAggregatesFilter<"DiscountCode"> | boolean
   percentOff?: Prisma.IntWithAggregatesFilter<"DiscountCode"> | number
   startsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"DiscountCode"> | Date | string | null
   endsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"DiscountCode"> | Date | string | null
@@ -350,6 +374,8 @@ export type DiscountCodeScalarWhereWithAggregatesInput = {
 export type DiscountCodeCreateInput = {
   id?: string
   code: string
+  name?: string | null
+  automatic?: boolean
   percentOff: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
@@ -366,6 +392,8 @@ export type DiscountCodeCreateInput = {
 export type DiscountCodeUncheckedCreateInput = {
   id?: string
   code: string
+  name?: string | null
+  automatic?: boolean
   percentOff: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
@@ -382,6 +410,8 @@ export type DiscountCodeUncheckedCreateInput = {
 export type DiscountCodeUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  automatic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   percentOff?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -398,6 +428,8 @@ export type DiscountCodeUpdateInput = {
 export type DiscountCodeUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  automatic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   percentOff?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -414,6 +446,8 @@ export type DiscountCodeUncheckedUpdateInput = {
 export type DiscountCodeCreateManyInput = {
   id?: string
   code: string
+  name?: string | null
+  automatic?: boolean
   percentOff: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
@@ -428,6 +462,8 @@ export type DiscountCodeCreateManyInput = {
 export type DiscountCodeUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  automatic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   percentOff?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -442,6 +478,8 @@ export type DiscountCodeUpdateManyMutationInput = {
 export type DiscountCodeUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  automatic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   percentOff?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -461,6 +499,8 @@ export type DiscountCodeNullableScalarRelationFilter = {
 export type DiscountCodeCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  automatic?: Prisma.SortOrder
   percentOff?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
@@ -481,6 +521,8 @@ export type DiscountCodeAvgOrderByAggregateInput = {
 export type DiscountCodeMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  automatic?: Prisma.SortOrder
   percentOff?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
@@ -495,6 +537,8 @@ export type DiscountCodeMaxOrderByAggregateInput = {
 export type DiscountCodeMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  automatic?: Prisma.SortOrder
   percentOff?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
@@ -550,6 +594,8 @@ export type DiscountCodeUpdateOneRequiredWithoutToursNestedInput = {
 export type DiscountCodeCreateWithoutBookingsInput = {
   id?: string
   code: string
+  name?: string | null
+  automatic?: boolean
   percentOff: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
@@ -565,6 +611,8 @@ export type DiscountCodeCreateWithoutBookingsInput = {
 export type DiscountCodeUncheckedCreateWithoutBookingsInput = {
   id?: string
   code: string
+  name?: string | null
+  automatic?: boolean
   percentOff: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
@@ -596,6 +644,8 @@ export type DiscountCodeUpdateToOneWithWhereWithoutBookingsInput = {
 export type DiscountCodeUpdateWithoutBookingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  automatic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   percentOff?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -611,6 +661,8 @@ export type DiscountCodeUpdateWithoutBookingsInput = {
 export type DiscountCodeUncheckedUpdateWithoutBookingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  automatic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   percentOff?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -626,6 +678,8 @@ export type DiscountCodeUncheckedUpdateWithoutBookingsInput = {
 export type DiscountCodeCreateWithoutToursInput = {
   id?: string
   code: string
+  name?: string | null
+  automatic?: boolean
   percentOff: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
@@ -641,6 +695,8 @@ export type DiscountCodeCreateWithoutToursInput = {
 export type DiscountCodeUncheckedCreateWithoutToursInput = {
   id?: string
   code: string
+  name?: string | null
+  automatic?: boolean
   percentOff: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
@@ -672,6 +728,8 @@ export type DiscountCodeUpdateToOneWithWhereWithoutToursInput = {
 export type DiscountCodeUpdateWithoutToursInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  automatic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   percentOff?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -687,6 +745,8 @@ export type DiscountCodeUpdateWithoutToursInput = {
 export type DiscountCodeUncheckedUpdateWithoutToursInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  automatic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   percentOff?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -742,6 +802,8 @@ export type DiscountCodeCountOutputTypeCountBookingsArgs<ExtArgs extends runtime
 export type DiscountCodeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   code?: boolean
+  name?: boolean
+  automatic?: boolean
   percentOff?: boolean
   startsAt?: boolean
   endsAt?: boolean
@@ -759,6 +821,8 @@ export type DiscountCodeSelect<ExtArgs extends runtime.Types.Extensions.Internal
 export type DiscountCodeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   code?: boolean
+  name?: boolean
+  automatic?: boolean
   percentOff?: boolean
   startsAt?: boolean
   endsAt?: boolean
@@ -773,6 +837,8 @@ export type DiscountCodeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
 export type DiscountCodeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   code?: boolean
+  name?: boolean
+  automatic?: boolean
   percentOff?: boolean
   startsAt?: boolean
   endsAt?: boolean
@@ -787,6 +853,8 @@ export type DiscountCodeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
 export type DiscountCodeSelectScalar = {
   id?: boolean
   code?: boolean
+  name?: boolean
+  automatic?: boolean
   percentOff?: boolean
   startsAt?: boolean
   endsAt?: boolean
@@ -798,7 +866,7 @@ export type DiscountCodeSelectScalar = {
   updatedAt?: boolean
 }
 
-export type DiscountCodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "percentOff" | "startsAt" | "endsAt" | "usageLimit" | "timesUsed" | "active" | "appliesToAll" | "createdAt" | "updatedAt", ExtArgs["result"]["discountCode"]>
+export type DiscountCodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "code" | "name" | "automatic" | "percentOff" | "startsAt" | "endsAt" | "usageLimit" | "timesUsed" | "active" | "appliesToAll" | "createdAt" | "updatedAt", ExtArgs["result"]["discountCode"]>
 export type DiscountCodeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tours?: boolean | Prisma.DiscountCode$toursArgs<ExtArgs>
   bookings?: boolean | Prisma.DiscountCode$bookingsArgs<ExtArgs>
@@ -816,6 +884,8 @@ export type $DiscountCodePayload<ExtArgs extends runtime.Types.Extensions.Intern
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     code: string
+    name: string | null
+    automatic: boolean
     percentOff: number
     startsAt: Date | null
     endsAt: Date | null
@@ -1252,6 +1322,8 @@ export interface Prisma__DiscountCodeClient<T, Null = never, ExtArgs extends run
 export interface DiscountCodeFieldRefs {
   readonly id: Prisma.FieldRef<"DiscountCode", 'String'>
   readonly code: Prisma.FieldRef<"DiscountCode", 'String'>
+  readonly name: Prisma.FieldRef<"DiscountCode", 'String'>
+  readonly automatic: Prisma.FieldRef<"DiscountCode", 'Boolean'>
   readonly percentOff: Prisma.FieldRef<"DiscountCode", 'Int'>
   readonly startsAt: Prisma.FieldRef<"DiscountCode", 'DateTime'>
   readonly endsAt: Prisma.FieldRef<"DiscountCode", 'DateTime'>
