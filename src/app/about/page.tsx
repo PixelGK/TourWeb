@@ -21,7 +21,7 @@ const principles = [
   },
   {
     number: "02",
-    title: "Clear before you pay",
+    title: "Clear before you commit",
     copy: "The tour page shows the route, inclusions, pickup arrangement, and IDR price. If a ticket or meal is optional, it should be labelled—not discovered halfway through the day.",
     icon: Handshake,
   },

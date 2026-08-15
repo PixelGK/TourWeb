@@ -21,17 +21,21 @@ enum TourCategory {
 }
 
 enum BookingStatus {
+  REQUESTED
   PENDING
   PAID
+  CONFIRMED
   CANCELLED
   REFUNDED
 }
 
 enum PaymentProviderName {
+  MANUAL
   MIDTRANS
 }
 
 enum PaymentStatus {
+  NOT_REQUIRED
   PENDING
   PAID
   FAILED

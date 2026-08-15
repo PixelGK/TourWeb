@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, LockKeyhole, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarCheck2, Check, LockKeyhole, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
@@ -32,9 +32,10 @@ interface CheckoutFlowProps {
   addons: MockAddon[];
   childPriceIdr: number | null;
   childAgeLabel: string | null;
+  mode: "request" | "payment";
 }
 
-export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPriceIdr, childAgeLabel }: CheckoutFlowProps) {
+export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPriceIdr, childAgeLabel, mode }: CheckoutFlowProps) {
   const [step, setStep] = useState(1);
   const [traveler, setTraveler] = useState<TravelerState>({ name: "", email: "", phone: "", country: "", hotelName: "", notes: "" });
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
@@ -108,9 +109,9 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
     }
   }
 
-  async function beginPayment() {
+  async function submitBooking() {
     if (!termsAccepted) {
-      setError("Please accept the Booking Terms and Privacy Notice before continuing to payment.");
+      setError(`Please accept the Booking Terms and Privacy Notice before ${mode === "request" ? "sending your request" : "continuing to payment"}.`);
       return;
     }
     setLoading(true);
@@ -121,17 +122,22 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
         headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
         body: JSON.stringify({ tourSlug: tour.slug, date, pax, adultCount, childCount, discountCode: appliedDiscount?.code ?? "", addonCodes: selectedAddons, termsAccepted, traveler }),
       });
-      const result = await response.json() as { error?: string; redirectUrl?: string };
-      if (!response.ok || !result.redirectUrl) {
+      const result = await response.json() as { error?: string; redirectUrl?: string; confirmationUrl?: string };
+      const destination = mode === "request" ? result.confirmationUrl : result.redirectUrl;
+      if (!response.ok || !destination) {
         if (response.status === 502) setIdempotencyKey(crypto.randomUUID());
-        throw new Error(result.error ?? "Secure payment could not be started");
+        throw new Error(result.error ?? (mode === "request" ? "Your booking request could not be sent" : "Secure payment could not be started"));
       }
 
-      const redirect = new URL(result.redirectUrl);
-      if (redirect.protocol !== "https:" || !new Set(["app.midtrans.com", "app.sandbox.midtrans.com"]).has(redirect.hostname)) throw new Error("The payment destination was not recognized");
+      const redirect = new URL(destination, window.location.origin);
+      if (mode === "request") {
+        if (redirect.origin !== window.location.origin || redirect.pathname !== "/checkout/confirmation") throw new Error("The booking confirmation destination was not recognized");
+      } else if (redirect.protocol !== "https:" || !new Set(["app.midtrans.com", "app.sandbox.midtrans.com"]).has(redirect.hostname)) {
+        throw new Error("The payment destination was not recognized");
+      }
       window.location.assign(redirect.toString());
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Secure payment could not be started");
+      setError(caught instanceof Error ? caught.message : (mode === "request" ? "Your booking request could not be sent" : "Secure payment could not be started"));
       setLoading(false);
     }
   }
@@ -140,7 +146,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:py-12">
       <main>
         <ol aria-label="Checkout progress" className="mb-8 grid grid-cols-3 border border-charcoal/25 bg-frangipani">
-          {["Traveler", "Options", "Payment"].map((label, index) => {
+          {["Traveler", "Options", mode === "request" ? "Request" : "Payment"].map((label, index) => {
             const number = index + 1;
             return <li key={label} aria-current={step === number ? "step" : undefined} className={cn("flex min-h-14 items-center gap-2 border-r border-charcoal/20 px-3 text-sm last:border-r-0 sm:px-5", step === number && "bg-terrace text-frangipani", step > number && "text-terrace")}>
               <span className={cn("grid size-6 shrink-0 place-items-center rounded-full border text-xs font-bold", step === number ? "border-frangipani/60" : "border-current")}>{step > number ? <Check className="size-3.5" aria-hidden="true" /> : number}</span>
@@ -173,7 +179,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
           <section aria-labelledby="addons-heading">
             <p className="text-xs font-bold uppercase tracking-[0.15em] text-clay">Step 2 of 3</p>
             <h1 id="addons-heading" className="mt-2 font-serif text-4xl sm:text-5xl">{hasLunchOption ? "Choose lunch and extras" : "Choose optional extras"}</h1>
-            <p className="mt-3 text-weathered">{hasLunchOption ? "Lunch is optional. Every extra is priced in IDR before you pay." : "Add only what you need. Every extra is priced in IDR before you pay."}</p>
+            <p className="mt-3 text-weathered">{hasLunchOption ? `Lunch is optional. Every extra is priced in IDR before you ${mode === "request" ? "send the request" : "pay"}.` : `Add only what you need. Every extra is priced in IDR before you ${mode === "request" ? "send the request" : "pay"}.`}</p>
 
             {childPriceIdr !== null ? (
               <fieldset className="mt-8 border border-charcoal/25 bg-frangipani p-5">
@@ -227,7 +233,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
             </div> : null}
             <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
               <Button variant="ghost" size="lg" onClick={() => setStep(1)}><ArrowLeft className="size-4" aria-hidden="true" /> Traveler details</Button>
-              <Button size="lg" onClick={() => { setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Review payment <ArrowRight className="size-4" aria-hidden="true" /></Button>
+              <Button size="lg" onClick={() => { setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}>{mode === "request" ? "Review request" : "Review payment"} <ArrowRight className="size-4" aria-hidden="true" /></Button>
             </div>
           </section>
         ) : null}
@@ -235,9 +241,9 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
         {step === 3 ? (
           <section aria-labelledby="payment-heading">
             <p className="text-xs font-bold uppercase tracking-[0.15em] text-clay">Step 3 of 3</p>
-            <h1 id="payment-heading" className="mt-2 font-serif text-4xl sm:text-5xl">Review and pay</h1>
+            <h1 id="payment-heading" className="mt-2 font-serif text-4xl sm:text-5xl">{mode === "request" ? "Review your request" : "Review and pay"}</h1>
             <div className="mt-7 border-l-4 border-gold bg-frangipani p-5 sm:p-6">
-              <div className="flex gap-3"><LockKeyhole className="mt-0.5 size-5 shrink-0 text-terrace" aria-hidden="true" /><div><h2 className="font-bold">You’ll continue to Midtrans</h2><p className="mt-1 text-sm leading-6 text-weathered">Card, bank, or wallet details are entered only on Midtrans’s hosted checkout. BaliXperience never receives or stores raw card numbers.</p></div></div>
+              {mode === "request" ? <div className="flex gap-3"><CalendarCheck2 className="mt-0.5 size-5 shrink-0 text-terrace" aria-hidden="true" /><div><h2 className="font-bold">No payment today</h2><p className="mt-1 text-sm leading-6 text-weathered">We’ll check the driver and included arrangements, then contact you on WhatsApp. Your request is not confirmed and does not hold capacity until we accept it.</p></div></div> : <div className="flex gap-3"><LockKeyhole className="mt-0.5 size-5 shrink-0 text-terrace" aria-hidden="true" /><div><h2 className="font-bold">You’ll continue to Midtrans</h2><p className="mt-1 text-sm leading-6 text-weathered">Card, bank, or wallet details are entered only on Midtrans’s hosted checkout. BaliXperience never receives or stores raw card numbers.</p></div></div>}
             </div>
             <dl className="mt-8 divide-y divide-charcoal/20 border-y border-charcoal/25">
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lead traveler</dt><dd className="text-right font-semibold">{traveler.name}<br /><span className="font-normal text-weathered">{traveler.email}</span></dd></div>
@@ -261,7 +267,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
             {error ? <p role="alert" className="mt-5 border border-error/40 bg-error/8 p-4 text-sm font-semibold text-error">{error}</p> : null}
             <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
               <Button variant="ghost" size="lg" onClick={() => setStep(2)} disabled={loading}><ArrowLeft className="size-4" aria-hidden="true" /> Trip options</Button>
-              <Button size="lg" onClick={beginPayment} loading={loading} disabled={!termsAccepted}>Pay securely in IDR <ArrowRight className="size-4" aria-hidden="true" /></Button>
+              <Button size="lg" onClick={submitBooking} loading={loading} disabled={!termsAccepted}>{mode === "request" ? "Send booking request" : "Pay securely in IDR"} <ArrowRight className="size-4" aria-hidden="true" /></Button>
             </div>
           </section>
         ) : null}
@@ -278,9 +284,9 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
           {lunchAddon ? <div className="flex justify-between gap-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? "Included" : "Choose & pay directly"}</dd></div> : null}
           <div className="flex justify-between gap-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold">{selectedExtraCount || "None"}</dd></div>
         </dl>
-        <div className="mt-5 flex items-end justify-between gap-3"><span className="text-sm text-weathered">Total</span><strong className="font-serif text-3xl tabular-nums">{idr.format(totalIdr)}</strong></div>
+        <div className="mt-5 flex items-end justify-between gap-3"><span className="text-sm text-weathered">{mode === "request" ? "Quoted total" : "Total"}</span><strong className="font-serif text-3xl tabular-nums">{idr.format(totalIdr)}</strong></div>
         <p className="mt-1 text-right text-xs text-weathered">≈ {usd.format(totalIdr / idrPerUsdEstimate)} estimate</p>
-        <p className="mt-5 flex gap-2 text-xs leading-5 text-weathered"><ShieldCheck className="size-4 shrink-0 text-terrace" aria-hidden="true" />The actual charge and settlement currency is IDR. Your bank determines any conversion rate or foreign transaction fee.</p>
+        <p className="mt-5 flex gap-2 text-xs leading-5 text-weathered"><ShieldCheck className="size-4 shrink-0 text-terrace" aria-hidden="true" />{mode === "request" ? "No payment is taken when you submit. Any later payment arrangement will be stated clearly before you commit." : "The actual charge and settlement currency is IDR. Your bank determines any conversion rate or foreign transaction fee."}</p>
       </aside>
     </div>
   );

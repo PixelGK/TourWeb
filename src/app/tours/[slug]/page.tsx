@@ -154,7 +154,7 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
                 </div>
               ) : null}
             </div>
-            <p className="mt-3 text-xs leading-5 text-weathered">USD values are estimates for comparison. Your payment and receipt use IDR.</p>
+            <p className="mt-3 text-xs leading-5 text-weathered">USD values are estimates for comparison. Your request and final confirmed price use IDR.</p>
           </section>
 
           <section className="grid gap-7 md:grid-cols-2" aria-label="Meeting and cancellation details">

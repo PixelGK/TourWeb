@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { AddonPricingMode, BookingStatus, PaymentStatus, Prisma, TourCategory } from "@/generated/prisma/client";
 import { requireAdminPageSession } from "@/lib/admin-auth";
-import { applyVerifiedPaymentStatus, markConfirmationEmailSent, markPaymentReceiptEmailSent, releasePendingBooking } from "@/lib/booking-service";
+import { applyVerifiedPaymentStatus, cancelBookingRequest, confirmBookingRequest, markConfirmationEmailSent, markPaymentReceiptEmailSent, releasePendingBooking } from "@/lib/booking-service";
 import { getPrisma } from "@/lib/db";
 import { sendBookingConfirmation, sendPaymentReceipt } from "@/lib/email";
 import { getPaymentProvider } from "@/lib/payments/provider";
@@ -253,22 +253,28 @@ export async function updateBookingAction(_previous: AdminActionState, formData:
     if (!booking) throw new Error("Booking was not found");
 
     if (action === "cancel") {
-      const cancelled = await releasePendingBooking(booking.reference, PaymentStatus.CANCELLED);
-      if (!cancelled) throw new Error("Only pending bookings can be cancelled directly");
+      if (booking.status === BookingStatus.REQUESTED || booking.status === BookingStatus.CONFIRMED) {
+        await cancelBookingRequest(booking.id);
+      } else {
+        const cancelled = await releasePendingBooking(booking.reference, PaymentStatus.CANCELLED);
+        if (!cancelled) throw new Error("Only requests and pending bookings can be cancelled directly");
+      }
       revalidatePath("/admin/bookings");
-      return { ok: true, message: "Pending booking cancelled and capacity restored" };
+      return { ok: true, message: "Booking cancelled; reserved capacity was restored when applicable" };
     }
 
     if (action === "confirm") {
-      if (booking.status !== BookingStatus.PAID) throw new Error("Payment must be verified before confirming the package");
-      const updated = await prisma.booking.update({ where: { id }, data: { confirmedAt: booking.confirmedAt ?? new Date() }, include: { tour: true, availability: true } });
+      if (booking.status !== BookingStatus.REQUESTED && booking.status !== BookingStatus.PAID) throw new Error("Only a booking request or verified payment can be confirmed");
+      const updated = booking.status === BookingStatus.REQUESTED
+        ? await confirmBookingRequest(booking.id)
+        : await prisma.booking.update({ where: { id }, data: { confirmedAt: booking.confirmedAt ?? new Date() }, include: { tour: true, availability: true } });
       if (!updated.confirmationEmailSentAt) {
         after(async () => {
           try { await sendBookingConfirmation(updated); await markConfirmationEmailSent(updated.id); } catch { /* Admin can retry confirmation. */ }
         });
       }
       revalidatePath("/admin/bookings");
-      return { ok: true, message: "Package confirmed and confirmation email queued" };
+      return { ok: true, message: "Package confirmed, capacity reserved, and confirmation email queued" };
     }
 
     if (!booking.paymentTransactionId) throw new Error("This booking has no provider transaction to recheck");

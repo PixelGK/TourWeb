@@ -21,17 +21,17 @@ const sections = [
   {
     title: "2. Booking and confirmation",
     paragraphs: [
-      "Submitting traveler details or reaching a payment page does not confirm a booking. After the payment provider verifies payment, we send a receipt and BaliXperience booking reference. We then confirm the driver and any included supplier arrangements within 12 hours.",
-      "If the selected package cannot be confirmed within 12 hours after payment, we will offer a reasonable alternative or provide a full refund. The customer is never required to accept the alternative.",
+      "Submitting a booking request does not confirm a booking or hold capacity. No online payment is taken at this stage. We send a BaliXperience reference, check the driver and any included supplier arrangements, and contact you on WhatsApp or email.",
+      "We aim to accept or decline each request within 12 hours. A booking is confirmed only when BaliXperience sends written confirmation. If the selected package is unavailable, we may offer a reasonable alternative, which you are never required to accept.",
       "Online checkout closes 12 hours before the package's expected pickup time. Later requests may be discussed on WhatsApp, but are not accepted until BaliXperience confirms availability and price.",
-      "Please check names, date, traveler count, pickup area, and contact details before paying. Contact us promptly if anything is wrong.",
+      "Please check names, date, traveler count, pickup area, and contact details before submitting. Contact us promptly if anything is wrong.",
     ],
   },
   {
     title: "3. Prices and payment",
     paragraphs: [
-      "The checkout charge and settlement currency is Indonesian rupiah (IDR). Any USD amount is an estimate for comparison and may differ from your bank's converted amount or fees.",
-      "Card and supported payment details are entered on Midtrans's hosted checkout. BaliXperience does not receive or store raw card numbers. We keep the provider transaction identifier, amount, and payment status needed to manage the booking.",
+      "Prices are quoted in Indonesian rupiah (IDR). Any USD amount is an estimate for comparison and may differ from the rate used by your bank or payment service.",
+      "The current website request flow does not collect payment. If online payment is enabled later, card and supported payment details will be entered only on a hosted payment provider page. BaliXperience will not receive or store raw card numbers.",
       "The inclusions shown on the tour page at the time of booking form part of your booking. Personal meals, optional stops, gratuities, and other items are excluded unless expressly listed as included.",
     ],
   },
@@ -98,13 +98,13 @@ export default function TermsPage() {
         eyebrow="Booking terms"
         title="The practical rules behind your booking."
         description="These terms explain when a booking is confirmed, what your price covers, how changes work, and where independent activity or attraction suppliers are involved."
-        aside={<p className="text-sm leading-6 text-weathered"><strong className="block text-charcoal">Last updated</strong>14 August 2026</p>}
+        aside={<p className="text-sm leading-6 text-weathered"><strong className="block text-charcoal">Last updated</strong>15 August 2026</p>}
       />
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 lg:grid-cols-12 lg:px-12 lg:py-20">
         <aside className="lg:col-span-3">
           <div className="border-l-4 border-gold bg-frangipani p-5 text-sm leading-6 text-weathered lg:sticky lg:top-6">
             <strong className="block text-charcoal">Plain-language summary</strong>
-            Your tour page and confirmation contain the booking-specific price, inclusions, and cancellation policy. These general terms cover the rest. If something looks inconsistent, contact us before paying.
+            Your tour page and confirmation contain the booking-specific price, inclusions, and cancellation policy. These general terms cover the rest. If something looks inconsistent, contact us before you commit.
           </div>
         </aside>
         <div className="space-y-10 lg:col-span-8 lg:col-start-5">

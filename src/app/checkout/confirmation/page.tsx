@@ -23,30 +23,37 @@ export default async function ConfirmationPage({ searchParams }: { searchParams:
     ? await getPrisma().booking.findUnique({ where: { reference: safeReference }, include: { tour: true, availability: true } }).catch(() => null)
     : null;
 
+  const isRequested = booking?.status === BookingStatus.REQUESTED;
   const isPaid = booking?.status === BookingStatus.PAID;
-  const isConfirmed = Boolean(isPaid && booking?.confirmedAt);
+  const isConfirmed = booking?.status === BookingStatus.CONFIRMED || Boolean(isPaid && booking?.confirmedAt);
   const isClosed = booking?.status === BookingStatus.CANCELLED || booking?.status === BookingStatus.REFUNDED;
-  const isPending = Boolean(booking && !isPaid && !isClosed);
-  const Icon = isPaid ? CheckCircle2 : isClosed ? XCircle : Clock3;
+  const isPendingPayment = booking?.status === BookingStatus.PENDING;
+  const Icon = isConfirmed || isPaid ? CheckCircle2 : isClosed ? XCircle : Clock3;
 
   return (
     <>
       <SiteHeader />
-      {isPending ? <ConfirmationRefresh /> : null}
+      {isPendingPayment ? <ConfirmationRefresh /> : null}
       <main className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
         <div className="border border-charcoal/25 bg-frangipani p-6 shadow-sun sm:p-10">
           <Icon aria-hidden="true" className={`size-12 ${isPaid ? "text-terrace" : isClosed ? "text-error" : "text-gold-dark"}`} />
-          <Badge className="mt-6">{isConfirmed ? "Package confirmed" : isPaid ? "Payment verified" : isClosed ? "Booking not active" : "Checking payment"}</Badge>
+          <Badge className="mt-6">{isConfirmed ? "Package confirmed" : isPaid ? "Payment verified" : isRequested ? "Request received" : isClosed ? "Booking not active" : "Checking payment"}</Badge>
           <h1 className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">
-            {isConfirmed ? "Your Bali day is confirmed." : isPaid ? "We’re arranging your Bali day." : isClosed ? "This booking is not active." : "We’re confirming your payment."}
+            {isConfirmed ? "Your Bali day is confirmed." : isPaid ? "We’re arranging your Bali day." : isRequested ? "We’ve received your request." : isClosed ? "This booking is not active." : "We’re confirming your payment."}
           </h1>
           <p className="mt-4 text-lg leading-8 text-weathered">
             {isConfirmed
-              ? "Your driver and included arrangements are confirmed. Your driver will carry any admission voucher and assist with entry."
+              ? booking?.paymentStatus === "NOT_REQUIRED"
+                ? "Your driver and included arrangements are confirmed. No online payment was taken; we’ll coordinate the next details with you directly."
+                : "Your driver and included arrangements are confirmed. Your driver will carry any admission voucher and assist with entry."
               : isPaid
               ? "Midtrans has verified your payment. We will confirm the driver and any included admission within 12 hours, or issue a full refund."
+              : isRequested
+                ? "No payment has been taken. We’ll check the driver and included arrangements, then contact you on WhatsApp. Capacity is held only after we confirm your request."
               : isClosed
-                ? "No paid booking was confirmed for this reference. If money left your account, message us and we’ll check it directly with Midtrans."
+                ? booking?.paymentStatus === "NOT_REQUIRED"
+                  ? "This request was not confirmed or has been cancelled. No online payment was taken."
+                  : "No paid booking was confirmed for this reference. If money left your account, message us and we’ll check it directly with Midtrans."
                 : "A return from the payment page is not proof of payment. This page updates only after Midtrans’s signed server notification reaches us—usually within seconds."}
           </p>
 
@@ -54,7 +61,7 @@ export default async function ConfirmationPage({ searchParams }: { searchParams:
             <dl className="mt-8 divide-y divide-charcoal/20 border-y border-charcoal/25">
               <div className="flex justify-between gap-4 py-4"><dt className="text-weathered">Tour</dt><dd className="text-right font-semibold">{booking.tour.title}</dd></div>
               <div className="flex justify-between gap-4 py-4"><dt className="text-weathered">Travelers</dt><dd className="font-semibold">{booking.paxCount}</dd></div>
-              <div className="flex justify-between gap-4 py-4"><dt className="text-weathered">Total in IDR</dt><dd className="font-semibold tabular-nums">{idr.format(booking.totalAmountIdr)}</dd></div>
+              <div className="flex justify-between gap-4 py-4"><dt className="text-weathered">{booking.paymentStatus === "NOT_REQUIRED" ? "Quoted total" : "Total in IDR"}</dt><dd className="font-semibold tabular-nums">{idr.format(booking.totalAmountIdr)}</dd></div>
               <div className="flex justify-between gap-4 py-4"><dt className="text-weathered">Reference</dt><dd className="break-all text-right font-mono text-sm font-semibold">{booking.reference}</dd></div>
             </dl>
           ) : safeReference ? (

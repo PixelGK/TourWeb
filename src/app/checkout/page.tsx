@@ -9,12 +9,13 @@ import { getMockAddons } from "@/data/mock-addons";
 import { getTourDetail } from "@/data/mock-tour-details";
 import { allTours } from "@/data/mock-tours";
 import { isInsideBookingWindow } from "@/lib/booking-window";
+import { getBookingFlowMode } from "@/lib/booking-mode";
 import { getPrisma } from "@/lib/db";
 import { hasDatabaseConfiguration } from "@/lib/server-env";
 
 export const metadata: Metadata = {
-  title: "Secure checkout",
-  description: "Complete your BaliXperience traveler details and continue to secure hosted payment in IDR.",
+  title: "Request your Bali day",
+  description: "Send BaliXperience your preferred date, group details, and trip options for confirmation.",
   robots: { index: false, follow: false },
 };
 
@@ -44,6 +45,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
         addons={databaseTour?.addons.map((addon) => ({ code: addon.code, title: addon.title, description: addon.description ?? "", priceIdr: addon.priceIdr, pricingMode: addon.pricingMode })) ?? getMockAddons(tour.category, tour.slug)}
         childPriceIdr={databaseTour?.childPriceIdr ?? null}
         childAgeLabel={databaseTour?.childAgeLabel ?? null}
+        mode={getBookingFlowMode()}
       />
       <SiteFooter />
     </>
