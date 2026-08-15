@@ -8,7 +8,7 @@ import { getAdminOverview } from "@/lib/admin-data";
 const idr = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", notation: "compact", maximumFractionDigits: 1 });
 const metrics = [
   { key: "bookingsToday", label: "Bookings today", icon: ReceiptText, format: (value: number) => String(value) },
-  { key: "pendingPayments", label: "Pending payment", icon: Clock3, format: (value: number) => String(value) },
+  { key: "pendingPayments", label: "Open requests", icon: Clock3, format: (value: number) => String(value) },
   { key: "departuresNextSevenDays", label: "Open dates · 7 days", icon: CalendarClock, format: (value: number) => String(value) },
   { key: "paidRevenueThisMonthIdr", label: "Paid this month", icon: CircleDollarSign, format: idr.format },
 ] as const;
@@ -17,7 +17,7 @@ export default async function AdminDashboardPage() {
   const data = await getAdminOverview();
   return (
     <div className="space-y-10">
-      <AdminPageHeader eyebrow="01 · Dispatch" title="Today at a glance" description="A compact operating view: money confirmed, guests waiting, and the dates that need attention." />
+      <AdminPageHeader eyebrow="01 · Dispatch" title="Today at a glance" description="A compact operating view: new requests, confirmed guests, and the dates that need attention." />
       <section aria-label="Business snapshot" className="grid border border-charcoal/30 bg-frangipani sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => { const Icon = metric.icon; return <div key={metric.key} className="border-b border-charcoal/20 p-5 last:border-b-0 sm:border-r sm:[&:nth-child(2)]:border-r-0 xl:border-b-0 xl:[&:nth-child(2)]:border-r xl:last:border-r-0"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-[0.1em] text-weathered">{metric.label}</span><Icon className="size-4 text-clay" aria-hidden="true" /></div><strong className="mt-5 block font-serif text-4xl tabular-nums">{metric.format(data.metrics[metric.key])}</strong></div>; })}
       </section>

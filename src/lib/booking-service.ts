@@ -11,6 +11,7 @@ import {
   type Booking,
 } from "@/generated/prisma/client";
 import type { CheckoutRequest } from "@/lib/checkout-validation";
+import type { BookingFlowMode } from "@/lib/booking-mode";
 import { getPrisma } from "@/lib/db";
 import { TERMS_VERSION } from "@/lib/legal";
 import type { PaymentState } from "@/lib/payments/types";
@@ -41,7 +42,7 @@ async function retrySerializable<T>(operation: () => Promise<T>) {
   throw new Error("Transaction retry exhausted");
 }
 
-export async function reserveBooking(input: CheckoutRequest, idempotencyKey: string) {
+export async function reserveBooking(input: CheckoutRequest, idempotencyKey: string, mode: BookingFlowMode = "payment") {
   const prisma = getPrisma();
   const fingerprint = requestHash(input);
   const date = new Date(`${input.date}T00:00:00.000Z`);
@@ -133,11 +134,15 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
     const discountAmountIdr = discount ? Math.floor(subtotalIdr * discount.percentOff / 100) : 0;
     const totalAmountIdr = subtotalIdr - discountAmountIdr;
 
-    const reserved = await tx.availability.updateMany({
-      where: { id: availability.id, isOpen: true, spotsRemaining: { gte: input.pax } },
-      data: { spotsRemaining: { decrement: input.pax } },
-    });
-    if (reserved.count !== 1) throw new BookingError("Those spots were just taken. Please choose another date or group size.", "SOLD_OUT", 409);
+    if (mode === "payment") {
+      const reserved = await tx.availability.updateMany({
+        where: { id: availability.id, isOpen: true, spotsRemaining: { gte: input.pax } },
+        data: { spotsRemaining: { decrement: input.pax } },
+      });
+      if (reserved.count !== 1) throw new BookingError("Those spots were just taken. Please choose another date or group size.", "SOLD_OUT", 409);
+    } else if (!availability.isOpen || availability.spotsRemaining < input.pax) {
+      throw new BookingError("This date does not currently have enough space for your group.", "SOLD_OUT", 409);
+    }
 
     const reference = bookingReference(input.date);
     const booking = await tx.booking.create({
@@ -158,8 +163,10 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
         discountCodeId: discount?.id,
         discountPercent: discount?.percentOff,
         discountAmountIdr,
-        paymentProvider: PaymentProviderName.MIDTRANS,
-        paymentTransactionId: reference,
+        status: mode === "request" ? BookingStatus.REQUESTED : BookingStatus.PENDING,
+        paymentProvider: mode === "request" ? PaymentProviderName.MANUAL : PaymentProviderName.MIDTRANS,
+        paymentStatus: mode === "request" ? PaymentStatus.NOT_REQUIRED : PaymentStatus.PENDING,
+        paymentTransactionId: mode === "request" ? null : reference,
         idempotencyKey,
         idempotencyRequestHash: fingerprint,
         heldUntil: new Date(Date.now() + 15 * 60 * 1000),
@@ -169,13 +176,72 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
       },
       include: { tour: true, availability: true },
     });
-    if (discount) await tx.discountCode.update({ where: { id: discount.id }, data: { timesUsed: { increment: 1 } } });
+    if (discount && mode === "payment") await tx.discountCode.update({ where: { id: discount.id }, data: { timesUsed: { increment: 1 } } });
     return { booking, created: true };
   }, {
     isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
     maxWait: 5_000,
     timeout: 8_000,
   }));
+}
+
+export async function confirmBookingRequest(bookingId: string) {
+  const prisma = getPrisma();
+  return retrySerializable(() => prisma.$transaction(async (tx) => {
+    const initial = await tx.booking.findUnique({ where: { id: bookingId }, select: { availabilityId: true } });
+    if (!initial) throw new BookingError("Booking request was not found", "NOT_FOUND", 404);
+    await tx.$queryRaw(Prisma.sql`select id from public.availability where id = ${initial.availabilityId}::uuid for update`);
+
+    const booking = await tx.booking.findUnique({ where: { id: bookingId }, include: { tour: true, availability: true } });
+    if (!booking) throw new BookingError("Booking request was not found", "NOT_FOUND", 404);
+    if (booking.status !== BookingStatus.REQUESTED) throw new BookingError("Only new booking requests can be confirmed", "INVALID", 409);
+
+    const blackout = await tx.globalBlackoutDate.findUnique({ where: { date: booking.availability.date }, select: { reason: true } });
+    if (blackout) throw new BookingError(`This date is unavailable: ${blackout.reason}`, "INVALID", 409);
+
+    const reserved = await tx.availability.updateMany({
+      where: { id: booking.availabilityId, isOpen: true, spotsRemaining: { gte: booking.paxCount } },
+      data: { spotsRemaining: { decrement: booking.paxCount } },
+    });
+    if (reserved.count !== 1) throw new BookingError("There is no longer enough availability for this request", "SOLD_OUT", 409);
+
+    if (booking.discountCodeId) {
+      await tx.$queryRaw(Prisma.sql`select id from public.discount_codes where id = ${booking.discountCodeId}::uuid for update`);
+      const discount = await tx.discountCode.findUniqueOrThrow({ where: { id: booking.discountCodeId } });
+      if (discount.usageLimit !== null && discount.timesUsed >= discount.usageLimit) throw new BookingError("The request's discount code has reached its usage limit", "INVALID", 409);
+      await tx.discountCode.update({ where: { id: discount.id }, data: { timesUsed: { increment: 1 } } });
+    }
+
+    return tx.booking.update({
+      where: { id: booking.id },
+      data: { status: BookingStatus.CONFIRMED, confirmedAt: new Date() },
+      include: { tour: true, availability: true },
+    });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 5_000, timeout: 8_000 }));
+}
+
+export async function cancelBookingRequest(bookingId: string) {
+  const prisma = getPrisma();
+  return prisma.$transaction(async (tx) => {
+    const initial = await tx.booking.findUnique({ where: { id: bookingId }, select: { availabilityId: true } });
+    if (!initial) throw new BookingError("Booking request was not found", "NOT_FOUND", 404);
+    await tx.$queryRaw(Prisma.sql`select id from public.availability where id = ${initial.availabilityId}::uuid for update`);
+    const booking = await tx.booking.findUnique({ where: { id: bookingId } });
+    if (!booking || (booking.status !== BookingStatus.REQUESTED && booking.status !== BookingStatus.CONFIRMED)) {
+      throw new BookingError("Only requested or manually confirmed bookings can be cancelled here", "INVALID", 409);
+    }
+
+    const released = booking.status === BookingStatus.CONFIRMED;
+    const updated = await tx.booking.update({
+      where: { id: booking.id },
+      data: { status: BookingStatus.CANCELLED, cancelledAt: new Date() },
+    });
+    if (released) {
+      await tx.availability.update({ where: { id: booking.availabilityId }, data: { spotsRemaining: { increment: booking.paxCount } } });
+      if (booking.discountCodeId) await tx.discountCode.update({ where: { id: booking.discountCodeId }, data: { timesUsed: { decrement: 1 } } });
+    }
+    return updated;
+  });
 }
 
 export async function releasePendingBooking(reference: string, paymentStatus: PaymentStatus = PaymentStatus.FAILED) {

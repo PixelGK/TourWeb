@@ -33,10 +33,10 @@ export function BookingWidget({ tourSlug, pricingTiers, maxGroupSize, blackoutDa
             <span className="text-sm text-weathered">Total for {pax}</span>
             <strong className="font-serif text-3xl tabular-nums">{idrFormatter.format(total)}</strong>
           </div>
-          <p className="mt-1 text-right text-xs text-weathered">≈ {usdFormatter.format(usdEstimate)} · charged in IDR</p>
+          <p className="mt-1 text-right text-xs text-weathered">≈ {usdFormatter.format(usdEstimate)} · final price in IDR</p>
         </div>
         <Button type="submit" form="desktop-booking-form" size="lg" className="mt-5 w-full">Continue to booking <ArrowRight aria-hidden="true" className="size-4" /></Button>
-        <p className="mt-3 text-center text-xs leading-5 text-weathered">No card details are entered on this site. Secure hosted payment follows after traveler details.</p>
+        <p className="mt-3 text-center text-xs leading-5 text-weathered">No payment today. Send a request and we’ll confirm the driver and included arrangements with you.</p>
       </aside>
 
       <div className="fixed inset-x-0 bottom-0 z-50 border-t border-charcoal/30 bg-frangipani p-3 shadow-[0_-5px_18px_rgb(28_27_24_/_0.16)] lg:hidden" aria-label="Mobile booking bar">

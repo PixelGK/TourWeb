@@ -45,7 +45,7 @@ const directReasons = [
   {
     number: "02",
     title: "Prices are charged in IDR",
-    copy: "You see what is included before paying. USD is shown as an estimate so you can compare costs easily.",
+    copy: "You see what is included before you commit. USD is shown as an estimate so you can compare costs easily.",
     icon: CircleDollarSign,
   },
   {
@@ -174,7 +174,7 @@ export default function HomePage() {
           <div className="lg:col-span-4">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay">Why book direct</p>
             <h2 id="direct-heading" className="mt-4 font-serif text-4xl leading-[1.02] sm:text-5xl">Book with the person arranging your day.</h2>
-            <p className="mt-5 max-w-sm text-base leading-7 text-weathered">Ask questions before paying, confirm pickup on WhatsApp, and know who to contact if plans change.</p>
+            <p className="mt-5 max-w-sm text-base leading-7 text-weathered">Ask questions before you commit, confirm pickup on WhatsApp, and know who to contact if plans change.</p>
           </div>
           <div className="border-t border-charcoal/30 lg:col-span-8">
             {directReasons.map(({ number, title, copy, icon: Icon }) => (

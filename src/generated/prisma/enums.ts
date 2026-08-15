@@ -26,8 +26,10 @@ export type TourCategory = (typeof TourCategory)[keyof typeof TourCategory]
 
 
 export const BookingStatus = {
+  REQUESTED: 'REQUESTED',
   PENDING: 'PENDING',
   PAID: 'PAID',
+  CONFIRMED: 'CONFIRMED',
   CANCELLED: 'CANCELLED',
   REFUNDED: 'REFUNDED'
 } as const
@@ -36,6 +38,7 @@ export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]
 
 
 export const PaymentProviderName = {
+  MANUAL: 'MANUAL',
   MIDTRANS: 'MIDTRANS'
 } as const
 
@@ -43,6 +46,7 @@ export type PaymentProviderName = (typeof PaymentProviderName)[keyof typeof Paym
 
 
 export const PaymentStatus = {
+  NOT_REQUIRED: 'NOT_REQUIRED',
   PENDING: 'PENDING',
   PAID: 'PAID',
   FAILED: 'FAILED',

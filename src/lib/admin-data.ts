@@ -167,7 +167,7 @@ export async function getAdminAvailability(tourId?: string): Promise<AdminAvaila
     where: { date: { gte: new Date() }, tourId: tourId && tourId !== "ALL" ? tourId : undefined },
     include: {
       tour: true,
-      bookings: { where: { status: { in: [BookingStatus.PENDING, BookingStatus.PAID] } }, select: { id: true } },
+      bookings: { where: { status: { in: [BookingStatus.PENDING, BookingStatus.PAID, BookingStatus.CONFIRMED] } }, select: { id: true } },
     },
     orderBy: [{ date: "asc" }, { tour: { title: "asc" } }],
     take: 180,
@@ -206,7 +206,7 @@ export async function getAdminOverview() {
   monthStart.setUTCDate(1);
   const [bookingsToday, pendingPayments, departuresNextSevenDays, revenue, recentBookings, upcoming] = await Promise.all([
     prisma.booking.count({ where: { createdAt: { gte: start, lt: end } } }),
-    prisma.booking.count({ where: { status: BookingStatus.PENDING } }),
+    prisma.booking.count({ where: { status: { in: [BookingStatus.REQUESTED, BookingStatus.PENDING] } } }),
     prisma.availability.count({ where: { date: { gte: start, lt: sevenDays }, capacity: { gt: 0 } } }),
     prisma.booking.aggregate({ where: { status: BookingStatus.PAID, paidAt: { gte: monthStart } }, _sum: { totalAmountIdr: true } }),
     getAdminBookings(),

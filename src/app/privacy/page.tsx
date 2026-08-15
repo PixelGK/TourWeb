@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const privacySections = [
   ["1. Information we collect", [
     "Booking details such as your name, email, phone number, country, travel date, party size, pickup area, hotel information you choose to provide, traveler ages where relevant, add-ons, and notes about the trip.",
-    "Payment records such as the amount, currency, payment provider, provider transaction identifier, and payment status. Card or banking credentials are entered with the hosted payment provider; BaliXperience does not receive or store raw card numbers.",
+    "The current booking-request flow does not collect payment. If online payment is enabled later, we may keep records such as the amount, currency, payment provider, provider transaction identifier, and payment status. Card or banking credentials would be entered with the hosted payment provider; BaliXperience does not receive or store raw card numbers.",
     "Messages and support information you send by email, WhatsApp, or through a booking form, plus technical records needed to secure and operate the website, such as IP address, timestamps, browser information, and rate-limit events.",
   ]],
   ["2. Why we use it", [
@@ -60,7 +60,7 @@ export default function PrivacyPage() {
         eyebrow="Privacy"
         title="Your trip details are for running your trip."
         description="This notice explains what BaliXperience collects, why it is needed, which booking partners receive it, and the choices available to you."
-        aside={<p className="text-sm leading-6 text-weathered"><strong className="block text-charcoal">Last updated</strong>12 August 2026</p>}
+        aside={<p className="text-sm leading-6 text-weathered"><strong className="block text-charcoal">Last updated</strong>15 August 2026</p>}
       />
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 lg:grid-cols-12 lg:px-12 lg:py-20">
         <aside className="lg:col-span-3">
