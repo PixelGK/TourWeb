@@ -7,20 +7,12 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { AddonPricingMode, BookingStatus, PaymentStatus, Prisma, TourCategory } from "@/generated/prisma/client";
+import type { AdminActionState } from "@/lib/admin-action-state";
 import { requireAdminPageSession } from "@/lib/admin-auth";
 import { applyVerifiedPaymentStatus, cancelBookingRequest, confirmBookingRequest, markConfirmationEmailSent, markPaymentReceiptEmailSent, releasePendingBooking } from "@/lib/booking-service";
 import { getPrisma } from "@/lib/db";
 import { sendBookingConfirmation, sendPaymentReceipt } from "@/lib/email";
 import { getPaymentProvider } from "@/lib/payments/provider";
-
-export interface AdminActionState {
-  ok: boolean;
-  message: string;
-  recordId?: string;
-}
-
-const initialState: AdminActionState = { ok: false, message: "" };
-export { initialState as initialAdminActionState };
 
 function lines(value: FormDataEntryValue | null) {
   return String(value ?? "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);

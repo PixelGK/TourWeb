@@ -3,7 +3,8 @@
 import { CalendarPlus, Lock, Unlock } from "lucide-react";
 import { useActionState } from "react";
 
-import { initialAdminActionState, saveAvailabilityAction, toggleAvailabilityAction } from "@/app/admin/actions";
+import { saveAvailabilityAction, toggleAvailabilityAction } from "@/app/admin/actions";
+import { initialAdminActionState } from "@/lib/admin-action-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";

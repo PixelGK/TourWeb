@@ -3,7 +3,8 @@
 import { CalendarOff, CalendarRange, Pause, Percent, Play, Trash2 } from "lucide-react";
 import { useActionState } from "react";
 
-import { deleteBlackoutAction, initialAdminActionState, saveBlackoutAction, saveDiscountAction, saveSeasonalDiscountAction, toggleDiscountAction } from "@/app/admin/actions";
+import { deleteBlackoutAction, saveBlackoutAction, saveDiscountAction, saveSeasonalDiscountAction, toggleDiscountAction } from "@/app/admin/actions";
+import { initialAdminActionState } from "@/lib/admin-action-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { AdminTourRow } from "@/lib/admin-data";

@@ -3,7 +3,8 @@
 import { Ban, Check, RefreshCw } from "lucide-react";
 import { useActionState } from "react";
 
-import { initialAdminActionState, updateBookingAction } from "@/app/admin/actions";
+import { updateBookingAction } from "@/app/admin/actions";
+import { initialAdminActionState } from "@/lib/admin-action-state";
 import { Button } from "@/components/ui/button";
 
 export function BookingActions({ id, status, confirmed, preview }: { id: string; status: string; confirmed?: boolean; preview: boolean }) {
