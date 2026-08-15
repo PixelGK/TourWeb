@@ -342,6 +342,9 @@ export async function saveSeasonalDiscountAction(_previous: AdminActionState, fo
     });
     revalidatePath("/admin/commerce");
     revalidatePath("/checkout");
+    revalidatePath("/");
+    revalidatePath("/tours");
+    revalidatePath("/tours/[slug]", "page");
     return { ok: true, message: `${input.name} will apply automatically` };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "Seasonal offer could not be created" };
@@ -382,6 +385,9 @@ export async function toggleDiscountAction(_previous: AdminActionState, formData
     const active = z.enum(["true", "false"]).transform((value) => value === "true").parse(formData.get("active"));
     await getPrisma().discountCode.update({ where: { id }, data: { active } });
     revalidatePath("/admin/commerce");
+    revalidatePath("/");
+    revalidatePath("/tours");
+    revalidatePath("/tours/[slug]", "page");
     return { ok: true, message: active ? "Discount activated" : "Discount paused" };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "Discount could not be changed" };

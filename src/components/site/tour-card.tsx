@@ -6,7 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { PriceTag } from "@/components/ui/price-tag";
 import type { MockTour } from "@/data/mock-tours";
 
-export function TourCard({ tour, priority = false, bookingQuery }: { tour: MockTour; priority?: boolean; bookingQuery?: string }) {
+interface TourCardPromotion {
+  name: string;
+  percentOff: number;
+  exactForSelectedDate: boolean;
+}
+
+export function TourCard({ tour, priority = false, bookingQuery, promotion }: { tour: MockTour; priority?: boolean; bookingQuery?: string; promotion?: TourCardPromotion | null }) {
   const href = bookingQuery ? `/tours/${tour.slug}?${bookingQuery}` : `/tours/${tour.slug}`;
 
   return (
@@ -39,7 +45,17 @@ export function TourCard({ tour, priority = false, bookingQuery }: { tour: MockT
           </div>
           <h3 className="mt-3 font-serif text-[1.65rem] leading-[1.08] text-charcoal">{tour.title}</h3>
           <div className="mt-auto pt-6">
-            <PriceTag idr={tour.priceIdr} usdApprox={tour.priceUsd} size="sm" />
+            {promotion ? (
+              <p className="mb-3 border-l-3 border-gold pl-3 text-xs font-bold leading-5 text-terrace">
+                {promotion.exactForSelectedDate ? "Your selected date qualifies" : `${promotion.name} · ${promotion.percentOff}% off selected dates`}
+              </p>
+            ) : null}
+            <PriceTag
+              idr={tour.priceIdr}
+              usdApprox={tour.priceUsd}
+              size="sm"
+              discount={promotion?.exactForSelectedDate ? { label: promotion.name, percentOff: promotion.percentOff } : undefined}
+            />
           </div>
         </div>
       </Link>

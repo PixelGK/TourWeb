@@ -8,6 +8,7 @@ import { TourCard } from "@/components/site/tour-card";
 import { TourFilters, type ActiveFilters } from "@/components/tours/tour-filters";
 import { TourSort } from "@/components/tours/tour-sort";
 import { allTours, tourCategories, type MockTour } from "@/data/mock-tours";
+import { bestAutomaticOffer, getAutomaticDiscountOffers } from "@/lib/automatic-discounts";
 import { isInsideBookingWindow } from "@/lib/booking-window";
 import { getPrisma } from "@/lib/db";
 import { hasDatabaseConfiguration } from "@/lib/server-env";
@@ -141,7 +142,11 @@ function pageHref(filters: ActiveFilters, page: number) {
 export default async function ToursPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const filters = parseFilters(params);
-  const results = await filterByAvailability(filterTours(filters), filters);
+  const filteredTours = filterTours(filters);
+  const [results, automaticOffers] = await Promise.all([
+    filterByAvailability(filteredTours, filters),
+    getAutomaticDiscountOffers(filteredTours.map((tour) => tour.slug)),
+  ]);
   const requestedPage = Number.parseInt(singleValue(params.page) ?? "1", 10);
   const pageCount = Math.max(1, Math.ceil(results.length / pageSize));
   const currentPage = Number.isFinite(requestedPage) ? Math.min(Math.max(requestedPage, 1), pageCount) : 1;
@@ -192,7 +197,10 @@ export default async function ToursPage({ searchParams }: { searchParams: Search
 
             {visibleTours.length ? (
               <div className="mt-7 grid gap-6 sm:grid-cols-2">
-                {visibleTours.map((tour) => <TourCard key={tour.slug} tour={tour} bookingQuery={bookingQuery} />)}
+                {visibleTours.map((tour) => {
+                  const promotion = bestAutomaticOffer(automaticOffers, tour.slug, filters.date);
+                  return <TourCard key={tour.slug} tour={tour} bookingQuery={bookingQuery} promotion={promotion ? { ...promotion, exactForSelectedDate: Boolean(filters.date) } : null} />;
+                })}
               </div>
             ) : (
               <div className="mt-7 border border-charcoal/25 bg-frangipani px-6 py-14 text-center">
