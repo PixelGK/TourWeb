@@ -11,6 +11,7 @@ import { PhotoGallery } from "@/components/tours/photo-gallery";
 import { Badge } from "@/components/ui/badge";
 import { getTourDetail } from "@/data/mock-tour-details";
 import { allTours } from "@/data/mock-tours";
+import { automaticOffersForTour, getAutomaticDiscountOffers } from "@/lib/automatic-discounts";
 import { isInsideBookingWindow } from "@/lib/booking-window";
 import { getPrisma } from "@/lib/db";
 import { hasDatabaseConfiguration } from "@/lib/server-env";
@@ -49,12 +50,13 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
   const baseTour = findTour(slug);
   if (!baseTour) notFound();
   const tour = getTourDetail(baseTour);
-  const [blackoutDates, databasePricing] = hasDatabaseConfiguration()
+  const [blackoutDates, databasePricing, automaticOffers] = hasDatabaseConfiguration()
     ? await Promise.all([
         getPrisma().globalBlackoutDate.findMany({ select: { date: true }, orderBy: { date: "asc" } }).then((rows) => rows.map((row) => row.date.toISOString().slice(0, 10))).catch(() => []),
         getPrisma().tour.findUnique({ where: { slug }, select: { childPriceIdr: true, childAgeLabel: true } }).catch(() => null),
+        getAutomaticDiscountOffers([slug]),
       ])
-    : [[], null];
+    : [[], null, []];
   const isExperienceDay = tour.category === "Experience Days";
   const initialDate = query.date && /^\d{4}-\d{2}-\d{2}$/.test(query.date) && isInsideBookingWindow(query.date) ? query.date : undefined;
   const requestedPax = Number(query.pax);
@@ -179,7 +181,7 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
           </section>
         </div>
 
-        <BookingWidget tourSlug={tour.slug} pricingTiers={tour.pricingTiers} maxGroupSize={tour.maxGroupSize} blackoutDates={blackoutDates} initialDate={initialDate} initialPax={initialPax} />
+        <BookingWidget tourSlug={tour.slug} pricingTiers={tour.pricingTiers} maxGroupSize={tour.maxGroupSize} blackoutDates={blackoutDates} initialDate={initialDate} initialPax={initialPax} automaticDiscounts={automaticOffersForTour(automaticOffers, slug)} />
       </div>
 
       <SiteFooter />

@@ -19,11 +19,14 @@ import { SiteHeader } from "@/components/site/site-header";
 import { TourCard } from "@/components/site/tour-card";
 import { Badge } from "@/components/ui/badge";
 import { topTours } from "@/data/mock-tours";
+import { bestAutomaticOffer, getAutomaticDiscountOffers } from "@/lib/automatic-discounts";
 
 export const metadata: Metadata = {
   title: "Private Bali Drivers & Experience Days",
   description: "Book private Bali day trips with an experienced local driver, including clearly bundled attraction and activity experiences.",
 };
+
+export const revalidate = 300;
 
 const categories = [
   ["01", "Trekking"],
@@ -62,7 +65,9 @@ const directReasons = [
   },
 ] as const;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const automaticOffers = await getAutomaticDiscountOffers(topTours.map((tour) => tour.slug));
+
   return (
     <main>
       <SiteHeader />
@@ -135,9 +140,14 @@ export default function HomePage() {
           </div>
 
           <div className="-mx-5 mt-10 grid snap-x snap-mandatory auto-cols-[84%] grid-flow-col gap-5 overflow-x-auto px-5 pb-7 [scrollbar-color:var(--color-gold)_transparent] sm:-mx-8 sm:auto-cols-[46%] sm:px-8 lg:-mx-12 lg:auto-cols-[calc((100%-3rem)/3)] lg:px-12">
-            {topTours.map((tour, index) => (
-              <div key={tour.slug} className="snap-start"><TourCard tour={tour} priority={index === 0} /></div>
-            ))}
+            {topTours.map((tour, index) => {
+              const promotion = bestAutomaticOffer(automaticOffers, tour.slug);
+              return (
+                <div key={tour.slug} className="snap-start">
+                  <TourCard tour={tour} priority={index === 0} promotion={promotion ? { ...promotion, exactForSelectedDate: false } : null} />
+                </div>
+              );
+            })}
           </div>
           <p className="mt-2 text-xs font-semibold uppercase tracking-[0.11em] text-weathered">Swipe or scroll to explore <span aria-hidden="true">→</span></p>
         </div>
