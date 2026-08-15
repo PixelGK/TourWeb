@@ -3,7 +3,8 @@
 import { Save, Trash2 } from "lucide-react";
 import { useActionState, type ReactNode } from "react";
 
-import { deleteTourAction, initialAdminActionState, saveTourAction } from "@/app/admin/actions";
+import { deleteTourAction, saveTourAction } from "@/app/admin/actions";
+import { initialAdminActionState } from "@/lib/admin-action-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
