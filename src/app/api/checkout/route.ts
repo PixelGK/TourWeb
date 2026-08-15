@@ -1,7 +1,8 @@
 import { after } from "next/server";
 import { ZodError } from "zod";
 
-import { BookingError, releasePendingBooking, reserveBooking, toPaymentBooking } from "@/lib/booking-service";
+import { BookingError, markBookingRequestEmailSent, releasePendingBooking, reserveBooking, toPaymentBooking } from "@/lib/booking-service";
+import { isTrustedMutationRequest } from "@/lib/admin-auth";
 import { getBookingFlowMode } from "@/lib/booking-mode";
 import { checkoutRequestSchema, idempotencyKeySchema } from "@/lib/checkout-validation";
 import { sendBookingRequestEmails } from "@/lib/email";
@@ -17,6 +18,7 @@ export async function POST(request: Request) {
   let reference: string | undefined;
   const mode = getBookingFlowMode();
   try {
+    if (!isTrustedMutationRequest(request)) return Response.json({ error: "Untrusted request origin" }, { status: 403 });
     const rateLimit = await enforceRateLimit("checkout", getRequestIp(request.headers), 8, 60);
     if (!rateLimit.allowed) return Response.json({ error: "Too many checkout attempts. Please wait a minute and try again." }, { status: 429 });
 
@@ -36,6 +38,7 @@ export async function POST(request: Request) {
       after(async () => {
         try {
           await sendBookingRequestEmails(reservation.booking);
+          await markBookingRequestEmailSent(reservation.booking.id);
         } catch (emailError) {
           console.error("Booking request email failed", emailError instanceof Error ? emailError.name : "UnknownError");
         }

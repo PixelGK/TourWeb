@@ -9,12 +9,11 @@ import { BookingWidget } from "@/components/tours/booking-widget";
 import { ItineraryTimeline } from "@/components/tours/itinerary-timeline";
 import { PhotoGallery } from "@/components/tours/photo-gallery";
 import { Badge } from "@/components/ui/badge";
-import { getTourDetail } from "@/data/mock-tour-details";
-import { allTours } from "@/data/mock-tours";
 import { automaticOffersForTour, getAutomaticDiscountOffers } from "@/lib/automatic-discounts";
 import { isInsideBookingWindow } from "@/lib/booking-window";
 import { getPrisma } from "@/lib/db";
-import { hasDatabaseConfiguration } from "@/lib/server-env";
+import { getPublicTour } from "@/lib/public-tour-data";
+import { getAppUrl, hasDatabaseConfiguration } from "@/lib/server-env";
 
 type PageProps = { params: Promise<{ slug: string }>; searchParams: Promise<{ date?: string; pax?: string }> };
 
@@ -23,17 +22,9 @@ export const revalidate = 300;
 const idrFormatter = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
 const usdFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
-function findTour(slug: string) {
-  return allTours.find((tour) => tour.slug === slug);
-}
-
-export function generateStaticParams() {
-  return allTours.map((tour) => ({ slug: tour.slug }));
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const tour = findTour(slug);
+  const tour = await getPublicTour(slug);
   if (!tour) return { title: "Tour not found" };
 
   return {
@@ -41,22 +32,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: tour.category === "Experience Days"
       ? `${tour.title}: a private Bali experience day with admission, hotel transport, direct local support, and clear IDR pricing.`
       : `${tour.title}: a private ${tour.duration.toLowerCase()} Bali experience with hotel pickup, direct local support, and clear IDR pricing.`,
+    alternates: { canonical: `/tours/${tour.slug}` },
+    openGraph: {
+      type: "website",
+      title: tour.title,
+      description: tour.summary,
+      url: `/tours/${tour.slug}`,
+      images: [{ url: tour.image, alt: tour.imageAlt }],
+    },
   };
 }
 
 export default async function TourDetailPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const query = await searchParams;
-  const baseTour = findTour(slug);
-  if (!baseTour) notFound();
-  const tour = getTourDetail(baseTour);
-  const [blackoutDates, databasePricing, automaticOffers] = hasDatabaseConfiguration()
+  const tour = await getPublicTour(slug);
+  if (!tour) notFound();
+  const [blackoutDates, automaticOffers] = hasDatabaseConfiguration()
     ? await Promise.all([
         getPrisma().globalBlackoutDate.findMany({ select: { date: true }, orderBy: { date: "asc" } }).then((rows) => rows.map((row) => row.date.toISOString().slice(0, 10))).catch(() => []),
-        getPrisma().tour.findUnique({ where: { slug }, select: { childPriceIdr: true, childAgeLabel: true } }).catch(() => null),
         getAutomaticDiscountOffers([slug]),
       ])
-    : [[], null, []];
+    : [[], []];
   const isExperienceDay = tour.category === "Experience Days";
   const initialDate = query.date && /^\d{4}-\d{2}-\d{2}$/.test(query.date) && isInsideBookingWindow(query.date) ? query.date : undefined;
   const requestedPax = Number(query.pax);
@@ -73,7 +70,7 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
       priceCurrency: "IDR",
       price: tour.priceIdr,
       availability: "https://schema.org/InStock",
-      url: `/tours/${tour.slug}`,
+      url: `${getAppUrl()}/tours/${tour.slug}`,
     },
   };
 
@@ -148,11 +145,11 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
                   <span className="text-right text-weathered">≈ {usdFormatter.format(tier.perPersonIdr / 16500)}</span>
                 </div>
               ))}
-              {databasePricing?.childPriceIdr !== null && databasePricing?.childPriceIdr !== undefined ? (
+              {tour.childPriceIdr !== null ? (
                 <div className="grid min-h-14 grid-cols-[1fr_1fr_0.8fr] items-center border-t border-charcoal/20 bg-limestone/60 px-4 text-sm sm:px-6">
-                  <span className="font-semibold">Child <span className="font-normal text-weathered">{databasePricing.childAgeLabel ?? "supplier age band"}</span></span>
-                  <span className="font-serif text-lg font-semibold tabular-nums">{idrFormatter.format(databasePricing.childPriceIdr)}</span>
-                  <span className="text-right text-weathered">≈ {usdFormatter.format(databasePricing.childPriceIdr / 16500)}</span>
+                  <span className="font-semibold">Child <span className="font-normal text-weathered">{tour.childAgeLabel ?? "supplier age band"}</span></span>
+                  <span className="font-serif text-lg font-semibold tabular-nums">{idrFormatter.format(tour.childPriceIdr)}</span>
+                  <span className="text-right text-weathered">≈ {usdFormatter.format(tour.childPriceIdr / 16500)}</span>
                 </div>
               ) : null}
             </div>

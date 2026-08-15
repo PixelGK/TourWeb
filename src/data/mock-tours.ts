@@ -1,18 +1,6 @@
-export interface MockTour {
-  slug: string;
-  title: string;
-  category: string;
-  location: string;
-  duration: string;
-  durationHours: number;
-  image: string;
-  imageAlt: string;
-  priceIdr: number;
-  priceUsd: number;
-  rating: number;
-  reviewCount: number;
-  note: string;
-}
+import type { PublicTourCard } from "@/types/public-tour";
+
+export type MockTour = PublicTourCard;
 
 export const topTours: MockTour[] = [
   {

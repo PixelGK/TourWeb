@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { isTrustedMutationRequest } from "@/lib/admin-auth";
 import { getPrisma } from "@/lib/db";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { getRequestIp, readJsonBody, RequestBodyError } from "@/lib/request";
@@ -14,6 +15,7 @@ const requestSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    if (!isTrustedMutationRequest(request)) return Response.json({ error: "Untrusted request origin" }, { status: 403 });
     const limit = await enforceRateLimit("discount-validate", getRequestIp(request.headers), 20, 60);
     if (!limit.allowed) return Response.json({ error: "Too many attempts. Please wait a minute." }, { status: 429 });
     const input = requestSchema.parse(await readJsonBody(request));

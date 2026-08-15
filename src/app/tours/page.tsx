@@ -7,11 +7,12 @@ import { SiteHeader } from "@/components/site/site-header";
 import { TourCard } from "@/components/site/tour-card";
 import { TourFilters, type ActiveFilters } from "@/components/tours/tour-filters";
 import { TourSort } from "@/components/tours/tour-sort";
-import { allTours, tourCategories, type MockTour } from "@/data/mock-tours";
 import { bestAutomaticOffer, getAutomaticDiscountOffers } from "@/lib/automatic-discounts";
 import { isInsideBookingWindow } from "@/lib/booking-window";
 import { getPrisma } from "@/lib/db";
+import { getPublicTourCategories, getPublicTours } from "@/lib/public-tour-data";
 import { hasDatabaseConfiguration } from "@/lib/server-env";
+import type { PublicTourCard } from "@/types/public-tour";
 
 export const metadata: Metadata = {
   title: "Bali Tours & Private Experiences",
@@ -23,7 +24,6 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 const validDurations = new Set(["half-day", "full-day", "multi-day"]);
 const validPrices = new Set(["under-750", "750-1000", "over-1000"]);
 const validSorts = new Set(["featured", "price-low", "price-high", "duration"]);
-const validCategories = new Set(tourCategories.map((category) => category.toLowerCase()));
 const destinationLabels: Record<string, string> = {
   ubud: "Ubud & central Bali",
   batur: "Mount Batur",
@@ -49,7 +49,7 @@ function singleValue(value: string | string[] | undefined) {
   return typeof value === "string" ? value : undefined;
 }
 
-function parseFilters(params: Record<string, string | string[] | undefined>): ActiveFilters {
+function parseFilters(params: Record<string, string | string[] | undefined>, validCategories: Set<string>): ActiveFilters {
   const category = singleValue(params.category)?.toLowerCase();
   const duration = singleValue(params.duration);
   const price = singleValue(params.price);
@@ -69,7 +69,7 @@ function parseFilters(params: Record<string, string | string[] | undefined>): Ac
   };
 }
 
-function matchesDestination(tour: MockTour, destination?: string) {
+function matchesDestination(tour: PublicTourCard, destination?: string) {
   if (!destination) return true;
   const text = `${tour.slug} ${tour.title} ${tour.category} ${tour.location}`.toLowerCase();
   if (destination === "ubud") return text.includes("ubud") || text.includes("tegalalang");
@@ -90,8 +90,8 @@ function matchesDestination(tour: MockTour, destination?: string) {
   return true;
 }
 
-function filterTours(filters: ActiveFilters): MockTour[] {
-  const filtered = allTours.filter((tour) => {
+function filterTours(tours: PublicTourCard[], filters: ActiveFilters): PublicTourCard[] {
+  const filtered = tours.filter((tour) => {
     if (!matchesDestination(tour, filters.destination)) return false;
     if (filters.category && tour.category.toLowerCase() !== filters.category) return false;
     if (filters.duration === "half-day" && tour.durationHours > 6) return false;
@@ -109,7 +109,7 @@ function filterTours(filters: ActiveFilters): MockTour[] {
   return filtered;
 }
 
-async function filterByAvailability(tours: MockTour[], filters: ActiveFilters) {
+async function filterByAvailability(tours: PublicTourCard[], filters: ActiveFilters) {
   if (!filters.date || !filters.pax || !hasDatabaseConfiguration() || !tours.length) return tours;
   const pax = Number(filters.pax);
   const available = await getPrisma().availability.findMany({
@@ -141,8 +141,10 @@ function pageHref(filters: ActiveFilters, page: number) {
 
 export default async function ToursPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const filters = parseFilters(params);
-  const filteredTours = filterTours(filters);
+  const [allTours, tourCategories] = await Promise.all([getPublicTours(), getPublicTourCategories()]);
+  const validCategories = new Set(tourCategories.map((category) => category.toLowerCase()));
+  const filters = parseFilters(params, validCategories);
+  const filteredTours = filterTours(allTours, filters);
   const [results, automaticOffers] = await Promise.all([
     filterByAvailability(filteredTours, filters),
     getAutomaticDiscountOffers(filteredTours.map((tour) => tour.slug)),
@@ -183,7 +185,7 @@ export default async function ToursPage({ searchParams }: { searchParams: Search
 
       <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-12 lg:py-14">
         <div className="grid gap-9 lg:grid-cols-[17.5rem_1fr] lg:items-start">
-          <TourFilters filters={filters} />
+          <TourFilters filters={filters} categories={tourCategories} />
 
           <section aria-labelledby="results-heading">
             <div className="flex flex-col gap-5 border-b border-charcoal/25 pb-6 sm:flex-row sm:items-end sm:justify-between">

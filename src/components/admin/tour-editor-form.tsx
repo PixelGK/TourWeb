@@ -40,12 +40,15 @@ export function TourEditorForm({ tour, preview }: { tour: AdminTourEditorData; p
               <Input label="Tour title" name="title" required defaultValue={tour.title} containerClassName="sm:col-span-2" />
               <Input label="URL slug" name="slug" required defaultValue={tour.slug} hint="Lowercase words separated by hyphens." />
               <Select label="Category" name="category" required defaultValue={tour.category}>{categories.map((category) => <option key={category} value={category}>{category.replaceAll("_", " ")}</option>)}</Select>
+              <Input label="Area / location" name="location" required defaultValue={tour.location} hint="Shown on cards, for example Ubud or North Bali." />
+              <Input label="Card caption" name="cardNote" required defaultValue={tour.cardNote} hint="A short practical detail, maximum 120 characters." />
               <Input label="Duration in minutes" name="durationMinutes" type="number" min={30} required defaultValue={tour.durationMinutes} />
               <Input label="Base price in IDR" name="basePriceIdr" type="number" min={0} step={5000} required defaultValue={tour.basePriceIdr} />
               <Input label="Optional child price in IDR" name="childPriceIdr" type="number" min={0} step={5000} defaultValue={tour.childPriceIdr ?? ""} hint="Leave empty to charge the adult rate." />
               <Input label="Child age label" name="childAgeLabel" defaultValue={tour.childAgeLabel ?? ""} hint="For example: ages 3–12." />
               <Input label="Maximum group size" name="maxGroupSize" type="number" min={1} max={50} required defaultValue={tour.maxGroupSize} />
               <label className="flex min-h-12 items-center gap-3 border border-charcoal/25 bg-frangipani px-4 sm:self-end"><input type="checkbox" name="published" defaultChecked={tour.published} className="size-5 accent-terrace" /><span><strong className="block text-sm">Published</strong><span className="text-xs text-weathered">Visible and bookable on the public site</span></span></label>
+              <label className="flex min-h-12 items-center gap-3 border border-charcoal/25 bg-frangipani px-4 sm:self-end"><input type="checkbox" name="featured" defaultChecked={tour.featured} className="size-5 accent-terrace" /><span><strong className="block text-sm">Top Pick</strong><span className="text-xs text-weathered">Prioritize this package on the homepage</span></span></label>
               <div className="sm:col-span-2"><FieldLabel htmlFor="description">Description</FieldLabel><textarea id="description" name="description" required rows={5} defaultValue={tour.description} className={textAreaClass} /></div>
             </div>
           </section>
@@ -65,6 +68,7 @@ export function TourEditorForm({ tour, preview }: { tour: AdminTourEditorData; p
             <div className="mb-6 grid grid-cols-[2rem_1fr] gap-3"><span className="font-serif text-2xl text-gold-dark">03</span><div><h2 id="tour-commerce" className="font-serif text-2xl">Photos and pricing</h2><p className="text-sm text-weathered">URLs are CDN-ready. Pricing and extras are parsed into database rows, not stored as blobs.</p></div></div>
             <div className="space-y-5">
               <div><FieldLabel htmlFor="images" hint="one URL per line">Image URLs</FieldLabel><textarea id="images" name="images" required rows={6} defaultValue={tour.images.join("\n")} className={`${textAreaClass} font-mono text-xs`} /></div>
+              <div><FieldLabel htmlFor="imageAlts" hint="one plain-language description per image, in the same order">Image descriptions</FieldLabel><textarea id="imageAlts" name="imageAlts" required rows={6} defaultValue={tour.imageAlts.join("\n")} className={textAreaClass} /></div>
               <div><FieldLabel htmlFor="pricingTiers" hint="min-max | per-person IDR">Group pricing tiers</FieldLabel><textarea id="pricingTiers" name="pricingTiers" required rows={5} defaultValue={pricing} className={`${textAreaClass} font-mono text-xs`} /></div>
               <div><FieldLabel htmlFor="addons" hint="code | title | price | pricing mode | description">Optional add-ons</FieldLabel><textarea id="addons" name="addons" rows={6} defaultValue={addons} className={`${textAreaClass} font-mono text-xs`} /></div>
             </div>

@@ -4,7 +4,7 @@ import { Maximize2, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import type { TourGalleryImage } from "@/data/mock-tour-details";
+import type { TourGalleryImage } from "@/types/public-tour";
 
 export function PhotoGallery({ images, title }: { images: TourGalleryImage[]; title: string }) {
   const visibleImages = images.slice(0, 4);

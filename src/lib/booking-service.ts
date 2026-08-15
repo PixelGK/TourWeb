@@ -337,6 +337,13 @@ export async function markConfirmationEmailSent(bookingId: string) {
   });
 }
 
+export async function markBookingRequestEmailSent(bookingId: string) {
+  return getPrisma().booking.updateMany({
+    where: { id: bookingId, bookingRequestEmailSentAt: null },
+    data: { bookingRequestEmailSentAt: new Date() },
+  });
+}
+
 export async function markPaymentReceiptEmailSent(bookingId: string) {
   return getPrisma().booking.updateMany({
     where: { id: bookingId, paymentReceiptEmailSentAt: null },

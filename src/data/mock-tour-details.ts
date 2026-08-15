@@ -1,21 +1,7 @@
 import type { MockTour } from "@/data/mock-tours";
+import type { ItineraryStop, PricingTier, TourGalleryImage } from "@/types/public-tour";
 
-export interface TourGalleryImage {
-  src: string;
-  alt: string;
-}
-
-export interface ItineraryStop {
-  time: string;
-  title: string;
-  description: string;
-}
-
-export interface PricingTier {
-  minPax: number;
-  maxPax: number;
-  perPersonIdr: number;
-}
+export type { ItineraryStop, PricingTier, TourGalleryImage } from "@/types/public-tour";
 
 export interface TourReview {
   author: string;

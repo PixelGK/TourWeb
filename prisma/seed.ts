@@ -5,7 +5,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, TourCategory, UserRole } from "../src/generated/prisma/client";
 import { getMockAddons } from "../src/data/mock-addons";
 import { getTourDetail } from "../src/data/mock-tour-details";
-import { allTours } from "../src/data/mock-tours";
+import { allTours, topTours } from "../src/data/mock-tours";
 
 const connectionString = process.env.DIRECT_URL;
 if (!connectionString) throw new Error("DIRECT_URL is required to seed the database");
@@ -59,7 +59,11 @@ async function main() {
         category: categories[mockTour.category] ?? TourCategory.CUSTOM_TOUR,
         durationMinutes: Math.round(mockTour.durationHours * 60),
         basePriceIdr: mockTour.priceIdr,
+        location: mockTour.location,
+        cardNote: mockTour.note,
+        featured: topTours.some((item) => item.slug === mockTour.slug),
         images: detail.gallery.map((image) => image.src),
+        imageAlts: detail.gallery.map((image) => image.alt),
         inclusions: detail.inclusions,
         exclusions: detail.exclusions,
         meetingPoint: detail.meetingPoint,
@@ -74,7 +78,11 @@ async function main() {
         category: categories[mockTour.category] ?? TourCategory.CUSTOM_TOUR,
         durationMinutes: Math.round(mockTour.durationHours * 60),
         basePriceIdr: mockTour.priceIdr,
+        location: mockTour.location,
+        cardNote: mockTour.note,
+        featured: topTours.some((item) => item.slug === mockTour.slug),
         images: detail.gallery.map((image) => image.src),
+        imageAlts: detail.gallery.map((image) => image.alt),
         inclusions: detail.inclusions,
         exclusions: detail.exclusions,
         meetingPoint: detail.meetingPoint,
