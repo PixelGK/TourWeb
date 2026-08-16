@@ -64,6 +64,22 @@ interface TourContentOverride {
 }
 
 const tourContentOverrides: Record<string, TourContentOverride> = {
+  "private-car-charter-bali": {
+    summary: "Keep the day flexible with one private air-conditioned vehicle and an experienced local driver. Ubud pickup is included; longer pickups from Kuta, Canggu, or Uluwatu are quoted before you confirm.",
+    itinerary: [
+      { time: "08:00", title: "Meet your private driver", description: "Start at your Ubud hotel and agree the day’s realistic priorities before setting off." },
+      { time: "09:00", title: "First chosen stop", description: "Visit the place that matters most while the day is cooler and quieter." },
+      { time: "11:30", title: "Flexible second stop", description: "Your driver adjusts the route for traffic, weather, and how long you want to stay." },
+      { time: "13:00", title: "Lunch recommendation", description: "Choose local, scenic, or quick. Lunch is paid directly unless you select the optional arrangement." },
+      { time: "14:30", title: "Afternoon route", description: "Continue to one or two realistic stops without spending the day inside the car." },
+      { time: "18:00", title: "Ubud hotel return", description: "Return after up to ten hours with the final timing adjusted for traffic." },
+    ],
+    inclusions: ["Private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver", "Ubud hotel pickup and drop-off", "Parking and fuel", "Drinking water", "Route planning by WhatsApp"],
+    exclusions: ["Attraction entrance tickets unless stated", "Meals and personal purchases", "Pickup surcharge for Kuta, Canggu, or Uluwatu—quoted before confirmation", "Personal travel insurance", "Gratuities"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 700000 }],
+    meetingPoint: "Your Ubud hotel or villa lobby",
+    meetingNote: "The listed price covers one vehicle from Ubud for up to 6 guests without large luggage. Kuta, Canggu, and Uluwatu pickup supplements are confirmed before you commit.",
+  },
   "ayung-river-rafting-ubud": {
     summary: "Paddle a scenic section of the Ayung with a trained rafting team, then shower and change before your private transfer back—an active half-day without a shared hotel shuttle.",
     itinerary: [
