@@ -44,6 +44,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
         date={date}
         pax={pax}
         pricingTiers={tour.pricingTiers}
+        pricingMode={tour.pricingMode ?? "PER_PERSON"}
         addons={tour.addons}
         childPriceIdr={tour.childPriceIdr}
         childAgeLabel={tour.childAgeLabel}
