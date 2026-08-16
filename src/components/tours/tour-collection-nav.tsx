@@ -22,7 +22,7 @@ export function TourCollectionNav({ active, counts, date, pax }: TourCollectionN
           {active ? <Link href="/tours" className="text-sm font-semibold text-terrace underline decoration-gold underline-offset-4">Show every route</Link> : null}
         </div>
 
-        <div className="-mx-5 flex snap-x snap-mandatory overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-5 sm:overflow-visible sm:px-0">
+        <div className="-mx-5 flex snap-x snap-mandatory overflow-x-auto px-5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-5 sm:overflow-visible sm:px-0">
           {tourCollections.map((collection) => {
             const params = new URLSearchParams({ collection: collection.id });
             if (date) params.set("date", date);
@@ -36,7 +36,7 @@ export function TourCollectionNav({ active, counts, date, pax }: TourCollectionN
                 className={`group relative min-w-[15rem] snap-start border border-r-0 border-charcoal/20 p-5 last:border-r sm:min-w-0 ${isActive ? "bg-terrace text-frangipani" : "bg-limestone text-charcoal hover:bg-gold-pale"}`}
               >
                 <div className="flex items-start justify-between gap-4">
-                  <span className={`text-xs font-bold uppercase tracking-[0.12em] ${isActive ? "text-gold" : "text-clay"}`}>{counts[collection.id]} routes</span>
+                  <span className={`text-xs font-bold uppercase tracking-[0.12em] ${isActive ? "text-gold" : "text-clay"}`}>{counts[collection.id]} {counts[collection.id] === 1 ? "route" : "routes"}</span>
                   <ArrowUpRight aria-hidden="true" className="size-4 transition-transform duration-fast group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </div>
                 <strong className="mt-7 block font-serif text-2xl leading-none">{collection.label}</strong>

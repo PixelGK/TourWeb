@@ -54,7 +54,7 @@ export function MultiDayPlanner({ tours, phone }: { tours: PublicTourCard[]; pho
         })}
       </div>
 
-      <aside className="lg:sticky lg:top-6" aria-label="Your multi-day plan">
+      <aside id="your-plan" className="scroll-mt-4 lg:sticky lg:top-6" aria-label="Your multi-day plan">
         <div className="border border-charcoal/25 bg-charcoal p-6 text-frangipani shadow-sun-dark">
           <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[0.14em] text-gold">Your route</p><h2 className="mt-2 font-serif text-3xl">{selected.length ? `${selected.length} Bali days` : "Start a plan"}</h2></div>{selected.length ? <button type="button" onClick={() => setSelected([])} className="flex size-9 items-center justify-center border border-frangipani/25 text-frangipani/70 hover:text-frangipani" title="Clear plan"><RotateCcw aria-hidden="true" className="size-4" /><span className="sr-only">Clear plan</span></button> : null}</div>
 
@@ -71,6 +71,7 @@ export function MultiDayPlanner({ tours, phone }: { tours: PublicTourCard[]; pho
           <Link href="/tours" className="mt-3 flex min-h-11 items-center justify-center text-sm font-semibold text-frangipani/70 underline decoration-frangipani/30 underline-offset-4 hover:text-frangipani">Open the full tour catalogue</Link>
         </div>
       </aside>
+      {selected.length ? <a href="#your-plan" className="fixed inset-x-4 bottom-3 z-40 flex min-h-12 items-center justify-between bg-gold px-4 text-sm font-bold text-charcoal shadow-sun-dark lg:hidden"><span>{selected.length} {selected.length === 1 ? "day" : "days"} selected</span><span className="inline-flex items-center gap-2">View your plan <ArrowRight aria-hidden="true" className="size-4" /></span></a> : null}
     </div>
   );
 }
