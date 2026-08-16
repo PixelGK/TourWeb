@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  output   = "../src/generated/prisma-build"
 }
 
 datasource db {
@@ -49,6 +49,11 @@ enum AddonPricingMode {
   PER_BOOKING
 }
 
+enum TourPricingMode {
+  PER_PERSON
+  PER_VEHICLE
+}
+
 enum UserRole {
   ADMIN
   CUSTOMER
@@ -62,6 +67,8 @@ model Tour {
   category           TourCategory
   durationMinutes    Int                 @map("duration_minutes")
   basePriceIdr       Int                 @map("base_price_idr")
+  baseCostIdr        Int?                @map("base_cost_idr")
+  pricingMode        TourPricingMode     @default(PER_PERSON) @map("pricing_mode")
   childPriceIdr      Int?                @map("child_price_idr")
   childAgeLabel      String?             @map("child_age_label")
   location           String              @default("Bali")
@@ -141,6 +148,7 @@ model TourAddon {
   title       String
   description String?
   priceIdr    Int              @map("price_idr")
+  costPriceIdr Int?            @map("cost_price_idr")
   pricingMode AddonPricingMode @map("pricing_mode")
   active      Boolean          @default(true)
   createdAt   DateTime         @default(now()) @map("created_at")
