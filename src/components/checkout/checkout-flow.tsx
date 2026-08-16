@@ -6,9 +6,10 @@ import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { PricingTier } from "@/types/public-tour";
+import type { PricingTier, TourPricingMode } from "@/types/public-tour";
 import type { MockAddon } from "@/data/mock-addons";
 import { cn } from "@/lib/utils";
+import { calculatePackageTotal } from "@/lib/tour-pricing";
 
 const idr = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
 const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -29,6 +30,7 @@ interface CheckoutFlowProps {
   date: string;
   pax: number;
   pricingTiers: PricingTier[];
+  pricingMode: TourPricingMode;
   addons: MockAddon[];
   childPriceIdr: number | null;
   childAgeLabel: string | null;
@@ -36,7 +38,7 @@ interface CheckoutFlowProps {
   mode: "request" | "payment";
 }
 
-export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPriceIdr, childAgeLabel, automaticDiscount, mode }: CheckoutFlowProps) {
+export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addons, childPriceIdr, childAgeLabel, automaticDiscount, mode }: CheckoutFlowProps) {
   const [step, setStep] = useState(1);
   const [traveler, setTraveler] = useState<TravelerState>({ name: "", email: "", phone: "", country: "", hotelName: "", notes: "" });
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
@@ -52,12 +54,13 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
   const [discountLoading, setDiscountLoading] = useState(false);
 
   const lunchAddon = addons.find((addon) => addon.code === "local-lunch");
-  const otherAddons = addons.filter((addon) => addon.code !== "local-lunch");
+  const pickupAddons = addons.filter((addon) => addon.code.startsWith("pickup-"));
+  const selectedPickup = pickupAddons.find((addon) => selectedAddons.includes(addon.code));
+  const otherAddons = addons.filter((addon) => addon.code !== "local-lunch" && !addon.code.startsWith("pickup-"));
   const lunchIncluded = lunchAddon ? selectedAddons.includes(lunchAddon.code) : false;
-  const selectedExtraCount = selectedAddons.filter((code) => code !== lunchAddon?.code).length;
-  const perPersonIdr = pricingTiers.find((tier) => pax >= tier.minPax && pax <= tier.maxPax)?.perPersonIdr ?? pricingTiers.at(-1)?.perPersonIdr ?? 0;
+  const selectedExtraCount = selectedAddons.filter((code) => code !== lunchAddon?.code && !code.startsWith("pickup-")).length;
   const addOnTotal = addons.filter((addon) => selectedAddons.includes(addon.code)).reduce((sum, addon) => sum + addon.priceIdr * (addon.pricingMode === "PER_PERSON" ? pax : 1), 0);
-  const basePackageTotalIdr = perPersonIdr * adultCount + (childPriceIdr ?? perPersonIdr) * childCount;
+  const basePackageTotalIdr = calculatePackageTotal({ pricingMode, pricingTiers, pax, adultCount, childCount, childPriceIdr });
   const packageSubtotalIdr = basePackageTotalIdr + addOnTotal;
   const activeDiscount = promoDiscount && (!automaticDiscount || promoDiscount.percentOff >= automaticDiscount.percentOff)
     ? { label: promoDiscount.code, percentOff: promoDiscount.percentOff }
@@ -82,6 +85,13 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
     setSelectedAddons((current) => included
       ? [...new Set([...current, lunchAddon.code])]
       : current.filter((code) => code !== lunchAddon.code));
+  }
+
+  function choosePickup(code: string | null) {
+    setSelectedAddons((current) => [
+      ...current.filter((item) => !item.startsWith("pickup-")),
+      ...(code ? [code] : []),
+    ]);
   }
 
   function updateTravelerCounts(adults: number, children: number) {
@@ -124,7 +134,20 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
-        body: JSON.stringify({ tourSlug: tour.slug, date, pax, adultCount, childCount, discountCode: promoDiscount?.code ?? "", addonCodes: selectedAddons, termsAccepted, traveler }),
+        body: JSON.stringify({
+          tourSlug: tour.slug,
+          date,
+          pax,
+          adultCount,
+          childCount,
+          discountCode: promoDiscount?.code ?? "",
+          addonCodes: selectedAddons,
+          termsAccepted,
+          traveler: {
+            ...traveler,
+            notes: [selectedPickup ? `Pickup area: ${selectedPickup.title.replace("Pickup from ", "")}` : pickupAddons.length ? "Pickup area: Ubud" : "", traveler.notes].filter(Boolean).join("\n"),
+          },
+        }),
       });
       const result = await response.json() as { error?: string; redirectUrl?: string; confirmationUrl?: string };
       const destination = mode === "request" ? result.confirmationUrl : result.redirectUrl;
@@ -196,6 +219,25 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
               </fieldset>
             ) : null}
 
+            {pickupAddons.length ? (
+              <fieldset className="mt-8">
+                <legend className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Pickup area</legend>
+                <p className="mt-2 text-sm leading-6 text-weathered">Ubud pickup is included. The longer pickup areas carry one fixed surcharge for the vehicle, not per guest.</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <label className={cn("cursor-pointer border p-4 transition-colors hover:bg-frangipani", !selectedPickup ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25")}>
+                    <input type="radio" name="pickup-area" checked={!selectedPickup} onChange={() => choosePickup(null)} className="mr-3 size-4 accent-terrace" />
+                    <strong>Ubud</strong><span className="ml-2 text-sm text-weathered">Included</span>
+                  </label>
+                  {pickupAddons.map((addon) => (
+                    <label key={addon.code} className={cn("cursor-pointer border p-4 transition-colors hover:bg-frangipani", selectedPickup?.code === addon.code ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25")}>
+                      <input type="radio" name="pickup-area" checked={selectedPickup?.code === addon.code} onChange={() => choosePickup(addon.code)} className="mr-3 size-4 accent-terrace" />
+                      <strong>{addon.title.replace("Pickup from ", "")}</strong><span className="ml-2 text-sm tabular-nums text-weathered">+ {idr.format(addon.priceIdr)}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            ) : null}
+
             {lunchAddon ? (
               <fieldset className="mt-8">
                 <legend className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Lunch plan</legend>
@@ -251,7 +293,8 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
             </div>
             <dl className="mt-8 divide-y divide-charcoal/20 border-y border-charcoal/25">
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lead traveler</dt><dd className="text-right font-semibold">{traveler.name}<br /><span className="font-normal text-weathered">{traveler.email}</span></dd></div>
-              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Package price</dt><dd className="font-semibold tabular-nums">{idr.format(perPersonIdr * adultCount + (childPriceIdr ?? perPersonIdr) * childCount)}</dd></div>
+              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">{pricingMode === "PER_VEHICLE" ? `Vehicle for ${pax} guests` : "Package price"}</dt><dd className="font-semibold tabular-nums">{idr.format(basePackageTotalIdr)}</dd></div>
+              {pickupAddons.length ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Pickup area</dt><dd className="text-right font-semibold">{selectedPickup ? <>{selectedPickup.title.replace("Pickup from ", "")} · <span className="tabular-nums">+ {idr.format(selectedPickup.priceIdr)}</span></> : "Ubud · Included"}</dd></div> : null}
               {lunchAddon ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? <>Included · <span className="tabular-nums">{idr.format(lunchAddon.priceIdr * pax)}</span></> : <>Choose your own · <span className="font-normal text-weathered">pay at restaurant</span></>}</dd></div> : null}
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold tabular-nums">{idr.format(addOnTotal - (lunchIncluded && lunchAddon ? lunchAddon.priceIdr * pax : 0))}</dd></div>
               {activeDiscount ? <div className="flex justify-between gap-5 py-4 text-success"><dt>Package discount · {activeDiscount.label}</dt><dd className="font-semibold tabular-nums">− {idr.format(discountAmountIdr)}</dd></div> : null}
@@ -287,6 +330,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, addons, childPrice
           <div className="flex justify-between gap-4"><dt className="text-weathered">Travelers</dt><dd className="font-semibold">{pax}</dd></div>
           {childPriceIdr !== null ? <div className="flex justify-between gap-4"><dt className="text-weathered">Mix</dt><dd className="font-semibold">{adultCount} adult · {childCount} child</dd></div> : null}
           {lunchAddon ? <div className="flex justify-between gap-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? "Included" : "Choose & pay directly"}</dd></div> : null}
+          {pickupAddons.length ? <div className="flex justify-between gap-4"><dt className="text-weathered">Pickup</dt><dd className="text-right font-semibold">{selectedPickup ? selectedPickup.title.replace("Pickup from ", "") : "Ubud"}</dd></div> : null}
           <div className="flex justify-between gap-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold">{selectedExtraCount || "None"}</dd></div>
         </dl>
         <div className="mt-5 flex items-end justify-between gap-3"><span className="text-sm text-weathered">{mode === "request" ? "Quoted total" : "Total"}</span><strong className="font-serif text-3xl tabular-nums">{idr.format(totalIdr)}</strong></div>
