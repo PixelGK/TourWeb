@@ -26,7 +26,7 @@ export function TourEditorForm({ tour, preview }: { tour: AdminTourEditorData; p
   const [deleteState, deleteAction, deleting] = useActionState(deleteTourAction, initialAdminActionState);
   const itinerary = tour.itinerary.map((stop) => `${stop.timeLabel} | ${stop.title} | ${stop.description}`).join("\n");
   const pricing = tour.pricingTiers.map((tier) => `${tier.minPax}-${tier.maxPax} | ${tier.perPersonIdr}`).join("\n");
-  const addons = tour.addons.map((addon) => `${addon.code} | ${addon.title} | ${addon.priceIdr} | ${addon.pricingMode} | ${addon.description ?? ""}`).join("\n");
+  const addons = tour.addons.map((addon) => `${addon.code} | ${addon.title} | ${addon.priceIdr} | ${addon.pricingMode} | ${addon.costPriceIdr ?? ""} | ${addon.description ?? ""}`).join("\n");
 
   return (
     <div className="space-y-8">
@@ -44,6 +44,11 @@ export function TourEditorForm({ tour, preview }: { tour: AdminTourEditorData; p
               <Input label="Card caption" name="cardNote" required defaultValue={tour.cardNote} hint="A short practical detail, maximum 120 characters." />
               <Input label="Duration in minutes" name="durationMinutes" type="number" min={30} required defaultValue={tour.durationMinutes} />
               <Input label="Base price in IDR" name="basePriceIdr" type="number" min={0} step={5000} required defaultValue={tour.basePriceIdr} />
+              <Select label="How the package is priced" name="pricingMode" required defaultValue={tour.pricingMode}>
+                <option value="PER_PERSON">Per person</option>
+                <option value="PER_VEHICLE">Per vehicle / booking</option>
+              </Select>
+              <Input label="Internal package cost in IDR" name="baseCostIdr" type="number" min={0} step={5000} defaultValue={tour.baseCostIdr ?? ""} hint="Private—never shown to guests." />
               <Input label="Optional child price in IDR" name="childPriceIdr" type="number" min={0} step={5000} defaultValue={tour.childPriceIdr ?? ""} hint="Leave empty to charge the adult rate." />
               <Input label="Child age label" name="childAgeLabel" defaultValue={tour.childAgeLabel ?? ""} hint="For example: ages 3–12." />
               <Input label="Maximum group size" name="maxGroupSize" type="number" min={1} max={50} required defaultValue={tour.maxGroupSize} />
@@ -69,8 +74,8 @@ export function TourEditorForm({ tour, preview }: { tour: AdminTourEditorData; p
             <div className="space-y-5">
               <div><FieldLabel htmlFor="images" hint="one URL per line">Image URLs</FieldLabel><textarea id="images" name="images" required rows={6} defaultValue={tour.images.join("\n")} className={`${textAreaClass} font-mono text-xs`} /></div>
               <div><FieldLabel htmlFor="imageAlts" hint="one plain-language description per image, in the same order">Image descriptions</FieldLabel><textarea id="imageAlts" name="imageAlts" required rows={6} defaultValue={tour.imageAlts.join("\n")} className={textAreaClass} /></div>
-              <div><FieldLabel htmlFor="pricingTiers" hint="min-max | per-person IDR">Group pricing tiers</FieldLabel><textarea id="pricingTiers" name="pricingTiers" required rows={5} defaultValue={pricing} className={`${textAreaClass} font-mono text-xs`} /></div>
-              <div><FieldLabel htmlFor="addons" hint="code | title | price | pricing mode | description">Optional add-ons</FieldLabel><textarea id="addons" name="addons" rows={6} defaultValue={addons} className={`${textAreaClass} font-mono text-xs`} /></div>
+              <div><FieldLabel htmlFor="pricingTiers" hint="min-max | price in IDR (uses the pricing method above)">Group pricing tiers</FieldLabel><textarea id="pricingTiers" name="pricingTiers" required rows={5} defaultValue={pricing} className={`${textAreaClass} font-mono text-xs`} /></div>
+              <div><FieldLabel htmlFor="addons" hint="code | title | selling price | mode | internal cost | description">Optional add-ons</FieldLabel><textarea id="addons" name="addons" rows={6} defaultValue={addons} className={`${textAreaClass} font-mono text-xs`} /></div>
             </div>
           </section>
 
