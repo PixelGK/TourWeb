@@ -7,6 +7,7 @@ import { getTourDetail } from "@/data/mock-tour-details";
 import { allTours, topTours } from "@/data/mock-tours";
 import { getPrisma } from "@/lib/db";
 import { hasDatabaseConfiguration } from "@/lib/server-env";
+import { calculatePackageTotal } from "@/lib/tour-pricing";
 
 export interface AdminTourRow {
   id: string;
@@ -84,6 +85,44 @@ export interface AdminTourEditorData {
   itinerary: Array<{ timeLabel: string; title: string; description: string }>;
   pricingTiers: Array<{ minPax: number; maxPax: number; perPersonIdr: number }>;
   addons: Array<{ code: string; title: string; priceIdr: number; costPriceIdr: number | null; pricingMode: string; description: string | null }>;
+}
+
+export interface AdminMarginTourRow {
+  id: string;
+  title: string;
+  published: boolean;
+  pricingMode: "PER_PERSON" | "PER_VEHICLE";
+  examplePax: number;
+  exampleRevenueIdr: number;
+  baseCostIdr: number | null;
+  estimatedGrossProfitIdr: number | null;
+  estimatedGrossMarginPercent: number | null;
+  addonCount: number;
+  addonsMissingCost: number;
+}
+
+export interface AdminMarginBookingRow {
+  id: string;
+  reference: string;
+  tourTitle: string;
+  date: string;
+  status: string;
+  revenueIdr: number;
+  estimatedCostIdr: number | null;
+  estimatedGrossProfitIdr: number | null;
+  estimatedGrossMarginPercent: number | null;
+}
+
+export interface AdminMarginData {
+  summary: {
+    confirmedSalesIdr: number;
+    estimatedGrossProfitIdr: number;
+    estimatedGrossMarginPercent: number | null;
+    completeBookingCount: number;
+    confirmedBookingCount: number;
+  };
+  tours: AdminMarginTourRow[];
+  bookings: AdminMarginBookingRow[];
 }
 
 function categoryLabel(category: string) {
@@ -239,6 +278,125 @@ export async function getAdminOverview() {
   };
 }
 
+export async function getAdminMargins(): Promise<AdminMarginData> {
+  if (!hasDatabaseConfiguration()) {
+    const tours = allTours.map((tour) => {
+      const detail = getTourDetail(tour);
+      const pricingMode = tour.pricingMode ?? "PER_PERSON";
+      const examplePax = 2;
+      const exampleRevenueIdr = calculatePackageTotal({ pricingMode, pricingTiers: detail.pricingTiers, pax: examplePax });
+      const baseCostIdr = tour.slug === "private-car-charter-bali"
+        ? 400000
+        : tour.category === "Multi-Day Trips" ? Math.round(tour.durationHours / 24) * 400000 : null;
+      const estimatedGrossProfitIdr = baseCostIdr === null ? null : exampleRevenueIdr - baseCostIdr;
+      return {
+        id: tour.slug,
+        title: tour.title,
+        published: true,
+        pricingMode,
+        examplePax,
+        exampleRevenueIdr,
+        baseCostIdr,
+        estimatedGrossProfitIdr,
+        estimatedGrossMarginPercent: estimatedGrossProfitIdr === null || exampleRevenueIdr === 0 ? null : estimatedGrossProfitIdr / exampleRevenueIdr * 100,
+        addonCount: 0,
+        addonsMissingCost: 0,
+      } satisfies AdminMarginTourRow;
+    });
+    return { summary: { confirmedSalesIdr: 0, estimatedGrossProfitIdr: 0, estimatedGrossMarginPercent: null, completeBookingCount: 0, confirmedBookingCount: 0 }, tours, bookings: [] };
+  }
+
+  const prisma = getPrisma();
+  const baliDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Makassar", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  const monthStart = new Date(`${baliDate.slice(0, 7)}-01T00:00:00.000Z`);
+  const [tourRows, bookingRows] = await Promise.all([
+    prisma.tour.findMany({
+      orderBy: [{ published: "desc" }, { title: "asc" }],
+      include: {
+        pricingTiers: { orderBy: { minPax: "asc" } },
+        addons: { where: { active: true }, select: { costPriceIdr: true } },
+      },
+    }),
+    prisma.booking.findMany({
+      where: {
+        status: { in: [BookingStatus.CONFIRMED, BookingStatus.PAID] },
+        availability: { date: { gte: monthStart } },
+      },
+      orderBy: { availability: { date: "asc" } },
+      take: 100,
+      include: {
+        tour: { select: { title: true, baseCostIdr: true } },
+        availability: { select: { date: true } },
+        addons: { include: { addon: { select: { costPriceIdr: true } } } },
+      },
+    }),
+  ]);
+
+  const tours = tourRows.map((tour) => {
+    const examplePax = Math.min(2, tour.maxGroupSize);
+    const exampleRevenueIdr = calculatePackageTotal({
+      pricingMode: tour.pricingMode,
+      pricingTiers: tour.pricingTiers,
+      pax: examplePax,
+      childPriceIdr: tour.childPriceIdr,
+    });
+    const estimatedGrossProfitIdr = tour.baseCostIdr === null ? null : exampleRevenueIdr - tour.baseCostIdr;
+    return {
+      id: tour.id,
+      title: tour.title,
+      published: tour.published,
+      pricingMode: tour.pricingMode,
+      examplePax,
+      exampleRevenueIdr,
+      baseCostIdr: tour.baseCostIdr,
+      estimatedGrossProfitIdr,
+      estimatedGrossMarginPercent: estimatedGrossProfitIdr === null || exampleRevenueIdr === 0 ? null : estimatedGrossProfitIdr / exampleRevenueIdr * 100,
+      addonCount: tour.addons.length,
+      addonsMissingCost: tour.addons.filter((addon) => addon.costPriceIdr === null).length,
+    } satisfies AdminMarginTourRow;
+  }).toSorted((a, b) => Number(a.baseCostIdr !== null) - Number(b.baseCostIdr !== null)
+    || (a.estimatedGrossMarginPercent ?? Number.POSITIVE_INFINITY) - (b.estimatedGrossMarginPercent ?? Number.POSITIVE_INFINITY));
+
+  const bookings = bookingRows.map((booking) => {
+    const baseCostIdr = booking.baseCostIdrSnapshot ?? booking.tour.baseCostIdr;
+    const addonCosts = booking.addons.map((item) => {
+      const unitCostIdr = item.unitCostIdr ?? item.addon.costPriceIdr;
+      return unitCostIdr === null ? null : unitCostIdr * item.quantity;
+    });
+    const estimatedCostIdr = baseCostIdr === null || addonCosts.some((cost) => cost === null)
+      ? null
+      : baseCostIdr + addonCosts.reduce<number>((sum, cost) => sum + (cost ?? 0), 0);
+    const estimatedGrossProfitIdr = estimatedCostIdr === null ? null : booking.totalAmountIdr - estimatedCostIdr;
+    return {
+      id: booking.id,
+      reference: booking.reference,
+      tourTitle: booking.tour.title,
+      date: booking.availability.date.toISOString().slice(0, 10),
+      status: booking.status,
+      revenueIdr: booking.totalAmountIdr,
+      estimatedCostIdr,
+      estimatedGrossProfitIdr,
+      estimatedGrossMarginPercent: estimatedGrossProfitIdr === null || booking.totalAmountIdr === 0 ? null : estimatedGrossProfitIdr / booking.totalAmountIdr * 100,
+    } satisfies AdminMarginBookingRow;
+  });
+
+  const completeBookings = bookings.filter((booking) => booking.estimatedGrossProfitIdr !== null);
+  const confirmedSalesIdr = bookings.reduce((sum, booking) => sum + booking.revenueIdr, 0);
+  const completeRevenueIdr = completeBookings.reduce((sum, booking) => sum + booking.revenueIdr, 0);
+  const estimatedGrossProfitIdr = completeBookings.reduce((sum, booking) => sum + (booking.estimatedGrossProfitIdr ?? 0), 0);
+  return {
+    summary: {
+      confirmedSalesIdr,
+      estimatedGrossProfitIdr,
+      estimatedGrossMarginPercent: completeRevenueIdr === 0 ? null : estimatedGrossProfitIdr / completeRevenueIdr * 100,
+      completeBookingCount: completeBookings.length,
+      confirmedBookingCount: bookings.length,
+    },
+    tours,
+    bookings,
+  };
+}
+
 export async function getAdminTourDetail(id: string) {
   if (!hasDatabaseConfiguration()) return null;
   return getPrisma().tour.findUnique({
@@ -354,3 +512,4 @@ export async function getAdminCommerce() {
 }
 
 export type AdminTourDetail = Prisma.TourGetPayload<{ include: { itinerary: true; pricingTiers: true; addons: true } }>;
+  
