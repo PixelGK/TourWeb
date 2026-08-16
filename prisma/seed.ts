@@ -2,7 +2,7 @@ import "dotenv/config";
 
 import { PrismaPg } from "@prisma/adapter-pg";
 
-import { PrismaClient, TourCategory, UserRole } from "../src/generated/prisma/client";
+import { PrismaClient, TourCategory, TourPricingMode, UserRole } from "../src/generated/prisma-build/client";
 import { getMockAddons } from "../src/data/mock-addons";
 import { getTourDetail } from "../src/data/mock-tour-details";
 import { allTours, topTours } from "../src/data/mock-tours";
@@ -59,6 +59,8 @@ async function main() {
         category: categories[mockTour.category] ?? TourCategory.CUSTOM_TOUR,
         durationMinutes: Math.round(mockTour.durationHours * 60),
         basePriceIdr: mockTour.priceIdr,
+        baseCostIdr: mockTour.slug === "private-car-charter-bali" ? 400000 : undefined,
+        pricingMode: mockTour.pricingMode === "PER_VEHICLE" ? TourPricingMode.PER_VEHICLE : TourPricingMode.PER_PERSON,
         location: mockTour.location,
         cardNote: mockTour.note,
         featured: topTours.some((item) => item.slug === mockTour.slug),
@@ -78,6 +80,8 @@ async function main() {
         category: categories[mockTour.category] ?? TourCategory.CUSTOM_TOUR,
         durationMinutes: Math.round(mockTour.durationHours * 60),
         basePriceIdr: mockTour.priceIdr,
+        baseCostIdr: mockTour.slug === "private-car-charter-bali" ? 400000 : undefined,
+        pricingMode: mockTour.pricingMode === "PER_VEHICLE" ? TourPricingMode.PER_VEHICLE : TourPricingMode.PER_PERSON,
         location: mockTour.location,
         cardNote: mockTour.note,
         featured: topTours.some((item) => item.slug === mockTour.slug),
@@ -107,8 +111,8 @@ async function main() {
     for (const addon of getMockAddons(mockTour.category, mockTour.slug)) {
       await prisma.tourAddon.upsert({
         where: { tourId_code: { tourId: tour.id, code: addon.code } },
-        update: { title: addon.title, description: addon.description, priceIdr: addon.priceIdr, pricingMode: addon.pricingMode, active: true },
-        create: { tourId: tour.id, ...addon, active: true },
+        update: { title: addon.title, description: addon.description, priceIdr: addon.priceIdr, costPriceIdr: addon.code === "local-lunch" ? 120000 : addon.code.startsWith("pickup-") ? 100000 : null, pricingMode: addon.pricingMode, active: true },
+        create: { tourId: tour.id, ...addon, costPriceIdr: addon.code === "local-lunch" ? 120000 : addon.code.startsWith("pickup-") ? 100000 : null, active: true },
       });
     }
     if (requestedSlugs.size) {
