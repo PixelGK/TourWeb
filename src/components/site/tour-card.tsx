@@ -54,6 +54,7 @@ export function TourCard({ tour, priority = false, bookingQuery, promotion }: { 
               idr={tour.priceIdr}
               usdApprox={tour.priceUsd}
               size="sm"
+              suffix={tour.pricingMode === "PER_VEHICLE" ? "per vehicle · up to 6 guests" : "per person"}
               discount={promotion?.exactForSelectedDate ? { label: promotion.name, percentOff: promotion.percentOff } : undefined}
             />
           </div>
