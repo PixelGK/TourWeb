@@ -45,8 +45,10 @@ export function getMockAddons(category: string, slug?: string) {
   if (slug === "private-car-charter-bali") return [...roadTripAddons, ...pickupAddons];
   if (slug && pickupAddonSlugs.has(slug)) return [...roadTripAddons, ...pickupAddons];
   if (slug && childSeatOnlySlugs.has(slug)) return [childSeatAddon];
+  if (category === "Multi-Day Trips") return [childSeatAddon];
   if (category === "Experience Days") {
     return [childSeatAddon, lunchAddon];
   }
   return category === "Trekking" || category === "Water Sports" || category === "Island Trips" ? activityAddons : roadTripAddons;
 }
+  
