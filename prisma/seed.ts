@@ -41,6 +41,16 @@ const launchPublishedSlugs = new Set([
   "jatiluwih-bedugul-water-temples",
   "sidemen-weaving-besakih",
   "taman-ayun-tanah-lot-sunset",
+  "nusa-penida-west-coast",
+  "manta-point-snorkeling",
+  "south-bali-surf-discovery",
+  "ubud-atv-jungle-trail",
+  "tegalalang-swing-coffee-route",
+  "bali-zoo-general-admission",
+  "waterbom-bali-single-day-pass",
+  "bali-bird-park-batubulan-day",
+  "ubud-market-cooking-class",
+  "sidemen-cycling-village-lunch",
 ]);
 
 const launchFeaturedSlugs = new Set([

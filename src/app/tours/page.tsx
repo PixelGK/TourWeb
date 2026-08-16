@@ -6,9 +6,11 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { TourCard } from "@/components/site/tour-card";
 import { TourFilters, type ActiveFilters } from "@/components/tours/tour-filters";
+import { TourCollectionNav } from "@/components/tours/tour-collection-nav";
 import { TourSort } from "@/components/tours/tour-sort";
 import { bestAutomaticOffer, getAutomaticDiscountOffers } from "@/lib/automatic-discounts";
 import { isInsideBookingWindow } from "@/lib/booking-window";
+import { collectionForTour, matchesTourCollection, tourCollections, type TourCollectionId } from "@/lib/tour-collections";
 import { getPrisma } from "@/lib/db";
 import { getPublicTourCategories, getPublicTours } from "@/lib/public-tour-data";
 import { hasDatabaseConfiguration } from "@/lib/server-env";
@@ -24,6 +26,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 const validDurations = new Set(["half-day", "full-day", "multi-day"]);
 const validPrices = new Set(["under-750", "750-1000", "over-1000"]);
 const validSorts = new Set(["featured", "price-low", "price-high", "duration"]);
+const validCollections = new Set(tourCollections.map((collection) => collection.id));
 const destinationLabels: Record<string, string> = {
   ubud: "Ubud & central Bali",
   batur: "Mount Batur",
@@ -57,6 +60,7 @@ function parseFilters(params: Record<string, string | string[] | undefined>, val
   const destination = singleValue(params.destination)?.toLowerCase();
   const date = singleValue(params.date);
   const pax = singleValue(params.pax);
+  const collection = singleValue(params.collection)?.toLowerCase();
 
   return {
     category: category && validCategories.has(category) ? category : undefined,
@@ -65,7 +69,8 @@ function parseFilters(params: Record<string, string | string[] | undefined>, val
     sort: sort && validSorts.has(sort) ? sort : "featured",
     destination: destination && validDestinations.has(destination) ? destination : undefined,
     date: date && /^\d{4}-\d{2}-\d{2}$/.test(date) && isInsideBookingWindow(date) ? date : undefined,
-    pax: pax && ["1", "2", "3", "4", "5"].includes(pax) ? pax : undefined,
+    pax: pax && ["1", "2", "3", "4", "5", "6"].includes(pax) ? pax : undefined,
+    collection: collection && validCollections.has(collection as TourCollectionId) ? collection : undefined,
   };
 }
 
@@ -92,6 +97,7 @@ function matchesDestination(tour: PublicTourCard, destination?: string) {
 
 function filterTours(tours: PublicTourCard[], filters: ActiveFilters): PublicTourCard[] {
   const filtered = tours.filter((tour) => {
+    if (!matchesTourCollection(tour, filters.collection)) return false;
     if (!matchesDestination(tour, filters.destination)) return false;
     if (filters.category && tour.category.toLowerCase() !== filters.category) return false;
     if (filters.duration === "half-day" && tour.durationHours > 6) return false;
@@ -134,6 +140,7 @@ function pageHref(filters: ActiveFilters, page: number) {
   if (filters.destination) params.set("destination", filters.destination);
   if (filters.date) params.set("date", filters.date);
   if (filters.pax) params.set("pax", filters.pax);
+  if (filters.collection) params.set("collection", filters.collection);
   if (page > 1) params.set("page", String(page));
   const query = params.toString();
   return query ? `/tours?${query}` : "/tours";
@@ -145,6 +152,7 @@ export default async function ToursPage({ searchParams }: { searchParams: Search
   const validCategories = new Set(tourCategories.map((category) => category.toLowerCase()));
   const filters = parseFilters(params, validCategories);
   const filteredTours = filterTours(allTours, filters);
+  const collectionCounts = Object.fromEntries(tourCollections.map((collection) => [collection.id, allTours.filter((tour) => collectionForTour(tour) === collection.id).length])) as Record<TourCollectionId, number>;
   const [results, automaticOffers] = await Promise.all([
     filterByAvailability(filteredTours, filters),
     getAutomaticDiscountOffers(filteredTours.map((tour) => tour.slug)),
@@ -153,7 +161,7 @@ export default async function ToursPage({ searchParams }: { searchParams: Search
   const pageCount = Math.max(1, Math.ceil(results.length / pageSize));
   const currentPage = Number.isFinite(requestedPage) ? Math.min(Math.max(requestedPage, 1), pageCount) : 1;
   const visibleTours = results.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const activeFilterCount = [filters.destination, filters.category, filters.duration, filters.price].filter(Boolean).length;
+  const activeFilterCount = [filters.destination, filters.category, filters.duration, filters.price, filters.collection].filter(Boolean).length;
   const bookingParams = new URLSearchParams();
   if (filters.date) bookingParams.set("date", filters.date);
   if (filters.pax) bookingParams.set("pax", filters.pax);
@@ -182,6 +190,8 @@ export default async function ToursPage({ searchParams }: { searchParams: Search
           </div>
         </div>
       </section>
+
+      <TourCollectionNav active={filters.collection as TourCollectionId | undefined} counts={collectionCounts} date={filters.date} pax={filters.pax} />
 
       <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-12 lg:py-14">
         <div className="grid gap-9 lg:grid-cols-[17.5rem_1fr] lg:items-start">
@@ -224,6 +234,11 @@ export default async function ToursPage({ searchParams }: { searchParams: Search
                 ) : <span />}
               </nav>
             ) : null}
+
+            <aside className="mt-12 grid gap-5 border border-charcoal/25 bg-gold-pale p-6 sm:grid-cols-[1fr_auto] sm:items-center">
+              <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Planning more than one day?</p><h2 className="mt-2 font-serif text-3xl">Put routes side by side.</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-weathered">Choose two to five days, then send one organized request. We check for repeated areas and unrealistic driving before quoting it.</p></div>
+              <Link href="/plan" className="inline-flex min-h-12 items-center justify-center gap-2 bg-terrace px-5 text-sm font-bold text-frangipani">Build a multi-day plan <ArrowRight aria-hidden="true" className="size-4" /></Link>
+            </aside>
           </section>
         </div>
       </div>

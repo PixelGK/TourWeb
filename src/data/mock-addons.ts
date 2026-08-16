@@ -30,9 +30,20 @@ const childSeatOnlySlugs = new Set([
   "blue-lagoon-snorkeling-tenganan",
   "sidemen-cycling-village-lunch",
 ]);
+const pickupAddonSlugs = new Set([
+  "ancient-bali-tampaksiring",
+  "penglipuran-besakih-cultural-route",
+  "jatiluwih-bedugul-water-temples",
+  "sidemen-weaving-besakih",
+  "ubud-temples-rice-terraces",
+  "east-bali-water-palaces",
+  "tegalalang-swing-coffee-route",
+  "tegalalang-terraces-coffee-morning",
+]);
 
 export function getMockAddons(category: string, slug?: string) {
   if (slug === "private-car-charter-bali") return [...roadTripAddons, ...pickupAddons];
+  if (slug && pickupAddonSlugs.has(slug)) return [...roadTripAddons, ...pickupAddons];
   if (slug && childSeatOnlySlugs.has(slug)) return [childSeatAddon];
   if (category === "Experience Days") {
     return [childSeatAddon, lunchAddon];

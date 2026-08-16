@@ -11,6 +11,7 @@ export interface ActiveFilters {
   destination?: string;
   date?: string;
   pax?: string;
+  collection?: string;
 }
 
 function FilterFields({ filters, categories }: { filters: ActiveFilters; categories: string[] }) {
@@ -37,7 +38,7 @@ function FilterFields({ filters, categories }: { filters: ActiveFilters; categor
       </fieldset>
 
       <fieldset className="py-6">
-        <legend className="mb-3 text-xs font-bold uppercase tracking-[0.13em] text-clay">Price per person</legend>
+        <legend className="mb-3 text-xs font-bold uppercase tracking-[0.13em] text-clay">Listed package price</legend>
         <div className="space-y-2.5">
           <FilterRadio name="price" value="" label="Any price" checked={!filters.price} />
           <FilterRadio name="price" value="under-750" label="Under IDR 750k" checked={filters.price === "under-750"} />
@@ -67,6 +68,7 @@ function FilterForm({ filters, categories }: { filters: ActiveFilters; categorie
       {filters.destination && filters.destination !== "all" ? <input type="hidden" name="destination" value={filters.destination} /> : null}
       {filters.date ? <input type="hidden" name="date" value={filters.date} /> : null}
       {filters.pax ? <input type="hidden" name="pax" value={filters.pax} /> : null}
+      {filters.collection ? <input type="hidden" name="collection" value={filters.collection} /> : null}
       <FilterFields filters={filters} categories={categories} />
       <div className="flex gap-3 border-t border-charcoal/25 pt-5">
         <Button type="submit" className="flex-1">Apply filters</Button>

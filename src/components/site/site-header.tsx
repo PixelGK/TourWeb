@@ -3,7 +3,8 @@ import Link from "next/link";
 
 const navigation = [
   { href: "/#top-picks", label: "Top tours" },
-  { href: "/#experiences", label: "Experiences" },
+  { href: "/tours", label: "All routes" },
+  { href: "/plan", label: "Build a trip" },
   { href: "/#day-plan", label: "The Day Plan" },
   { href: "/about", label: "About" },
 ];
