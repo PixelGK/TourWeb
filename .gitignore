@@ -14,6 +14,7 @@
 /outputs/
 /.tmp-skill-install/
 /.skill-source/
+/src/generated/prisma-build/
 
 # local environment files
 .env*

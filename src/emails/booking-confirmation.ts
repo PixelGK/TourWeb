@@ -22,7 +22,7 @@ export function bookingConfirmationHtml(booking: BookingWithTour) {
       <h1 style="margin:0;font-family:Georgia,serif;font-size:34px;line-height:1.1">You’re booked, ${name}.</h1>
     </div>
     <div style="background:#FFF9EC;padding:28px;border:1px solid #C9C0AF">
-      <p style="margin:0 0 22px;line-height:1.6">Your driver and included arrangements are confirmed. We’ll message you on WhatsApp before pickup with the final meeting details.</p>
+      <p style="margin:0 0 22px;line-height:1.6">Your driver and included arrangements are confirmed. Before pickup, we’ll send your BaliXperience Day Plan on WhatsApp with the meeting details, the day’s main priority, flexible stops, and any costs paid locally.</p>
       <table role="presentation" style="width:100%;border-collapse:collapse;font-size:15px">
         <tr><td style="padding:10px 0;border-bottom:1px solid #DDD4C4;color:#665F54">Tour</td><td style="padding:10px 0;border-bottom:1px solid #DDD4C4;text-align:right;font-weight:bold">${tour}</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #DDD4C4;color:#665F54">Date</td><td style="padding:10px 0;border-bottom:1px solid #DDD4C4;text-align:right;font-weight:bold">${escapeHtml(date)}</td></tr>

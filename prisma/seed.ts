@@ -5,7 +5,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, TourCategory, TourPricingMode, UserRole } from "../src/generated/prisma-build/client";
 import { getMockAddons } from "../src/data/mock-addons";
 import { getTourDetail } from "../src/data/mock-tour-details";
-import { allTours, topTours } from "../src/data/mock-tours";
+import { allTours } from "../src/data/mock-tours";
 
 const connectionString = process.env.DIRECT_URL;
 if (!connectionString) throw new Error("DIRECT_URL is required to seed the database");
@@ -24,6 +24,26 @@ const categories: Record<string, TourCategory> = {
   Nature: TourCategory.NATURE,
   "Experience Days": TourCategory.EXPERIENCE_DAY,
 };
+
+const launchPublishedSlugs = new Set([
+  "private-car-charter-bali",
+  "ubud-temples-rice-terraces",
+  "sekumpul-waterfall-north-bali",
+  "uluwatu-kecak-jimbaran-evening",
+  "east-bali-water-palaces",
+  "mount-batur-sunrise-trek",
+  "ayung-river-rafting-ubud",
+  "ubud-rafting-atv-adventure",
+  "blue-lagoon-snorkeling-tenganan",
+  "bali-safari-day-admission",
+]);
+
+const launchFeaturedSlugs = new Set([
+  "mount-batur-sunrise-trek",
+  "ubud-temples-rice-terraces",
+  "private-car-charter-bali",
+  "ubud-rafting-atv-adventure",
+]);
 
 function bookableDates(days = 366) {
   const today = new Date();
@@ -63,7 +83,6 @@ async function main() {
         pricingMode: mockTour.pricingMode === "PER_VEHICLE" ? TourPricingMode.PER_VEHICLE : TourPricingMode.PER_PERSON,
         location: mockTour.location,
         cardNote: mockTour.note,
-        featured: topTours.some((item) => item.slug === mockTour.slug),
         images: detail.gallery.map((image) => image.src),
         imageAlts: detail.gallery.map((image) => image.alt),
         inclusions: detail.inclusions,
@@ -71,7 +90,6 @@ async function main() {
         meetingPoint: detail.meetingPoint,
         cancellationPolicy: detail.cancellationPolicy,
         maxGroupSize: detail.maxGroupSize,
-        published: true,
       },
       create: {
         title: mockTour.title,
@@ -84,7 +102,7 @@ async function main() {
         pricingMode: mockTour.pricingMode === "PER_VEHICLE" ? TourPricingMode.PER_VEHICLE : TourPricingMode.PER_PERSON,
         location: mockTour.location,
         cardNote: mockTour.note,
-        featured: topTours.some((item) => item.slug === mockTour.slug),
+        featured: launchFeaturedSlugs.has(mockTour.slug),
         images: detail.gallery.map((image) => image.src),
         imageAlts: detail.gallery.map((image) => image.alt),
         inclusions: detail.inclusions,
@@ -92,7 +110,7 @@ async function main() {
         meetingPoint: detail.meetingPoint,
         cancellationPolicy: detail.cancellationPolicy,
         maxGroupSize: detail.maxGroupSize,
-        published: true,
+        published: launchPublishedSlugs.has(mockTour.slug),
       },
     });
 

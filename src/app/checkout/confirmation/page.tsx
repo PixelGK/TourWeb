@@ -44,8 +44,8 @@ export default async function ConfirmationPage({ searchParams }: { searchParams:
           <p className="mt-4 text-lg leading-8 text-weathered">
             {isConfirmed
               ? booking?.paymentStatus === "NOT_REQUIRED"
-                ? "Your driver and included arrangements are confirmed. No online payment was taken; we’ll coordinate the next details with you directly."
-                : "Your driver and included arrangements are confirmed. Your driver will carry any admission voucher and assist with entry."
+                ? "Your driver and included arrangements are confirmed. No online payment was taken; we’ll send your Day Plan on WhatsApp before pickup."
+                : "Your driver and included arrangements are confirmed. We’ll send your Day Plan on WhatsApp, and your driver will carry any included admission voucher."
               : isPaid
               ? "Midtrans has verified your payment. We will confirm the driver and any included admission within 12 hours, or issue a full refund."
               : isRequested

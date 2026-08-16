@@ -4,7 +4,6 @@ import {
   Check,
   ChevronRight,
   CircleDollarSign,
-  HeartHandshake,
   Headphones,
   MapPinned,
   Sparkles,
@@ -13,6 +12,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { DayPlanPromise } from "@/components/site/day-plan-promise";
 import { SearchPanel } from "@/components/site/search-panel";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -154,31 +154,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-terrace text-frangipani" aria-labelledby="trust-heading">
-        <div className="mx-auto grid max-w-7xl lg:grid-cols-[0.82fr_1.18fr]">
-          <div className="border-b border-frangipani/20 px-5 py-12 sm:px-8 lg:border-b-0 lg:border-r lg:px-12 lg:py-16">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-gold">Before you book</p>
-            <h2 id="trust-heading" className="mt-4 max-w-md font-serif text-4xl leading-[1.05] sm:text-5xl">Know who is arranging your day.</h2>
-          </div>
-          <div className="grid sm:grid-cols-3">
-            <div className="border-b border-frangipani/20 p-6 sm:border-b-0 sm:border-r lg:p-8">
-              <MapPinned aria-hidden="true" className="size-6 text-gold" />
-              <p className="mt-4 font-serif text-3xl">Bali-based</p>
-              <p className="mt-2 text-sm leading-6 text-frangipani/65">Routes are planned by someone who drives these roads and understands realistic travel times.</p>
-            </div>
-            <div className="border-b border-frangipani/20 p-6 sm:border-b-0 sm:border-r lg:p-8">
-              <HeartHandshake aria-hidden="true" className="size-6 text-gold" />
-              <p className="mt-4 font-serif text-3xl">Planned with care</p>
-              <p className="mt-2 text-sm leading-6 text-frangipani/65">Each route has realistic timing and enough breathing room to enjoy the day without rushing.</p>
-            </div>
-            <div className="p-6 lg:p-8">
-              <Headphones aria-hidden="true" className="size-6 text-gold" />
-              <p className="mt-4 font-serif text-3xl">Direct support</p>
-              <p className="mt-2 text-sm leading-6 text-frangipani/65">Message a local contact before pickup and during your trip if plans change.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <DayPlanPromise />
 
       <section id="why-direct" className="scroll-mt-20 bg-frangipani py-16 lg:py-24" aria-labelledby="direct-heading">
         <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-12 lg:px-12">

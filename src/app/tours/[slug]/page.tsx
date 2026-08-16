@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { DayPlanPromise } from "@/components/site/day-plan-promise";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { BookingWidget } from "@/components/tours/booking-widget";
@@ -109,6 +110,8 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
 
       <div className="mx-auto grid max-w-7xl gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:px-12 lg:py-20">
         <div className="min-w-0 space-y-16">
+          <DayPlanPromise compact />
+
           <section aria-labelledby="itinerary-heading">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay">Your day</p>
             <h2 id="itinerary-heading" className="mt-3 font-serif text-4xl leading-none sm:text-5xl">What happens on the day</h2>

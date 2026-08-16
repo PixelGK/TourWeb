@@ -4,7 +4,7 @@ import Link from "next/link";
 const navigation = [
   { href: "/#top-picks", label: "Top tours" },
   { href: "/#experiences", label: "Experiences" },
-  { href: "/#why-direct", label: "Why book direct" },
+  { href: "/#day-plan", label: "The Day Plan" },
   { href: "/about", label: "About" },
 ];
 
