@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -13,6 +14,9 @@ export const metadata: Metadata = {
 export default async function PlanPage() {
   const tours = await getPublicTours();
   const planTours = tours.filter((tour) => tour.category !== "Car Charter" && tour.durationHours <= 12);
+  const readyMadePlans = tours
+    .filter((tour) => tour.category === "Multi-Day Trips")
+    .toSorted((a, b) => a.durationHours - b.durationHours);
 
   return (
     <main>
@@ -25,9 +29,48 @@ export default async function PlanPage() {
         </div>
       </section>
       <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-12 lg:py-14">
+        {readyMadePlans.length ? (
+          <section aria-labelledby="ready-made-heading" className="mb-14">
+            <div className="grid gap-4 border-b border-charcoal/25 pb-6 lg:grid-cols-[0.75fr_1fr] lg:items-end">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Ready-made journeys</p>
+                <h2 id="ready-made-heading" className="mt-2 font-serif text-4xl leading-none text-charcoal sm:text-5xl">Start with a route that already makes sense.</h2>
+              </div>
+              <p className="max-w-xl text-sm leading-6 text-weathered lg:justify-self-end">These prices cover one private vehicle for up to six guests. Hotels, meals, and admission tickets stay separate, so you choose where to stay and what to spend.</p>
+            </div>
+            <div className="divide-y divide-charcoal/20 border-b border-charcoal/20">
+              {readyMadePlans.map((tour) => {
+                const days = Math.round(tour.durationHours / 24);
+                return (
+                  <Link key={tour.slug} href={`/tours/${tour.slug}`} className="group grid gap-4 py-6 transition-colors hover:bg-frangipani focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus sm:grid-cols-[5.5rem_1fr_auto] sm:items-center sm:px-4">
+                    <div className="flex items-baseline gap-2 text-terrace sm:block">
+                      <span className="font-serif text-5xl leading-none">{days}</span>
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] sm:mt-1 sm:block">{days === 1 ? "day" : "days"}</span>
+                    </div>
+                    <div>
+                      <h3 className="font-serif text-2xl leading-tight text-charcoal transition-colors group-hover:text-terrace">{tour.title}</h3>
+                      <p className="mt-1 text-sm text-weathered">{tour.location} · {tour.note}</p>
+                    </div>
+                    <div className="sm:text-right">
+                      <p className="text-lg font-bold text-charcoal">IDR {new Intl.NumberFormat("en-ID").format(tour.priceIdr)}</p>
+                      <p className="mt-1 text-xs font-semibold text-weathered">per vehicle · up to 6</p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+        <section aria-labelledby="custom-plan-heading">
+          <div className="mb-6">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Or build your own</p>
+            <h2 id="custom-plan-heading" className="mt-2 font-serif text-4xl text-charcoal">Choose two to five individual days.</h2>
+          </div>
         <MultiDayPlanner tours={planTours} phone={process.env.NEXT_PUBLIC_WHATSAPP_NUMBER} />
+        </section>
       </div>
       <SiteFooter />
     </main>
   );
 }
+  
