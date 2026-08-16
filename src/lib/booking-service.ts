@@ -114,6 +114,7 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
       addonId: addon.id,
       quantity: addon.pricingMode === AddonPricingMode.PER_PERSON ? input.pax : 1,
       unitPriceIdr: addon.priceIdr,
+      unitCostIdr: addon.costPriceIdr,
     }));
     const addonTotal = addonRows.reduce((sum, addon) => sum + addon.quantity * addon.unitPriceIdr, 0);
     const packageTotalIdr = calculatePackageTotal({
@@ -184,6 +185,7 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
         hotelName: input.traveler.hotelName || null,
         notes: input.traveler.notes || null,
         totalAmountIdr,
+        baseCostIdrSnapshot: tour.baseCostIdr,
         discountCodeId: discount?.id,
         discountPercent: discount?.percentOff,
         discountAmountIdr,
@@ -371,3 +373,4 @@ export function toPaymentBooking(booking: Booking & { tour: { title: string } })
     totalAmountIdr: booking.totalAmountIdr,
   };
 }
+  
