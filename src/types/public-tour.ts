@@ -9,11 +9,14 @@ export interface PublicTourCard {
   imageAlt: string;
   priceIdr: number;
   priceUsd: number;
+  pricingMode?: TourPricingMode;
   rating: number;
   reviewCount: number;
   note: string;
   featured?: boolean;
 }
+
+export type TourPricingMode = "PER_PERSON" | "PER_VEHICLE";
 
 export interface TourGalleryImage {
   src: string;
