@@ -177,6 +177,7 @@ model Booking {
   notes                     String?
   status                    BookingStatus       @default(PENDING)
   totalAmountIdr            Int                 @map("total_amount_idr")
+  baseCostIdrSnapshot       Int?                @map("base_cost_idr_snapshot")
   discountCodeId            String?             @map("discount_code_id") @db.Uuid
   discountPercent           Int?                @map("discount_percent")
   discountAmountIdr         Int                 @default(0) @map("discount_amount_idr")
@@ -255,6 +256,7 @@ model BookingAddon {
   addonId      String    @map("addon_id") @db.Uuid
   quantity     Int
   unitPriceIdr Int       @map("unit_price_idr")
+  unitCostIdr  Int?      @map("unit_cost_idr")
   booking      Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   addon        TourAddon @relation(fields: [addonId], references: [id], onDelete: Restrict)
 
@@ -285,3 +287,4 @@ model RateLimitBucket {
   @@index([resetAt])
   @@map("rate_limit_buckets")
 }
+  
