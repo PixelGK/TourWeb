@@ -5,15 +5,12 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { getBookingWindow } from "@/lib/booking-window";
-import type { PricingTier } from "@/types/public-tour";
+import type { PricingTier, TourPricingMode } from "@/types/public-tour";
+import { calculatePackageTotal } from "@/lib/tour-pricing";
 
 const idrFormatter = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
 const usdFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 const approximateIdrPerUsd = 16500;
-
-function getPerPersonPrice(tiers: PricingTier[], pax: number) {
-  return tiers.find((tier) => pax >= tier.minPax && pax <= tier.maxPax)?.perPersonIdr ?? tiers[tiers.length - 1].perPersonIdr;
-}
 
 interface AutomaticDiscount {
   name: string;
@@ -22,12 +19,11 @@ interface AutomaticDiscount {
   endsOn: string;
 }
 
-export function BookingWidget({ tourSlug, pricingTiers, maxGroupSize, blackoutDates = [], initialDate = "", initialPax = 2, automaticDiscounts = [] }: { tourSlug: string; pricingTiers: PricingTier[]; maxGroupSize: number; blackoutDates?: string[]; initialDate?: string; initialPax?: number; automaticDiscounts?: AutomaticDiscount[] }) {
+export function BookingWidget({ tourSlug, pricingTiers, pricingMode, maxGroupSize, blackoutDates = [], initialDate = "", initialPax = 2, automaticDiscounts = [] }: { tourSlug: string; pricingTiers: PricingTier[]; pricingMode: TourPricingMode; maxGroupSize: number; blackoutDates?: string[]; initialDate?: string; initialPax?: number; automaticDiscounts?: AutomaticDiscount[] }) {
   const [pax, setPax] = useState(Math.min(Math.max(initialPax, 1), maxGroupSize));
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [bookingWindow] = useState(getBookingWindow);
-  const perPerson = getPerPersonPrice(pricingTiers, pax);
-  const total = perPerson * pax;
+  const total = calculatePackageTotal({ pricingMode, pricingTiers, pax });
   const activeDiscount = automaticDiscounts.find((offer) => selectedDate >= offer.startsOn && selectedDate <= offer.endsOn);
   const discountedTotal = activeDiscount ? Math.floor(total * (100 - activeDiscount.percentOff) / 100) : total;
   const usdEstimate = discountedTotal / approximateIdrPerUsd;
@@ -43,7 +39,7 @@ export function BookingWidget({ tourSlug, pricingTiers, maxGroupSize, blackoutDa
         <div className="mt-5 border-y border-charcoal/20 py-4">
           {activeDiscount ? <p className="mb-2 text-xs font-bold text-terrace">{activeDiscount.name} · {activeDiscount.percentOff}% off</p> : null}
           <div className="flex items-baseline justify-between gap-4">
-            <span className="text-sm text-weathered">Total for {pax}</span>
+            <span className="text-sm text-weathered">{pricingMode === "PER_VEHICLE" ? `One vehicle · ${pax} guests` : `Total for ${pax}`}</span>
             <span className="text-right">
               {activeDiscount ? <span className="block text-xs tabular-nums text-weathered line-through decoration-clay">{idrFormatter.format(total)}</span> : null}
               <strong className="block font-serif text-3xl tabular-nums">{idrFormatter.format(discountedTotal)}</strong>
