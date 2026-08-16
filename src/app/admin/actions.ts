@@ -6,7 +6,7 @@ import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { AddonPricingMode, BookingStatus, PaymentStatus, Prisma, TourCategory } from "@/generated/prisma/client";
+import { AddonPricingMode, BookingStatus, PaymentStatus, Prisma, TourCategory, TourPricingMode } from "@/generated/prisma/client";
 import type { AdminActionState } from "@/lib/admin-action-state";
 import { requireAdminPageSession } from "@/lib/admin-auth";
 import { applyVerifiedPaymentStatus, cancelBookingRequest, confirmBookingRequest, markBookingRequestEmailSent, markConfirmationEmailSent, markPaymentReceiptEmailSent, releasePendingBooking } from "@/lib/booking-service";
@@ -43,13 +43,14 @@ function parsePricing(value: FormDataEntryValue | null) {
 
 function parseAddons(value: FormDataEntryValue | null) {
   return lines(value).map((line, index) => {
-    const [code, title, priceText, modeText, ...descriptionParts] = line.split("|").map((part) => part.trim());
+    const [code, title, priceText, modeText, costText, ...descriptionParts] = line.split("|").map((part) => part.trim());
     const priceIdr = Number(priceText);
+    const costPriceIdr = costText === "" ? null : Number(costText);
     const pricingMode = modeText as AddonPricingMode;
-    if (!code?.match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) || !title || !Number.isInteger(priceIdr) || priceIdr < 0 || !Object.values(AddonPricingMode).includes(pricingMode)) {
-      throw new Error(`Add-on line ${index + 1} needs code | title | price | PER_PERSON or PER_BOOKING | description`);
+    if (!code?.match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) || !title || !Number.isInteger(priceIdr) || priceIdr < 0 || (costPriceIdr !== null && (!Number.isInteger(costPriceIdr) || costPriceIdr < 0)) || !Object.values(AddonPricingMode).includes(pricingMode)) {
+      throw new Error(`Add-on line ${index + 1} needs code | title | selling price | PER_PERSON or PER_BOOKING | internal cost | description`);
     }
-    return { code, title, priceIdr, pricingMode, description: descriptionParts.join(" | ") || null };
+    return { code, title, priceIdr, costPriceIdr, pricingMode, description: descriptionParts.join(" | ") || null };
   });
 }
 
@@ -61,6 +62,8 @@ const tourSchema = z.object({
   category: z.enum(TourCategory),
   durationMinutes: z.coerce.number().int().min(30).max(20_160),
   basePriceIdr: z.coerce.number().int().min(0).max(2_000_000_000),
+  pricingMode: z.enum(TourPricingMode),
+  baseCostIdr: z.union([z.literal(""), z.coerce.number().int().min(0).max(2_000_000_000)]),
   childPriceIdr: z.union([z.literal(""), z.coerce.number().int().min(0).max(2_000_000_000)]),
   childAgeLabel: z.string().trim().max(80),
   location: z.string().trim().min(2).max(120),
@@ -90,6 +93,8 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
       category: formData.get("category"),
       durationMinutes: formData.get("durationMinutes"),
       basePriceIdr: formData.get("basePriceIdr"),
+      pricingMode: formData.get("pricingMode"),
+      baseCostIdr: formData.get("baseCostIdr"),
       childPriceIdr: formData.get("childPriceIdr"),
       childAgeLabel: formData.get("childAgeLabel"),
       location: formData.get("location"),
@@ -124,6 +129,8 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
         category: input.category,
         durationMinutes: input.durationMinutes,
         basePriceIdr: input.basePriceIdr,
+        pricingMode: input.pricingMode,
+        baseCostIdr: input.baseCostIdr === "" ? null : input.baseCostIdr,
         childPriceIdr: input.childPriceIdr === "" ? null : input.childPriceIdr,
         childAgeLabel: input.childPriceIdr === "" ? null : input.childAgeLabel || null,
         location: input.location,
