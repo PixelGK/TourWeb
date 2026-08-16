@@ -1,0 +1,287 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TourCategory {
+  TREKKING
+  WATER_SPORTS
+  CULTURAL_TOUR
+  CAR_CHARTER
+  MULTI_DAY_TRIP
+  CUSTOM_TOUR
+  ISLAND_TRIP
+  NATURE
+  ATTRACTION_TICKET
+  EXPERIENCE_DAY
+}
+
+enum BookingStatus {
+  REQUESTED
+  PENDING
+  PAID
+  CONFIRMED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentProviderName {
+  MANUAL
+  MIDTRANS
+}
+
+enum PaymentStatus {
+  NOT_REQUIRED
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+enum AddonPricingMode {
+  PER_PERSON
+  PER_BOOKING
+}
+
+enum TourPricingMode {
+  PER_PERSON
+  PER_VEHICLE
+}
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+model Tour {
+  id                 String              @id @default(uuid()) @db.Uuid
+  title              String
+  slug               String              @unique
+  description        String
+  category           TourCategory
+  durationMinutes    Int                 @map("duration_minutes")
+  basePriceIdr       Int                 @map("base_price_idr")
+  baseCostIdr        Int?                @map("base_cost_idr")
+  pricingMode        TourPricingMode     @default(PER_PERSON) @map("pricing_mode")
+  childPriceIdr      Int?                @map("child_price_idr")
+  childAgeLabel      String?             @map("child_age_label")
+  location           String              @default("Bali")
+  cardNote           String?             @map("card_note")
+  featured           Boolean             @default(false)
+  images             String[]
+  imageAlts          String[]            @default([]) @map("image_alts")
+  inclusions         String[]
+  exclusions         String[]
+  meetingPoint       String              @map("meeting_point")
+  cancellationPolicy String              @map("cancellation_policy")
+  maxGroupSize       Int                 @map("max_group_size")
+  published          Boolean             @default(false)
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  itinerary          TourItineraryStop[]
+  pricingTiers       TourPricingTier[]
+  availability       Availability[]
+  bookings           Booking[]
+  addons             TourAddon[]
+  discountCodes      DiscountCodeTour[]
+
+  @@index([category, published])
+  @@index([featured, published])
+  @@map("tours")
+}
+
+model TourPricingTier {
+  id           String @id @default(uuid()) @db.Uuid
+  tourId       String @map("tour_id") @db.Uuid
+  minPax       Int    @map("min_pax")
+  maxPax       Int    @map("max_pax")
+  perPersonIdr Int    @map("per_person_idr")
+  tour         Tour   @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@unique([tourId, minPax, maxPax])
+  @@index([tourId])
+  @@map("tour_pricing_tiers")
+}
+
+model TourItineraryStop {
+  id          String @id @default(uuid()) @db.Uuid
+  tourId      String @map("tour_id") @db.Uuid
+  position    Int
+  timeLabel   String @map("time_label")
+  title       String
+  description String
+  tour        Tour   @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@unique([tourId, position])
+  @@index([tourId])
+  @@map("tour_itinerary_stops")
+}
+
+model Availability {
+  id             String    @id @default(uuid()) @db.Uuid
+  tourId         String    @map("tour_id") @db.Uuid
+  date           DateTime  @db.Date
+  capacity       Int
+  spotsRemaining Int       @map("spots_remaining")
+  isOpen         Boolean   @default(true) @map("is_open")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  tour           Tour      @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  bookings       Booking[]
+
+  @@unique([tourId, date])
+  @@index([date])
+  @@index([tourId])
+  @@map("availability")
+}
+
+model TourAddon {
+  id          String           @id @default(uuid()) @db.Uuid
+  tourId      String           @map("tour_id") @db.Uuid
+  code        String
+  title       String
+  description String?
+  priceIdr    Int              @map("price_idr")
+  costPriceIdr Int?            @map("cost_price_idr")
+  pricingMode AddonPricingMode @map("pricing_mode")
+  active      Boolean          @default(true)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  tour        Tour             @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  bookings    BookingAddon[]
+
+  @@unique([tourId, code])
+  @@index([tourId])
+  @@map("tour_addons")
+}
+
+model Booking {
+  id                        String              @id @default(uuid()) @db.Uuid
+  reference                 String              @unique
+  tourId                    String              @map("tour_id") @db.Uuid
+  availabilityId            String              @map("availability_id") @db.Uuid
+  paxCount                  Int                 @map("pax_count")
+  adultCount                Int                 @default(0) @map("adult_count")
+  childCount                Int                 @default(0) @map("child_count")
+  customerName              String              @map("customer_name")
+  customerEmail             String              @map("customer_email")
+  customerPhone             String              @map("customer_phone")
+  customerCountry           String              @map("customer_country")
+  hotelName                 String?             @map("hotel_name")
+  notes                     String?
+  status                    BookingStatus       @default(PENDING)
+  totalAmountIdr            Int                 @map("total_amount_idr")
+  discountCodeId            String?             @map("discount_code_id") @db.Uuid
+  discountPercent           Int?                @map("discount_percent")
+  discountAmountIdr         Int                 @default(0) @map("discount_amount_idr")
+  currency                  String              @default("IDR")
+  paymentProvider           PaymentProviderName @map("payment_provider")
+  paymentStatus             PaymentStatus       @default(PENDING) @map("payment_status")
+  paymentTransactionId      String?             @unique @map("payment_transaction_id")
+  idempotencyKey            String              @unique @map("idempotency_key")
+  idempotencyRequestHash    String              @map("idempotency_request_hash")
+  heldUntil                 DateTime            @map("held_until")
+  paidAt                    DateTime?           @map("paid_at")
+  cancelledAt               DateTime?           @map("cancelled_at")
+  confirmationEmailSentAt   DateTime?           @map("confirmation_email_sent_at")
+  bookingRequestEmailSentAt DateTime?           @map("booking_request_email_sent_at")
+  paymentReceiptEmailSentAt DateTime?           @map("payment_receipt_email_sent_at")
+  confirmedAt               DateTime?           @map("confirmed_at")
+  termsAcceptedAt           DateTime?           @map("terms_accepted_at")
+  termsVersion              String?             @map("terms_version")
+  createdAt                 DateTime            @default(now()) @map("created_at")
+  updatedAt                 DateTime            @updatedAt @map("updated_at")
+  tour                      Tour                @relation(fields: [tourId], references: [id], onDelete: Restrict)
+  availability              Availability        @relation(fields: [availabilityId], references: [id], onDelete: Restrict)
+  addons                    BookingAddon[]
+  discountCode              DiscountCode?       @relation(fields: [discountCodeId], references: [id], onDelete: SetNull)
+
+  @@index([availabilityId, status])
+  @@index([tourId])
+  @@index([status, createdAt])
+  @@index([customerEmail])
+  @@index([discountCodeId])
+  @@map("bookings")
+}
+
+model DiscountCode {
+  id           String             @id @default(uuid()) @db.Uuid
+  code         String             @unique
+  name         String?
+  automatic    Boolean            @default(false)
+  percentOff   Int                @map("percent_off")
+  startsAt     DateTime?          @map("starts_at")
+  endsAt       DateTime?          @map("ends_at")
+  usageLimit   Int?               @map("usage_limit")
+  timesUsed    Int                @default(0) @map("times_used")
+  active       Boolean            @default(true)
+  appliesToAll Boolean            @default(true) @map("applies_to_all")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  tours        DiscountCodeTour[]
+  bookings     Booking[]
+
+  @@index([active, startsAt, endsAt])
+  @@map("discount_codes")
+}
+
+model DiscountCodeTour {
+  discountCodeId String       @map("discount_code_id") @db.Uuid
+  tourId         String       @map("tour_id") @db.Uuid
+  discountCode   DiscountCode @relation(fields: [discountCodeId], references: [id], onDelete: Cascade)
+  tour           Tour         @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@id([discountCodeId, tourId])
+  @@index([tourId])
+  @@map("discount_code_tours")
+}
+
+model GlobalBlackoutDate {
+  date      DateTime @id @db.Date
+  reason    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("global_blackout_dates")
+}
+
+model BookingAddon {
+  bookingId    String    @map("booking_id") @db.Uuid
+  addonId      String    @map("addon_id") @db.Uuid
+  quantity     Int
+  unitPriceIdr Int       @map("unit_price_idr")
+  booking      Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  addon        TourAddon @relation(fields: [addonId], references: [id], onDelete: Restrict)
+
+  @@id([bookingId, addonId])
+  @@index([addonId])
+  @@map("booking_addons")
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  name         String?
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(ADMIN)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model RateLimitBucket {
+  key         String   @id
+  count       Int
+  windowStart DateTime @map("window_start")
+  resetAt     DateTime @map("reset_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([resetAt])
+  @@map("rate_limit_buckets")
+}
