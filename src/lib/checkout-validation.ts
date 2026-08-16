@@ -28,6 +28,9 @@ export const checkoutRequestSchema = z.object({
   if (value.adultCount + value.childCount !== value.pax) {
     context.addIssue({ code: "custom", path: ["pax"], message: "Adult and child counts must match the traveler total" });
   }
+  if (value.addonCodes.filter((code) => code.startsWith("pickup-")).length > 1) {
+    context.addIssue({ code: "custom", path: ["addonCodes"], message: "Choose only one pickup area" });
+  }
 });
 
 export const idempotencyKeySchema = z.uuid();

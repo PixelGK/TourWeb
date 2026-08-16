@@ -15,6 +15,7 @@ export interface AdminTourRow {
   category: string;
   durationMinutes: number;
   basePriceIdr: number;
+  pricingMode: "PER_PERSON" | "PER_VEHICLE";
   maxGroupSize: number;
   published: boolean;
   bookingCount: number;
@@ -65,6 +66,8 @@ export interface AdminTourEditorData {
   category: string;
   durationMinutes: number;
   basePriceIdr: number;
+  pricingMode: "PER_PERSON" | "PER_VEHICLE";
+  baseCostIdr: number | null;
   childPriceIdr: number | null;
   childAgeLabel: string | null;
   location: string;
@@ -80,7 +83,7 @@ export interface AdminTourEditorData {
   published: boolean;
   itinerary: Array<{ timeLabel: string; title: string; description: string }>;
   pricingTiers: Array<{ minPax: number; maxPax: number; perPersonIdr: number }>;
-  addons: Array<{ code: string; title: string; priceIdr: number; pricingMode: string; description: string | null }>;
+  addons: Array<{ code: string; title: string; priceIdr: number; costPriceIdr: number | null; pricingMode: string; description: string | null }>;
 }
 
 function categoryLabel(category: string) {
@@ -95,6 +98,7 @@ function mockTours(): AdminTourRow[] {
     category: tour.category,
     durationMinutes: tour.durationHours * 60,
     basePriceIdr: tour.priceIdr,
+    pricingMode: tour.slug === "private-car-charter-bali" ? "PER_VEHICLE" : "PER_PERSON",
     maxGroupSize: 6,
     published: index !== allTours.length - 1,
     bookingCount: [18, 11, 9, 22, 5, 7, 31, 13, 4, 8, 3, 2][index] ?? 0,
@@ -115,6 +119,7 @@ export async function getAdminTours(): Promise<AdminTourRow[]> {
     category: categoryLabel(tour.category),
     durationMinutes: tour.durationMinutes,
     basePriceIdr: tour.basePriceIdr,
+    pricingMode: tour.pricingMode,
     maxGroupSize: tour.maxGroupSize,
     published: tour.published,
     bookingCount: tour._count.bookings,
@@ -245,7 +250,7 @@ export async function getAdminTourDetail(id: string) {
 export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorData> {
   if (!id) {
     return {
-      title: "", slug: "", description: "", category: "CUSTOM_TOUR", durationMinutes: 480, basePriceIdr: 0, childPriceIdr: null, childAgeLabel: null,
+      title: "", slug: "", description: "", category: "CUSTOM_TOUR", durationMinutes: 480, basePriceIdr: 0, pricingMode: "PER_PERSON", baseCostIdr: null, childPriceIdr: null, childAgeLabel: null,
       location: "Bali", cardNote: "Private driver and direct support", featured: false, images: [], imageAlts: [], inclusions: [], exclusions: [], meetingPoint: "Your hotel or villa lobby", cancellationPolicy: "", maxGroupSize: 6,
       published: false, itinerary: [], pricingTiers: [], addons: [],
     };
@@ -267,6 +272,8 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
       category: mockCategory[tour.category] ?? "CUSTOM_TOUR",
       durationMinutes: tour.durationHours * 60,
       basePriceIdr: tour.priceIdr,
+      pricingMode: tour.slug === "private-car-charter-bali" ? "PER_VEHICLE" : "PER_PERSON",
+      baseCostIdr: tour.slug === "private-car-charter-bali" ? 400000 : null,
       childPriceIdr: null,
       childAgeLabel: null,
       location: tour.location,
@@ -282,7 +289,7 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
       published: true,
       itinerary: detail.itinerary.map((stop) => ({ timeLabel: stop.time, title: stop.title, description: stop.description })),
       pricingTiers: detail.pricingTiers,
-      addons: getMockAddons(tour.category, tour.slug).map((addon) => ({ ...addon, description: addon.description })),
+      addons: getMockAddons(tour.category, tour.slug).map((addon) => ({ ...addon, costPriceIdr: addon.code === "local-lunch" ? 120000 : addon.code.startsWith("pickup-") ? 100000 : null, description: addon.description })),
     };
   }
   const tour = await getPrisma().tour.findUnique({
@@ -300,6 +307,8 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
     category: tour.category,
     durationMinutes: tour.durationMinutes,
     basePriceIdr: tour.basePriceIdr,
+    pricingMode: tour.pricingMode,
+    baseCostIdr: tour.baseCostIdr,
     childPriceIdr: tour.childPriceIdr,
     childAgeLabel: tour.childAgeLabel,
     location: tour.location === "Bali" ? knownTour?.location ?? tour.location : tour.location,
@@ -315,7 +324,7 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
     published: tour.published,
     itinerary: tour.itinerary.map((stop) => ({ timeLabel: stop.timeLabel, title: stop.title, description: stop.description })),
     pricingTiers: tour.pricingTiers,
-    addons: tour.addons.map((addon) => ({ code: addon.code, title: addon.title, priceIdr: addon.priceIdr, pricingMode: addon.pricingMode, description: addon.description })),
+    addons: tour.addons.map((addon) => ({ code: addon.code, title: addon.title, priceIdr: addon.priceIdr, costPriceIdr: addon.costPriceIdr, pricingMode: addon.pricingMode, description: addon.description })),
   };
 }
 

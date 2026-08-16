@@ -15,6 +15,7 @@ import type { BookingFlowMode } from "@/lib/booking-mode";
 import { getPrisma } from "@/lib/db";
 import { TERMS_VERSION } from "@/lib/legal";
 import type { PaymentState } from "@/lib/payments/types";
+import { calculatePackageTotal } from "@/lib/tour-pricing";
 
 export class BookingError extends Error {
   constructor(message: string, public readonly code: "NOT_FOUND" | "SOLD_OUT" | "CONFLICT" | "INVALID", public readonly status = 400) {
@@ -66,6 +67,7 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
     if (!tour?.published) throw new BookingError("This tour is not available for online booking", "NOT_FOUND", 404);
     if (input.pax > tour.maxGroupSize) throw new BookingError(`This tour accepts up to ${tour.maxGroupSize} travelers`, "INVALID");
     if (tour.addons.length !== input.addonCodes.length) throw new BookingError("One or more selected add-ons are unavailable", "INVALID");
+    if (tour.addons.filter((addon) => addon.code.startsWith("pickup-")).length > 1) throw new BookingError("Choose only one pickup area", "INVALID");
 
     const pickupTime = tour.itinerary[0]?.timeLabel.match(/(?:^|\D)([01]\d|2[0-3]):([0-5]\d)(?:\D|$)/);
     const pickupHour = pickupTime?.[1] ?? "08";
@@ -114,7 +116,14 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
       unitPriceIdr: addon.priceIdr,
     }));
     const addonTotal = addonRows.reduce((sum, addon) => sum + addon.quantity * addon.unitPriceIdr, 0);
-    const packageTotalIdr = perPersonIdr * input.adultCount + childPriceIdr * input.childCount;
+    const packageTotalIdr = calculatePackageTotal({
+      pricingMode: tour.pricingMode,
+      pricingTiers: tour.pricingTiers,
+      pax: input.pax,
+      adultCount: input.adultCount,
+      childCount: input.childCount,
+      childPriceIdr,
+    });
     const subtotalIdr = packageTotalIdr + addonTotal;
 
     let enteredDiscount: { id: string; percentOff: number } | null = null;

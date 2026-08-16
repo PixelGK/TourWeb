@@ -5,7 +5,7 @@ import { cache } from "react";
 import { getMockAddons } from "@/data/mock-addons";
 import { getTourDetail as getMockTourDetail } from "@/data/mock-tour-details";
 import { allTours, topTours } from "@/data/mock-tours";
-import type { TourCategory } from "@/generated/prisma/client";
+import type { TourCategory, TourPricingMode } from "@/generated/prisma/client";
 import { getPrisma } from "@/lib/db";
 import { hasDatabaseConfiguration } from "@/lib/server-env";
 import type { PublicTourCard, PublicTourDetail } from "@/types/public-tour";
@@ -49,6 +49,7 @@ type DatabaseTourCard = Awaited<ReturnType<typeof getPrisma>>["tour"] extends ne
   category: TourCategory;
   durationMinutes: number;
   basePriceIdr: number;
+  pricingMode: TourPricingMode;
   location: string;
   cardNote: string | null;
   featured: boolean;
@@ -70,6 +71,7 @@ function toPublicCard(tour: DatabaseTourCard): PublicTourCard {
     imageAlt: tour.imageAlts[0] || known?.imageAlt || `${tour.title} in Bali`,
     priceIdr: tour.basePriceIdr,
     priceUsd: Math.round(tour.basePriceIdr / IDR_PER_USD_ESTIMATE),
+    pricingMode: tour.pricingMode,
     rating: 0,
     reviewCount: 0,
     note: tour.cardNote || known?.note || "Private driver and direct support",
@@ -88,6 +90,7 @@ export const getPublicTours = cache(async (): Promise<PublicTourCard[]> => {
       category: true,
       durationMinutes: true,
       basePriceIdr: true,
+      pricingMode: true,
       location: true,
       cardNote: true,
       featured: true,
