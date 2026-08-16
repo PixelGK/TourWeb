@@ -51,6 +51,10 @@ const launchPublishedSlugs = new Set([
   "bali-bird-park-batubulan-day",
   "ubud-market-cooking-class",
   "sidemen-cycling-village-lunch",
+  "north-bali-overnight-escape",
+  "bali-highlights-three-days",
+  "bali-four-region-private-journey",
+  "five-day-bali-private-driver-circuit",
 ]);
 
 const launchFeaturedSlugs = new Set([
@@ -60,10 +64,29 @@ const launchFeaturedSlugs = new Set([
   "ubud-rafting-atv-adventure",
 ]);
 
+const driverOnlyCostSlugs = new Set([
+  "private-car-charter-bali",
+  "ubud-temples-rice-terraces",
+  "sekumpul-waterfall-north-bali",
+  "east-bali-water-palaces",
+  "ancient-bali-tampaksiring",
+  "penglipuran-besakih-cultural-route",
+  "jatiluwih-bedugul-water-temples",
+  "sidemen-weaving-besakih",
+  "taman-ayun-tanah-lot-sunset",
+  "slow-ubud-custom-day",
+]);
+
 function bookableDates(days = 366) {
   const today = new Date();
   const start = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
   return Array.from({ length: days }, (_, index) => new Date(start.getTime() + index * 86_400_000));
+}
+
+function baseCostForTour(tour: (typeof allTours)[number]) {
+  if (driverOnlyCostSlugs.has(tour.slug)) return 400000;
+  if (tour.category === "Multi-Day Trips") return Math.round(tour.durationHours / 24) * 400000;
+  return undefined;
 }
 
 async function main() {
@@ -94,7 +117,7 @@ async function main() {
         category: categories[mockTour.category] ?? TourCategory.CUSTOM_TOUR,
         durationMinutes: Math.round(mockTour.durationHours * 60),
         basePriceIdr: mockTour.priceIdr,
-        baseCostIdr: mockTour.slug === "private-car-charter-bali" ? 400000 : undefined,
+        baseCostIdr: baseCostForTour(mockTour),
         pricingMode: mockTour.pricingMode === "PER_VEHICLE" ? TourPricingMode.PER_VEHICLE : TourPricingMode.PER_PERSON,
         location: mockTour.location,
         cardNote: mockTour.note,
@@ -113,7 +136,7 @@ async function main() {
         category: categories[mockTour.category] ?? TourCategory.CUSTOM_TOUR,
         durationMinutes: Math.round(mockTour.durationHours * 60),
         basePriceIdr: mockTour.priceIdr,
-        baseCostIdr: mockTour.slug === "private-car-charter-bali" ? 400000 : undefined,
+        baseCostIdr: baseCostForTour(mockTour),
         pricingMode: mockTour.pricingMode === "PER_VEHICLE" ? TourPricingMode.PER_VEHICLE : TourPricingMode.PER_PERSON,
         location: mockTour.location,
         cardNote: mockTour.note,
@@ -172,3 +195,4 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
+  
