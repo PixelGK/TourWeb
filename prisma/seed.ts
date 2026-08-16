@@ -36,6 +36,11 @@ const launchPublishedSlugs = new Set([
   "ubud-rafting-atv-adventure",
   "blue-lagoon-snorkeling-tenganan",
   "bali-safari-day-admission",
+  "ancient-bali-tampaksiring",
+  "penglipuran-besakih-cultural-route",
+  "jatiluwih-bedugul-water-temples",
+  "sidemen-weaving-besakih",
+  "taman-ayun-tanah-lot-sunset",
 ]);
 
 const launchFeaturedSlugs = new Set([

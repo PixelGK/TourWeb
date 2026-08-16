@@ -64,6 +64,81 @@ interface TourContentOverride {
 }
 
 const tourContentOverrides: Record<string, TourContentOverride> = {
+  "ancient-bali-tampaksiring": {
+    summary: "A compact route through Bali’s old royal and sacred landscape: the rock-cut shrines at Gunung Kawi, the active water temple at Tirta Empul, and Goa Gajah near Ubud. Your driver handles the route; admission and any site guide are paid directly.",
+    itinerary: [
+      { time: "08:00", title: "Private hotel pickup", description: "Leave with shoulders and knees covered for the temple visits; sarongs are normally available at the sites." },
+      { time: "09:15", title: "Gunung Kawi", description: "Descend the long stone stairway to the 11th-century rock-cut shrines and river valley. Allow time for the climb back up." },
+      { time: "11:30", title: "Tirta Empul", description: "Visit the active water-temple complex respectfully. Purification is optional and follows local rules; it is not presented as a staged activity." },
+      { time: "13:15", title: "Lunch near Tampaksiring", description: "Choose a local or scenic restaurant and pay it directly, keeping the meal within your preferred budget." },
+      { time: "14:45", title: "Goa Gajah", description: "Finish at the archaeological cave and bathing-pool complex before returning through Ubud." },
+      { time: "17:00", title: "Private return", description: "Head back without a compulsory coffee, swing, or shop stop." },
+    ],
+    inclusions: ["Private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver", "Hotel pickup and drop-off", "Fuel and parking", "Route timing and practical temple advice", "Drinking water"],
+    exclusions: ["All entrance tickets and local donations", "Licensed site or temple guide", "Meals and personal purchases", "Purification offering or change of clothes", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 750000 }],
+    meetingNote: "This is a private driver route, not a licensed guided temple tour. Your driver can help arrange an official local guide at a site when available; pay that guide directly.",
+  },
+  "penglipuran-besakih-cultural-route": {
+    summary: "See two different sides of Balinese community life in one sensible eastbound route: Penglipuran’s lived-in village layout and the vast Besakih temple complex below Mount Agung.",
+    itinerary: [
+      { time: "07:30", title: "Private hotel pickup", description: "Start early because Besakih is a long drive and both places deserve more than a quick photo stop." },
+      { time: "09:15", title: "Penglipuran village", description: "Walk the central lane and bamboo area with respect for the families who live here; homes open to visitors at the residents’ discretion." },
+      { time: "11:15", title: "Bangli countryside", description: "Continue east through the highlands, with one short roadside viewpoint only if weather and traffic make it worthwhile." },
+      { time: "12:30", title: "Lunch before Besakih", description: "Choose and pay for lunch directly so there is no compulsory restaurant built into the route." },
+      { time: "14:00", title: "Besakih Temple", description: "Enter through the official visitor process and explore the public areas with the guide arrangement provided or required at the complex." },
+      { time: "16:30", title: "Private hotel return", description: "Return by the clearest route for the afternoon conditions." },
+    ],
+    inclusions: ["Private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver", "Hotel pickup and drop-off", "Fuel and parking", "Route planning", "Drinking water"],
+    exclusions: ["Penglipuran and Besakih admission", "Official or local guide fees", "Meals and personal purchases", "Ceremonial donations", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 950000 }],
+    meetingNote: "Temple access can change during ceremonies. BaliXperience provides the vehicle and driver; official visitor services inside Besakih are handled at the complex.",
+  },
+  "jatiluwih-bedugul-water-temples": {
+    summary: "Follow the water that shapes central Bali: Taman Ayun’s royal temple grounds, the Jatiluwih subak landscape, and Ulun Danu Beratan on the highland lake—sequenced as one full-day driving loop.",
+    itinerary: [
+      { time: "07:30", title: "Private hotel pickup", description: "Leave early for the Tabanan countryside and cooler highlands." },
+      { time: "09:00", title: "Taman Ayun", description: "Walk around the moated royal temple compound and its tiered meru towers." },
+      { time: "11:00", title: "Jatiluwih rice terraces", description: "Choose a short marked walk or a longer viewpoint stop through the UNESCO-listed subak landscape." },
+      { time: "13:00", title: "Lunch in the highlands", description: "Pick a restaurant around Jatiluwih or Bedugul and pay directly." },
+      { time: "14:30", title: "Ulun Danu Beratan", description: "Visit the lakeside temple grounds; mist and rain are common and part of the highland weather." },
+      { time: "16:00", title: "Private return", description: "Head back before the evening road becomes busier." },
+    ],
+    inclusions: ["Private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver", "Hotel pickup and drop-off", "Fuel and parking", "Route planning", "Drinking water"],
+    exclusions: ["All attraction entrance tickets", "Licensed site guide", "Meals and personal purchases", "Rain gear", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 950000 }],
+    meetingNote: "This route covers substantial mountain driving. Stops may be shortened or reordered for ceremonies, highland weather, and traffic, while keeping the three anchor places whenever they are open.",
+  },
+  "sidemen-weaving-besakih": {
+    summary: "Spend the morning among Sidemen’s working rice country and weaving traditions, then continue to Besakih. The craft stop is chosen for the visit itself—buying anything is optional.",
+    itinerary: [
+      { time: "07:30", title: "Private hotel pickup", description: "Travel east before the busiest traffic and settle the day’s pace with your driver." },
+      { time: "09:30", title: "Sidemen valley", description: "Stop for an accessible valley view or short village walk suited to the weather and your mobility." },
+      { time: "11:00", title: "Weaving household or workshop", description: "See how local textiles are made at a pre-agreed stop. There is no requirement to shop." },
+      { time: "12:30", title: "Lunch in Sidemen", description: "Choose a local meal or a longer scenic lunch and pay the restaurant directly." },
+      { time: "14:15", title: "Besakih Temple", description: "Continue to Bali’s largest temple complex and use its current official visitor and guiding process." },
+      { time: "16:30", title: "Private hotel return", description: "Return without adding a rushed extra palace or photo stop." },
+    ],
+    inclusions: ["Private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver", "Hotel pickup and drop-off", "Fuel and parking", "Pre-arranged weaving stop", "Drinking water"],
+    exclusions: ["Besakih admission and official guide", "Village or workshop donations where requested", "Meals and personal purchases", "Textile purchases", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 950000 }],
+    meetingNote: "The weaving visit depends on household or workshop availability and will be confirmed before the day. Purchases are always optional.",
+  },
+  "taman-ayun-tanah-lot-sunset": {
+    summary: "A later-start cultural route that gives Taman Ayun proper time before reaching Tanah Lot for the changing light—not a full day padded with unrelated commission stops.",
+    itinerary: [
+      { time: "12:30", title: "Private hotel pickup", description: "The exact start shifts with your pickup area and that day’s sunset time." },
+      { time: "14:00", title: "Taman Ayun", description: "Walk the gardens and outer grounds of the moated Mengwi royal temple complex." },
+      { time: "15:45", title: "Tabanan countryside break", description: "Choose a simple coffee, snack, or rice-field view on the westbound route; pay any order directly." },
+      { time: "17:00", title: "Tanah Lot", description: "Arrive with time to explore the public paths before sunset rather than running from the car at the last minute." },
+      { time: "18:30", title: "Dinner option or return", description: "Choose a nearby meal or return directly after the light fades." },
+      { time: "20:00", title: "Hotel drop-off", description: "Finish at your accommodation with timing adjusted for traffic." },
+    ],
+    inclusions: ["Private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver", "Hotel pickup and drop-off", "Fuel and parking", "Sunset-aware route timing", "Drinking water"],
+    exclusions: ["Taman Ayun and Tanah Lot entrance tickets", "Licensed temple guide", "Meals and drinks", "Personal purchases", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 750000 }],
+    meetingNote: "Sunset is weather-dependent. The route is still worthwhile in cloud, but sunset visibility cannot be guaranteed.",
+  },
   "private-car-charter-bali": {
     summary: "Keep the day flexible with one private air-conditioned vehicle and an experienced local driver. Ubud pickup is included; longer pickups from Kuta, Canggu, or Uluwatu are quoted before you confirm.",
     itinerary: [
