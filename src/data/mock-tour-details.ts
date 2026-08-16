@@ -139,6 +139,64 @@ const tourContentOverrides: Record<string, TourContentOverride> = {
     pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 750000 }],
     meetingNote: "Sunset is weather-dependent. The route is still worthwhile in cloud, but sunset visibility cannot be guaranteed.",
   },
+  "north-bali-overnight-escape": {
+    summary: "Two private driver days that fit together without repeating the same roads: old Bali around Ubud first, then the rice terraces and cooler water-temple country of Tabanan and Bedugul.",
+    itinerary: [
+      { time: "Day 1", title: "Ubud’s old sacred landscape", description: "Visit Gunung Kawi and Tirta Empul in the morning, choose lunch around Tampaksiring, then finish at Tegalalang or a quieter rice-field stop. Your driver returns you to your hotel after the day." },
+      { time: "Day 2", title: "Jatiluwih and the highlands", description: "Travel west through Taman Ayun, spend proper time in the Jatiluwih subak landscape, and continue to Ulun Danu Beratan before the private hotel return." },
+    ],
+    inclusions: ["One private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver on both touring days", "Daily hotel pickup and drop-off on the confirmed route", "Fuel and parking", "Route review by WhatsApp before the first day", "Drinking water"],
+    exclusions: ["Accommodation", "Attraction and temple admission tickets", "Meals and personal purchases", "Licensed site or temple guides", "Extra hours or remote hotel repositioning not agreed in the route", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 1700000 }],
+    meetingPoint: "Your confirmed Bali hotel or villa",
+    meetingNote: "The two touring days may be consecutive or separated, subject to driver availability. Tell us both hotel locations before confirmation so we can check the route and disclose any remote-area supplement.",
+    cancellationPolicy: STANDARD_CANCELLATION_POLICY,
+  },
+  "bali-highlights-three-days": {
+    summary: "Three different sides of Bali with one clear driving plan: the sacred landscape around Ubud, village and temple country in the east, then Bali’s southern cliffs and Kecak at sunset.",
+    itinerary: [
+      { time: "Day 1", title: "Ancient Ubud and Tampaksiring", description: "Begin with Gunung Kawi and Tirta Empul, stop for lunch where you choose, and finish at Goa Gajah or a rice-field viewpoint according to your pace." },
+      { time: "Day 2", title: "Sidemen and Besakih", description: "Travel east for a Sidemen valley view and optional weaving visit, then continue to Besakih using the temple complex’s official visitor process." },
+      { time: "Day 3", title: "Uluwatu and Kecak sunset", description: "Keep the morning free, start after lunch for one south-coast stop, then visit Uluwatu and the Kecak performance before dinner in Jimbaran or your hotel return." },
+    ],
+    inclusions: ["One private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver on all 3 touring days", "Daily hotel pickup and drop-off on the confirmed route", "Fuel and parking", "Route review by WhatsApp before the first day", "Drinking water"],
+    exclusions: ["Accommodation", "Attraction, temple, and Kecak admission tickets", "Meals and personal purchases", "Licensed site or temple guides", "Extra hours or remote hotel repositioning not agreed in the route", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 2500000 }],
+    meetingPoint: "Your confirmed Bali hotel or villa",
+    meetingNote: "This is a driver-led private route, not a licensed guided tour. We confirm your hotels and the practical order before accepting the request; days can be separated if driver availability allows.",
+    cancellationPolicy: STANDARD_CANCELLATION_POLICY,
+  },
+  "bali-four-region-private-journey": {
+    summary: "A four-day private driver plan built by region, not by a crowded attraction checklist. Explore central Bali, the western highlands, the east, and the southern coast on separate days.",
+    itinerary: [
+      { time: "Day 1", title: "Ubud and Tampaksiring", description: "Choose a balanced mix of Gunung Kawi, Tirta Empul, Goa Gajah, and one rice-field stop. Your driver helps keep the day realistic rather than forcing every option in." },
+      { time: "Day 2", title: "Jatiluwih and Bedugul", description: "Follow the westbound highland route through Taman Ayun, Jatiluwih, and Ulun Danu Beratan, with time for lunch at your preferred budget." },
+      { time: "Day 3", title: "Sidemen and east Bali", description: "Visit the Sidemen valley and a confirmed weaving stop, then choose Besakih or a water-palace route depending on your interests and hotel position." },
+      { time: "Day 4", title: "South coast and Uluwatu", description: "Take a later start for one beach or cultural stop, Uluwatu Temple, and the Kecak performance, with optional dinner in Jimbaran paid directly." },
+    ],
+    inclusions: ["One private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver on all 4 touring days", "Daily hotel pickup and drop-off on the confirmed route", "Fuel and parking", "Route review by WhatsApp before the first day", "Drinking water"],
+    exclusions: ["Accommodation", "Admission and activity tickets", "Meals and personal purchases", "Licensed site or temple guides", "Extra hours or remote hotel repositioning not agreed in the route", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 3300000 }],
+    meetingPoint: "Your confirmed Bali hotel or villa",
+    meetingNote: "We check your hotel sequence before confirming. If the route would create excessive backtracking, we will suggest moving a day or changing one stop rather than quietly adding hours in the car.",
+    cancellationPolicy: STANDARD_CANCELLATION_POLICY,
+  },
+  "five-day-bali-private-driver-circuit": {
+    summary: "Five private driver days for travelers who want Bali’s major regions without racing through them: central Bali, the UNESCO highlands, the north, the east, and the southern cliffs.",
+    itinerary: [
+      { time: "Day 1", title: "Ubud and Tampaksiring", description: "Explore the sacred and archaeological sites around Tampaksiring, then add one Ubud-area landscape stop according to your energy." },
+      { time: "Day 2", title: "Jatiluwih and Bedugul", description: "Travel through Taman Ayun to the Jatiluwih rice terraces and Ulun Danu Beratan, keeping this day focused on the western highlands." },
+      { time: "Day 3", title: "North Bali waterfalls", description: "Start early for Sekumpul or a more accessible waterfall route. Your driver adjusts the highland crossing for weather and your walking ability." },
+      { time: "Day 4", title: "Sidemen and east Bali", description: "See Sidemen’s working landscape and weaving tradition, then choose Besakih or the eastern water palaces as the day’s main temple route." },
+      { time: "Day 5", title: "Uluwatu at sunset", description: "Finish with a slower south-coast day, Uluwatu Temple, the Kecak performance, and an optional Jimbaran dinner paid directly." },
+    ],
+    inclusions: ["One private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver on all 5 touring days", "Daily hotel pickup and drop-off on the confirmed route", "Fuel and parking", "Route review by WhatsApp before the first day", "Drinking water"],
+    exclusions: ["Accommodation", "Admission and activity tickets", "Meals and personal purchases", "Licensed site or temple guides", "Extra hours or remote hotel repositioning not agreed in the route", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 4100000 }],
+    meetingPoint: "Your confirmed Bali hotel or villa",
+    meetingNote: "The five touring days do not have to be consecutive, subject to driver availability. We confirm the hotel sequence first because the same stops can feel easy or exhausting depending on where you sleep.",
+    cancellationPolicy: STANDARD_CANCELLATION_POLICY,
+  },
   "private-car-charter-bali": {
     summary: "Keep the day flexible with one private air-conditioned vehicle and an experienced local driver. Ubud pickup is included; longer pickups from Kuta, Canggu, or Uluwatu are quoted before you confirm.",
     itinerary: [
@@ -520,3 +578,4 @@ export function getTourDetail(tour: MockTour): MockTourDetail {
     ],
   };
 }
+  
