@@ -133,10 +133,10 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
 
           <section aria-labelledby="pricing-heading">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay">Group pricing</p>
-            <h2 id="pricing-heading" className="mt-3 font-serif text-4xl sm:text-5xl">{isExperienceDay ? "Complete day price per person" : "Price per person"}</h2>
+            <h2 id="pricing-heading" className="mt-3 font-serif text-4xl sm:text-5xl">{tour.pricingMode === "PER_VEHICLE" ? "One price for the vehicle" : isExperienceDay ? "Complete day price per person" : "Price per person"}</h2>
             <div className="mt-7 overflow-hidden border border-charcoal/25 bg-frangipani">
               <div className="grid grid-cols-[1fr_1fr_0.8fr] border-b border-charcoal/20 bg-terrace px-4 py-3 text-xs font-bold uppercase tracking-[0.1em] text-frangipani sm:px-6">
-                <span>Group size</span><span>Per person</span><span className="text-right">USD est.</span>
+                <span>Group size</span><span>{tour.pricingMode === "PER_VEHICLE" ? "Per vehicle" : "Per person"}</span><span className="text-right">USD est.</span>
               </div>
               {tour.pricingTiers.map((tier) => (
                 <div key={tier.minPax} className="grid min-h-14 grid-cols-[1fr_1fr_0.8fr] items-center border-b border-charcoal/15 px-4 text-sm last:border-b-0 sm:px-6">
@@ -178,7 +178,7 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
           </section>
         </div>
 
-        <BookingWidget tourSlug={tour.slug} pricingTiers={tour.pricingTiers} maxGroupSize={tour.maxGroupSize} blackoutDates={blackoutDates} initialDate={initialDate} initialPax={initialPax} automaticDiscounts={automaticOffersForTour(automaticOffers, slug)} />
+        <BookingWidget tourSlug={tour.slug} pricingTiers={tour.pricingTiers} pricingMode={tour.pricingMode ?? "PER_PERSON"} maxGroupSize={tour.maxGroupSize} blackoutDates={blackoutDates} initialDate={initialDate} initialPax={initialPax} automaticDiscounts={automaticOffersForTour(automaticOffers, slug)} />
       </div>
 
       <SiteFooter />
