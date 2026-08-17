@@ -27,6 +27,7 @@ export function TourEditorForm({ tour, preview }: { tour: AdminTourEditorData; p
   const itinerary = tour.itinerary.map((stop) => `${stop.timeLabel} | ${stop.title} | ${stop.description}`).join("\n");
   const pricing = tour.pricingTiers.map((tier) => `${tier.minPax}-${tier.maxPax} | ${tier.perPersonIdr}`).join("\n");
   const addons = tour.addons.map((addon) => `${addon.code} | ${addon.title} | ${addon.priceIdr} | ${addon.pricingMode} | ${addon.costPriceIdr ?? ""} | ${addon.description ?? ""}`).join("\n");
+  const variants = tour.variants.map((variant) => `${variant.code} | ${variant.title} | ${variant.priceAdjustmentIdr} | ${variant.supplierUnitCostIdr} | ${variant.guestsPerUnit} | ${variant.remainderCostIdr} | ${variant.isDefault ? "yes" : "no"} | ${variant.description ?? ""}`).join("\n");
 
   return (
     <div className="space-y-8">
@@ -48,7 +49,8 @@ export function TourEditorForm({ tour, preview }: { tour: AdminTourEditorData; p
                 <option value="PER_PERSON">Per person</option>
                 <option value="PER_VEHICLE">Per vehicle / booking</option>
               </Select>
-              <Input label="Internal package cost in IDR" name="baseCostIdr" type="number" min={0} step={5000} defaultValue={tour.baseCostIdr ?? ""} hint="Private—never shown to guests." />
+              <Input label="Fixed internal cost in IDR" name="baseCostIdr" type="number" min={0} step={5000} defaultValue={tour.baseCostIdr ?? ""} hint="Per booking, such as the driver and vehicle. Private." />
+              <Input label="Internal cost per traveler in IDR" name="perPaxCostIdr" type="number" min={0} step={5000} defaultValue={tour.perPaxCostIdr ?? ""} hint="Ticket or activity supplier cost for each guest. Private." />
               <Input label="Optional child price in IDR" name="childPriceIdr" type="number" min={0} step={5000} defaultValue={tour.childPriceIdr ?? ""} hint="Leave empty to charge the adult rate." />
               <Input label="Child age label" name="childAgeLabel" defaultValue={tour.childAgeLabel ?? ""} hint="For example: ages 3–12." />
               <Input label="Maximum group size" name="maxGroupSize" type="number" min={1} max={50} required defaultValue={tour.maxGroupSize} />
@@ -76,6 +78,7 @@ export function TourEditorForm({ tour, preview }: { tour: AdminTourEditorData; p
               <div><FieldLabel htmlFor="imageAlts" hint="one plain-language description per image, in the same order">Image descriptions</FieldLabel><textarea id="imageAlts" name="imageAlts" required rows={6} defaultValue={tour.imageAlts.join("\n")} className={textAreaClass} /></div>
               <div><FieldLabel htmlFor="pricingTiers" hint="min-max | price in IDR (uses the pricing method above)">Group pricing tiers</FieldLabel><textarea id="pricingTiers" name="pricingTiers" required rows={5} defaultValue={pricing} className={`${textAreaClass} font-mono text-xs`} /></div>
               <div><FieldLabel htmlFor="addons" hint="code | title | selling price | mode | internal cost | description">Optional add-ons</FieldLabel><textarea id="addons" name="addons" rows={6} defaultValue={addons} className={`${textAreaClass} font-mono text-xs`} /></div>
+              <div><FieldLabel htmlFor="variants" hint="code | title | price adjustment per guest | supplier unit cost | guests per unit | odd guest cost | yes/no default | description">Package options</FieldLabel><textarea id="variants" name="variants" rows={6} defaultValue={variants} className={`${textAreaClass} font-mono text-xs`} /><p className="mt-2 text-xs leading-5 text-weathered">Use this for selectable versions such as standard/premium or solo/shared. Enter one default option. Supplier costs stay private.</p></div>
             </div>
           </section>
 

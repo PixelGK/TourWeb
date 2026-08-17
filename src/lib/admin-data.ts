@@ -3,11 +3,12 @@ import "server-only";
 import { BookingStatus, Prisma } from "@/generated/prisma/client";
 import { mockAdminBookings, mockUpcomingAvailability } from "@/data/mock-admin";
 import { getMockAddons } from "@/data/mock-addons";
+import { getMockVariants } from "@/data/mock-variants";
 import { getTourDetail } from "@/data/mock-tour-details";
 import { allTours, topTours } from "@/data/mock-tours";
 import { getPrisma } from "@/lib/db";
 import { hasDatabaseConfiguration } from "@/lib/server-env";
-import { calculatePackageTotal } from "@/lib/tour-pricing";
+import { calculatePackageTotal, calculateVariantPriceAdjustment, calculateVariantSupplierCost } from "@/lib/tour-pricing";
 
 export interface AdminTourRow {
   id: string;
@@ -69,6 +70,7 @@ export interface AdminTourEditorData {
   basePriceIdr: number;
   pricingMode: "PER_PERSON" | "PER_VEHICLE";
   baseCostIdr: number | null;
+  perPaxCostIdr: number | null;
   childPriceIdr: number | null;
   childAgeLabel: string | null;
   location: string;
@@ -85,6 +87,7 @@ export interface AdminTourEditorData {
   itinerary: Array<{ timeLabel: string; title: string; description: string }>;
   pricingTiers: Array<{ minPax: number; maxPax: number; perPersonIdr: number }>;
   addons: Array<{ code: string; title: string; priceIdr: number; costPriceIdr: number | null; pricingMode: string; description: string | null }>;
+  variants: Array<{ code: string; title: string; description: string | null; priceAdjustmentIdr: number; supplierUnitCostIdr: number; guestsPerUnit: number; remainderCostIdr: number; isDefault: boolean }>;
 }
 
 export interface AdminMarginTourRow {
@@ -95,6 +98,8 @@ export interface AdminMarginTourRow {
   examplePax: number;
   exampleRevenueIdr: number;
   baseCostIdr: number | null;
+  perPaxCostIdr: number | null;
+  exampleCostIdr: number | null;
   estimatedGrossProfitIdr: number | null;
   estimatedGrossMarginPercent: number | null;
   addonCount: number;
@@ -285,10 +290,10 @@ export async function getAdminMargins(): Promise<AdminMarginData> {
       const pricingMode = tour.pricingMode ?? "PER_PERSON";
       const examplePax = 2;
       const exampleRevenueIdr = calculatePackageTotal({ pricingMode, pricingTiers: detail.pricingTiers, pax: examplePax });
-      const baseCostIdr = tour.slug === "private-car-charter-bali"
-        ? 400000
-        : tour.category === "Multi-Day Trips" ? Math.round(tour.durationHours / 24) * 400000 : null;
-      const estimatedGrossProfitIdr = baseCostIdr === null ? null : exampleRevenueIdr - baseCostIdr;
+      const baseCostIdr = tour.category === "Multi-Day Trips" ? Math.round(tour.durationHours / 24) * 500000 : 500000;
+      const perPaxCostIdr = tour.slug === "ubud-atv-jungle-trail" ? 275000 : null;
+      const exampleCostIdr = pricingMode === "PER_PERSON" && perPaxCostIdr === null ? null : baseCostIdr + (perPaxCostIdr ?? 0) * examplePax;
+      const estimatedGrossProfitIdr = exampleCostIdr === null ? null : exampleRevenueIdr - exampleCostIdr;
       return {
         id: tour.slug,
         title: tour.title,
@@ -297,6 +302,8 @@ export async function getAdminMargins(): Promise<AdminMarginData> {
         examplePax,
         exampleRevenueIdr,
         baseCostIdr,
+        perPaxCostIdr,
+        exampleCostIdr,
         estimatedGrossProfitIdr,
         estimatedGrossMarginPercent: estimatedGrossProfitIdr === null || exampleRevenueIdr === 0 ? null : estimatedGrossProfitIdr / exampleRevenueIdr * 100,
         addonCount: 0,
@@ -315,6 +322,7 @@ export async function getAdminMargins(): Promise<AdminMarginData> {
       include: {
         pricingTiers: { orderBy: { minPax: "asc" } },
         addons: { where: { active: true }, select: { costPriceIdr: true } },
+        variants: { where: { active: true }, orderBy: [{ isDefault: "desc" }, { title: "asc" }] },
       },
     }),
     prisma.booking.findMany({
@@ -325,7 +333,7 @@ export async function getAdminMargins(): Promise<AdminMarginData> {
       orderBy: { availability: { date: "asc" } },
       take: 100,
       include: {
-        tour: { select: { title: true, baseCostIdr: true } },
+        tour: { select: { title: true, pricingMode: true, baseCostIdr: true, perPaxCostIdr: true } },
         availability: { select: { date: true } },
         addons: { include: { addon: { select: { costPriceIdr: true } } } },
       },
@@ -334,13 +342,17 @@ export async function getAdminMargins(): Promise<AdminMarginData> {
 
   const tours = tourRows.map((tour) => {
     const examplePax = Math.min(2, tour.maxGroupSize);
+    const defaultVariant = tour.variants.find((variant) => variant.isDefault) ?? tour.variants[0];
     const exampleRevenueIdr = calculatePackageTotal({
       pricingMode: tour.pricingMode,
       pricingTiers: tour.pricingTiers,
       pax: examplePax,
       childPriceIdr: tour.childPriceIdr,
-    });
-    const estimatedGrossProfitIdr = tour.baseCostIdr === null ? null : exampleRevenueIdr - tour.baseCostIdr;
+    }) + calculateVariantPriceAdjustment(defaultVariant, examplePax);
+    const exampleCostIdr = tour.baseCostIdr === null || (tour.pricingMode === "PER_PERSON" && tour.perPaxCostIdr === null && !defaultVariant)
+      ? null
+      : tour.baseCostIdr + (tour.perPaxCostIdr ?? 0) * examplePax + (defaultVariant ? calculateVariantSupplierCost(defaultVariant, examplePax) : 0);
+    const estimatedGrossProfitIdr = exampleCostIdr === null ? null : exampleRevenueIdr - exampleCostIdr;
     return {
       id: tour.id,
       title: tour.title,
@@ -349,23 +361,26 @@ export async function getAdminMargins(): Promise<AdminMarginData> {
       examplePax,
       exampleRevenueIdr,
       baseCostIdr: tour.baseCostIdr,
+      perPaxCostIdr: tour.perPaxCostIdr,
+      exampleCostIdr,
       estimatedGrossProfitIdr,
       estimatedGrossMarginPercent: estimatedGrossProfitIdr === null || exampleRevenueIdr === 0 ? null : estimatedGrossProfitIdr / exampleRevenueIdr * 100,
       addonCount: tour.addons.length,
       addonsMissingCost: tour.addons.filter((addon) => addon.costPriceIdr === null).length,
     } satisfies AdminMarginTourRow;
-  }).toSorted((a, b) => Number(a.baseCostIdr !== null) - Number(b.baseCostIdr !== null)
+  }).toSorted((a, b) => Number(a.exampleCostIdr !== null) - Number(b.exampleCostIdr !== null)
     || (a.estimatedGrossMarginPercent ?? Number.POSITIVE_INFINITY) - (b.estimatedGrossMarginPercent ?? Number.POSITIVE_INFINITY));
 
   const bookings = bookingRows.map((booking) => {
     const baseCostIdr = booking.baseCostIdrSnapshot ?? booking.tour.baseCostIdr;
+    const perPaxCostIdr = booking.perPaxCostIdrSnapshot ?? booking.tour.perPaxCostIdr;
     const addonCosts = booking.addons.map((item) => {
       const unitCostIdr = item.unitCostIdr ?? item.addon.costPriceIdr;
       return unitCostIdr === null ? null : unitCostIdr * item.quantity;
     });
-    const estimatedCostIdr = baseCostIdr === null || addonCosts.some((cost) => cost === null)
+    const estimatedCostIdr = baseCostIdr === null || (booking.tour.pricingMode === "PER_PERSON" && perPaxCostIdr === null && booking.variantTitleSnapshot === null) || (booking.variantTitleSnapshot !== null && booking.variantSupplierCostIdrSnapshot === null) || addonCosts.some((cost) => cost === null)
       ? null
-      : baseCostIdr + addonCosts.reduce<number>((sum, cost) => sum + (cost ?? 0), 0);
+      : baseCostIdr + (perPaxCostIdr ?? 0) * booking.paxCount + (booking.variantSupplierCostIdrSnapshot ?? 0) + addonCosts.reduce<number>((sum, cost) => sum + (cost ?? 0), 0);
     const estimatedGrossProfitIdr = estimatedCostIdr === null ? null : booking.totalAmountIdr - estimatedCostIdr;
     return {
       id: booking.id,
@@ -401,16 +416,16 @@ export async function getAdminTourDetail(id: string) {
   if (!hasDatabaseConfiguration()) return null;
   return getPrisma().tour.findUnique({
     where: { id },
-    include: { itinerary: { orderBy: { position: "asc" } }, pricingTiers: { orderBy: { minPax: "asc" } }, addons: { orderBy: { title: "asc" } } },
+    include: { itinerary: { orderBy: { position: "asc" } }, pricingTiers: { orderBy: { minPax: "asc" } }, addons: { orderBy: { title: "asc" } }, variants: { orderBy: [{ isDefault: "desc" }, { title: "asc" }] } },
   });
 }
 
 export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorData> {
   if (!id) {
     return {
-      title: "", slug: "", description: "", category: "CUSTOM_TOUR", durationMinutes: 480, basePriceIdr: 0, pricingMode: "PER_PERSON", baseCostIdr: null, childPriceIdr: null, childAgeLabel: null,
+      title: "", slug: "", description: "", category: "CUSTOM_TOUR", durationMinutes: 480, basePriceIdr: 0, pricingMode: "PER_PERSON", baseCostIdr: null, perPaxCostIdr: null, childPriceIdr: null, childAgeLabel: null,
       location: "Bali", cardNote: "Private driver and direct support", featured: false, images: [], imageAlts: [], inclusions: [], exclusions: [], meetingPoint: "Your hotel or villa lobby", cancellationPolicy: "", maxGroupSize: 6,
-      published: false, itinerary: [], pricingTiers: [], addons: [],
+      published: false, itinerary: [], pricingTiers: [], addons: [], variants: [],
     };
   }
   if (!hasDatabaseConfiguration()) {
@@ -431,7 +446,8 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
       durationMinutes: tour.durationHours * 60,
       basePriceIdr: tour.priceIdr,
       pricingMode: tour.slug === "private-car-charter-bali" ? "PER_VEHICLE" : "PER_PERSON",
-      baseCostIdr: tour.slug === "private-car-charter-bali" ? 400000 : null,
+      baseCostIdr: tour.category === "Multi-Day Trips" ? Math.round(tour.durationHours / 24) * 500000 : 500000,
+      perPaxCostIdr: tour.slug === "ubud-atv-jungle-trail" ? 275000 : null,
       childPriceIdr: null,
       childAgeLabel: null,
       location: tour.location,
@@ -448,11 +464,12 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
       itinerary: detail.itinerary.map((stop) => ({ timeLabel: stop.time, title: stop.title, description: stop.description })),
       pricingTiers: detail.pricingTiers,
       addons: getMockAddons(tour.category, tour.slug).map((addon) => ({ ...addon, costPriceIdr: addon.code === "local-lunch" ? 120000 : addon.code.startsWith("pickup-") ? 100000 : null, description: addon.description })),
+      variants: getMockVariants(tour.slug).map((variant) => ({ ...variant, description: variant.description, supplierUnitCostIdr: variant.code === "standard-solo" ? 275000 : variant.code === "standard-tandem" ? 375000 : variant.code === "premium-solo" ? 500000 : 750000, remainderCostIdr: variant.code.startsWith("standard") ? 275000 : 500000 })),
     };
   }
   const tour = await getPrisma().tour.findUnique({
     where: { id },
-    include: { itinerary: { orderBy: { position: "asc" } }, pricingTiers: { orderBy: { minPax: "asc" } }, addons: { where: { active: true }, orderBy: { title: "asc" } } },
+    include: { itinerary: { orderBy: { position: "asc" } }, pricingTiers: { orderBy: { minPax: "asc" } }, addons: { where: { active: true }, orderBy: { title: "asc" } }, variants: { where: { active: true }, orderBy: [{ isDefault: "desc" }, { title: "asc" }] } },
   });
   if (!tour) return getAdminTourEditor();
   const knownTour = allTours.find((item) => item.slug === tour.slug);
@@ -467,6 +484,7 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
     basePriceIdr: tour.basePriceIdr,
     pricingMode: tour.pricingMode,
     baseCostIdr: tour.baseCostIdr,
+    perPaxCostIdr: tour.perPaxCostIdr,
     childPriceIdr: tour.childPriceIdr,
     childAgeLabel: tour.childAgeLabel,
     location: tour.location === "Bali" ? knownTour?.location ?? tour.location : tour.location,
@@ -483,6 +501,7 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
     itinerary: tour.itinerary.map((stop) => ({ timeLabel: stop.timeLabel, title: stop.title, description: stop.description })),
     pricingTiers: tour.pricingTiers,
     addons: tour.addons.map((addon) => ({ code: addon.code, title: addon.title, priceIdr: addon.priceIdr, costPriceIdr: addon.costPriceIdr, pricingMode: addon.pricingMode, description: addon.description })),
+    variants: tour.variants.map((variant) => ({ code: variant.code, title: variant.title, description: variant.description, priceAdjustmentIdr: variant.priceAdjustmentIdr, supplierUnitCostIdr: variant.supplierUnitCostIdr, guestsPerUnit: variant.guestsPerUnit, remainderCostIdr: variant.remainderCostIdr, isDefault: variant.isDefault })),
   };
 }
 
@@ -511,5 +530,4 @@ export async function getAdminCommerce() {
   };
 }
 
-export type AdminTourDetail = Prisma.TourGetPayload<{ include: { itinerary: true; pricingTiers: true; addons: true } }>;
-  
+export type AdminTourDetail = Prisma.TourGetPayload<{ include: { itinerary: true; pricingTiers: true; addons: true; variants: true } }>;

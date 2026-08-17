@@ -15,7 +15,7 @@ import type { BookingFlowMode } from "@/lib/booking-mode";
 import { getPrisma } from "@/lib/db";
 import { TERMS_VERSION } from "@/lib/legal";
 import type { PaymentState } from "@/lib/payments/types";
-import { calculatePackageTotal } from "@/lib/tour-pricing";
+import { calculatePackageTotal, calculateVariantSupplierCost } from "@/lib/tour-pricing";
 
 export class BookingError extends Error {
   constructor(message: string, public readonly code: "NOT_FOUND" | "SOLD_OUT" | "CONFLICT" | "INVALID", public readonly status = 400) {
@@ -60,6 +60,7 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
       include: {
         pricingTiers: { orderBy: { minPax: "asc" } },
         addons: { where: { active: true, code: { in: input.addonCodes } } },
+        variants: { where: { active: true }, orderBy: [{ isDefault: "desc" }, { title: "asc" }] },
         availability: { where: { date, isOpen: true }, take: 1 },
         itinerary: { orderBy: { position: "asc" }, take: 1, select: { timeLabel: true } },
       },
@@ -68,6 +69,10 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
     if (input.pax > tour.maxGroupSize) throw new BookingError(`This tour accepts up to ${tour.maxGroupSize} travelers`, "INVALID");
     if (tour.addons.length !== input.addonCodes.length) throw new BookingError("One or more selected add-ons are unavailable", "INVALID");
     if (tour.addons.filter((addon) => addon.code.startsWith("pickup-")).length > 1) throw new BookingError("Choose only one pickup area", "INVALID");
+    const variant = input.variantCode ? tour.variants.find((item) => item.code === input.variantCode) : tour.variants.find((item) => item.isDefault) ?? tour.variants[0];
+    if (tour.variants.length && !variant) throw new BookingError("Choose an available ride option", "INVALID");
+    if (!tour.variants.length && input.variantCode) throw new BookingError("This package does not have ride options", "INVALID");
+    if (variant && input.pax < variant.guestsPerUnit) throw new BookingError(`${variant.title} requires at least ${variant.guestsPerUnit} travelers`, "INVALID");
 
     const pickupTime = tour.itinerary[0]?.timeLabel.match(/(?:^|\D)([01]\d|2[0-3]):([0-5]\d)(?:\D|$)/);
     const pickupHour = pickupTime?.[1] ?? "08";
@@ -117,6 +122,7 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
       unitCostIdr: addon.costPriceIdr,
     }));
     const addonTotal = addonRows.reduce((sum, addon) => sum + addon.quantity * addon.unitPriceIdr, 0);
+    const variantPriceAdjustmentIdr = (variant?.priceAdjustmentIdr ?? 0) * input.pax;
     const packageTotalIdr = calculatePackageTotal({
       pricingMode: tour.pricingMode,
       pricingTiers: tour.pricingTiers,
@@ -124,7 +130,9 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
       adultCount: input.adultCount,
       childCount: input.childCount,
       childPriceIdr,
-    });
+    }) + variantPriceAdjustmentIdr;
+    if (packageTotalIdr < 0) throw new BookingError("The selected option produced an invalid package price", "INVALID");
+    const variantSupplierCostIdr = variant ? calculateVariantSupplierCost(variant, input.pax) : null;
     const subtotalIdr = packageTotalIdr + addonTotal;
 
     let enteredDiscount: { id: string; percentOff: number } | null = null;
@@ -186,6 +194,12 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
         notes: input.traveler.notes || null,
         totalAmountIdr,
         baseCostIdrSnapshot: tour.baseCostIdr,
+        perPaxCostIdrSnapshot: tour.perPaxCostIdr,
+        variantId: variant?.id,
+        variantCodeSnapshot: variant?.code,
+        variantTitleSnapshot: variant?.title,
+        variantPriceAdjustmentIdrSnapshot: variantPriceAdjustmentIdr,
+        variantSupplierCostIdrSnapshot: variantSupplierCostIdr,
         discountCodeId: discount?.id,
         discountPercent: discount?.percentOff,
         discountAmountIdr,
@@ -373,4 +387,3 @@ export function toPaymentBooking(booking: Booking & { tour: { title: string } })
     totalAmountIdr: booking.totalAmountIdr,
   };
 }
-  

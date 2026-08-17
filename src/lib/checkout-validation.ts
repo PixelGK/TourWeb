@@ -14,6 +14,7 @@ export const checkoutRequestSchema = z.object({
   adultCount: z.coerce.number().int().min(1).max(20),
   childCount: z.coerce.number().int().min(0).max(20),
   discountCode: z.string().trim().toUpperCase().regex(/^[A-Z0-9-]{3,30}$/).optional().or(z.literal("")),
+  variantCode: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional().or(z.literal("")),
   addonCodes: z.array(z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)).max(10).transform((items) => [...new Set(items)].sort()),
   termsAccepted: z.literal(true),
   traveler: z.object({

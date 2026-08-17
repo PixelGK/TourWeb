@@ -17,12 +17,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ tour?: string; date?: string; pax?: string }> }) {
+export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ tour?: string; date?: string; pax?: string; variant?: string }> }) {
   const params = await searchParams;
   const tour = params.tour ? await getPublicTour(params.tour) : null;
   const pax = Number(params.pax);
   const date = params.date;
   if (!tour || !date || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !isInsideBookingWindow(date) || !Number.isInteger(pax) || pax < 1 || pax > tour.maxGroupSize) notFound();
+  const selectedVariant = tour.variants.find((variant) => variant.code === params.variant) ?? tour.variants.find((variant) => variant.isDefault) ?? tour.variants[0];
+  if (selectedVariant && selectedVariant.guestsPerUnit > pax) notFound();
 
   const travelDate = new Date(`${date}T00:00:00.000Z`);
   const [blackout, automaticDiscount] = hasDatabaseConfiguration()
@@ -46,6 +48,8 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
         pricingTiers={tour.pricingTiers}
         pricingMode={tour.pricingMode ?? "PER_PERSON"}
         addons={tour.addons}
+        variants={tour.variants}
+        initialVariantCode={selectedVariant?.code ?? ""}
         childPriceIdr={tour.childPriceIdr}
         childAgeLabel={tour.childAgeLabel}
         automaticDiscount={automaticDiscount ? { name: automaticDiscount.name ?? "Seasonal offer", percentOff: automaticDiscount.percentOff } : null}

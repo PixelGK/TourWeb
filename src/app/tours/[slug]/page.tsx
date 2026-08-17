@@ -181,7 +181,7 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
           </section>
         </div>
 
-        <BookingWidget tourSlug={tour.slug} pricingTiers={tour.pricingTiers} pricingMode={tour.pricingMode ?? "PER_PERSON"} maxGroupSize={tour.maxGroupSize} blackoutDates={blackoutDates} initialDate={initialDate} initialPax={initialPax} automaticDiscounts={automaticOffersForTour(automaticOffers, slug)} />
+        <BookingWidget tourSlug={tour.slug} pricingTiers={tour.pricingTiers} pricingMode={tour.pricingMode ?? "PER_PERSON"} variants={tour.variants} maxGroupSize={tour.maxGroupSize} blackoutDates={blackoutDates} initialDate={initialDate} initialPax={initialPax} automaticDiscounts={automaticOffersForTour(automaticOffers, slug)} />
       </div>
 
       <SiteFooter />

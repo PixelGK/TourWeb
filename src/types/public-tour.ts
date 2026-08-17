@@ -43,6 +43,15 @@ export interface PublicTourAddon {
   pricingMode: "PER_PERSON" | "PER_BOOKING";
 }
 
+export interface PublicTourVariant {
+  code: string;
+  title: string;
+  description: string;
+  priceAdjustmentIdr: number;
+  guestsPerUnit: number;
+  isDefault: boolean;
+}
+
 export interface PublicTourDetail extends PublicTourCard {
   summary: string;
   gallery: TourGalleryImage[];
@@ -57,4 +66,5 @@ export interface PublicTourDetail extends PublicTourCard {
   childPriceIdr: number | null;
   childAgeLabel: string | null;
   addons: PublicTourAddon[];
+  variants: PublicTourVariant[];
 }

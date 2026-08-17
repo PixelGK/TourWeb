@@ -54,6 +54,24 @@ function parseAddons(value: FormDataEntryValue | null) {
   });
 }
 
+function parseVariants(value: FormDataEntryValue | null) {
+  const variants = lines(value).map((line, index) => {
+    const [code, title, adjustmentText, costText, guestsText, remainderText, defaultText, ...descriptionParts] = line.split("|").map((part) => part.trim());
+    const priceAdjustmentIdr = Number(adjustmentText);
+    const supplierUnitCostIdr = Number(costText);
+    const guestsPerUnit = Number(guestsText);
+    const remainderCostIdr = Number(remainderText);
+    const isDefault = /^(yes|true|default)$/i.test(defaultText ?? "");
+    if (!code?.match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) || !title || !Number.isInteger(priceAdjustmentIdr) || Math.abs(priceAdjustmentIdr) > 2_000_000_000 || !Number.isInteger(supplierUnitCostIdr) || supplierUnitCostIdr < 0 || !Number.isInteger(guestsPerUnit) || guestsPerUnit < 1 || guestsPerUnit > 6 || !Number.isInteger(remainderCostIdr) || remainderCostIdr < 0) {
+      throw new Error(`Option line ${index + 1} needs code | title | price adjustment per guest | supplier unit cost | guests per unit | odd guest cost | yes/no default | description`);
+    }
+    return { code, title, priceAdjustmentIdr, supplierUnitCostIdr, guestsPerUnit, remainderCostIdr, isDefault, description: descriptionParts.join(" | ") || null };
+  });
+  if (new Set(variants.map((variant) => variant.code)).size !== variants.length) throw new Error("Ride option codes must be unique");
+  if (variants.length && variants.filter((variant) => variant.isDefault).length !== 1) throw new Error("Choose exactly one default ride option");
+  return variants;
+}
+
 const tourSchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().trim().min(3).max(140),
@@ -64,6 +82,7 @@ const tourSchema = z.object({
   basePriceIdr: z.coerce.number().int().min(0).max(2_000_000_000),
   pricingMode: z.enum(TourPricingMode),
   baseCostIdr: z.union([z.literal(""), z.coerce.number().int().min(0).max(2_000_000_000)]),
+  perPaxCostIdr: z.union([z.literal(""), z.coerce.number().int().min(0).max(2_000_000_000)]),
   childPriceIdr: z.union([z.literal(""), z.coerce.number().int().min(0).max(2_000_000_000)]),
   childAgeLabel: z.string().trim().max(80),
   location: z.string().trim().min(2).max(120),
@@ -95,6 +114,7 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
       basePriceIdr: formData.get("basePriceIdr"),
       pricingMode: formData.get("pricingMode"),
       baseCostIdr: formData.get("baseCostIdr"),
+      perPaxCostIdr: formData.get("perPaxCostIdr"),
       childPriceIdr: formData.get("childPriceIdr"),
       childAgeLabel: formData.get("childAgeLabel"),
       location: formData.get("location"),
@@ -112,6 +132,7 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
     const itinerary = parseItinerary(formData.get("itinerary"));
     const pricingTiers = parsePricing(formData.get("pricingTiers"));
     const addons = parseAddons(formData.get("addons"));
+    const variants = parseVariants(formData.get("variants"));
     if (!images.length || !itinerary.length || !pricingTiers.length) throw new Error("Add at least one image, itinerary stop, and pricing tier");
     if (images.some((image) => { try { const url = new URL(image); return !["http:", "https:"].includes(url.protocol); } catch { return true; } })) throw new Error("Every image must be a valid http or https URL");
     if (imageAlts.length !== images.length) throw new Error("Add one image description for each image URL");
@@ -131,6 +152,7 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
         basePriceIdr: input.basePriceIdr,
         pricingMode: input.pricingMode,
         baseCostIdr: input.baseCostIdr === "" ? null : input.baseCostIdr,
+        perPaxCostIdr: input.perPaxCostIdr === "" ? null : input.perPaxCostIdr,
         childPriceIdr: input.childPriceIdr === "" ? null : input.childPriceIdr,
         childAgeLabel: input.childPriceIdr === "" ? null : input.childAgeLabel || null,
         location: input.location,
@@ -161,6 +183,15 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
           where: { tourId_code: { tourId: tour.id, code: addon.code } },
           update: { ...addon, active: true },
           create: { ...addon, tourId: tour.id, active: true },
+        });
+      }
+      const variantCodes = variants.map((variant) => variant.code);
+      await tx.tourVariant.updateMany({ where: { tourId: tour.id, code: { notIn: variantCodes } }, data: { active: false, isDefault: false } });
+      for (const variant of variants) {
+        await tx.tourVariant.upsert({
+          where: { tourId_code: { tourId: tour.id, code: variant.code } },
+          update: { ...variant, active: true },
+          create: { ...variant, tourId: tour.id, active: true },
         });
       }
       return tour;

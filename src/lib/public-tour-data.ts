@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { getMockAddons } from "@/data/mock-addons";
+import { getMockVariants } from "@/data/mock-variants";
 import { getTourDetail as getMockTourDetail } from "@/data/mock-tour-details";
 import { allTours, topTours } from "@/data/mock-tours";
 import type { TourCategory, TourPricingMode } from "@/generated/prisma/client";
@@ -119,6 +120,7 @@ export const getPublicTour = cache(async (slug: string): Promise<PublicTourDetai
       childPriceIdr: null,
       childAgeLabel: null,
       addons: getMockAddons(mock.category, mock.slug),
+      variants: getMockVariants(mock.slug),
     };
   }
 
@@ -128,6 +130,7 @@ export const getPublicTour = cache(async (slug: string): Promise<PublicTourDetai
       itinerary: { orderBy: { position: "asc" } },
       pricingTiers: { orderBy: { minPax: "asc" } },
       addons: { where: { active: true }, orderBy: { title: "asc" } },
+      variants: { where: { active: true }, orderBy: [{ isDefault: "desc" }, { title: "asc" }] },
     },
   });
   if (!tour || tour.images.length === 0) return null;
@@ -158,6 +161,14 @@ export const getPublicTour = cache(async (slug: string): Promise<PublicTourDetai
       description: addon.description ?? "",
       priceIdr: addon.priceIdr,
       pricingMode: addon.pricingMode,
+    })),
+    variants: tour.variants.map((variant) => ({
+      code: variant.code,
+      title: variant.title,
+      description: variant.description ?? "",
+      priceAdjustmentIdr: variant.priceAdjustmentIdr,
+      guestsPerUnit: variant.guestsPerUnit,
+      isDefault: variant.isDefault,
     })),
   };
 });

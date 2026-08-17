@@ -6,10 +6,10 @@ import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { PricingTier, TourPricingMode } from "@/types/public-tour";
+import type { PricingTier, PublicTourVariant, TourPricingMode } from "@/types/public-tour";
 import type { MockAddon } from "@/data/mock-addons";
 import { cn } from "@/lib/utils";
-import { calculatePackageTotal } from "@/lib/tour-pricing";
+import { calculatePackageTotal, calculateVariantPriceAdjustment } from "@/lib/tour-pricing";
 
 const idr = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
 const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -32,16 +32,19 @@ interface CheckoutFlowProps {
   pricingTiers: PricingTier[];
   pricingMode: TourPricingMode;
   addons: MockAddon[];
+  variants: PublicTourVariant[];
+  initialVariantCode: string;
   childPriceIdr: number | null;
   childAgeLabel: string | null;
   automaticDiscount: { name: string; percentOff: number } | null;
   mode: "request" | "payment";
 }
 
-export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addons, childPriceIdr, childAgeLabel, automaticDiscount, mode }: CheckoutFlowProps) {
+export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addons, variants, initialVariantCode, childPriceIdr, childAgeLabel, automaticDiscount, mode }: CheckoutFlowProps) {
   const [step, setStep] = useState(1);
   const [traveler, setTraveler] = useState<TravelerState>({ name: "", email: "", phone: "", country: "", hotelName: "", notes: "" });
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+  const [variantCode, setVariantCode] = useState(initialVariantCode);
   const hasLunchOption = addons.some((addon) => addon.code === "local-lunch");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -60,7 +63,8 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
   const lunchIncluded = lunchAddon ? selectedAddons.includes(lunchAddon.code) : false;
   const selectedExtraCount = selectedAddons.filter((code) => code !== lunchAddon?.code && !code.startsWith("pickup-")).length;
   const addOnTotal = addons.filter((addon) => selectedAddons.includes(addon.code)).reduce((sum, addon) => sum + addon.priceIdr * (addon.pricingMode === "PER_PERSON" ? pax : 1), 0);
-  const basePackageTotalIdr = calculatePackageTotal({ pricingMode, pricingTiers, pax, adultCount, childCount, childPriceIdr });
+  const selectedVariant = variants.find((variant) => variant.code === variantCode);
+  const basePackageTotalIdr = calculatePackageTotal({ pricingMode, pricingTiers, pax, adultCount, childCount, childPriceIdr }) + calculateVariantPriceAdjustment(selectedVariant, pax);
   const packageSubtotalIdr = basePackageTotalIdr + addOnTotal;
   const activeDiscount = promoDiscount && (!automaticDiscount || promoDiscount.percentOff >= automaticDiscount.percentOff)
     ? { label: promoDiscount.code, percentOff: promoDiscount.percentOff }
@@ -141,6 +145,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
           adultCount,
           childCount,
           discountCode: promoDiscount?.code ?? "",
+          variantCode,
           addonCodes: selectedAddons,
           termsAccepted,
           traveler: {
@@ -219,125 +224,76 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
               </fieldset>
             ) : null}
 
-            {pickupAddons.length ? (
+            {variants.length ? (
               <fieldset className="mt-8">
-                <legend className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Pickup area</legend>
-                <p className="mt-2 text-sm leading-6 text-weathered">Ubud pickup is included. The longer pickup areas carry one fixed surcharge for the vehicle, not per guest.</p>
+                <legend className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Ride option</legend>
+                <p className="mt-2 text-sm leading-6 text-weathered">Choose the ATV setup for your group. Shared options place two travelers on each ATV; an odd guest rides solo.</p>
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <label className={cn("cursor-pointer border p-4 transition-colors hover:bg-frangipani", !selectedPickup ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25")}>
-                    <input type="radio" name="pickup-area" checked={!selectedPickup} onChange={() => choosePickup(null)} className="mr-3 size-4 accent-terrace" />
-                    <strong>Ubud</strong><span className="ml-2 text-sm text-weathered">Included</span>
-                  </label>
-                  {pickupAddons.map((addon) => (
-                    <label key={addon.code} className={cn("cursor-pointer border p-4 transition-colors hover:bg-frangipani", selectedPickup?.code === addon.code ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25")}>
-                      <input type="radio" name="pickup-area" checked={selectedPickup?.code === addon.code} onChange={() => choosePickup(addon.code)} className="mr-3 size-4 accent-terrace" />
-                      <strong>{addon.title.replace("Pickup from ", "")}</strong><span className="ml-2 text-sm tabular-nums text-weathered">+ {idr.format(addon.priceIdr)}</span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-            ) : null}
+                  {variants.map((variant) => {
+                    const unavailable = variant.guestsPerUnit > pax;
+                    return <label key={variant.code} className={cn("border p-5 transition-colors", unavailable ? "cursor-not-allowed border-charcoal/15 opacity-55" : "cursor-pointer hover:bg-frangipani", variantCode === variant.code && !unavailable ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25") }>
+                      <span className="flex items-start gap-3"><input type="radio" name="ride-option" value={variant.code} checked={variantCode === variant.code} disabled={unavailable} onChange={() => setVariantCode(variant.code)} className="mt-1 size-5 shrink-0 accent-terrace" /><span><strong className="block">{variant.title}</strong><span className="mt-1 block text-sm leading-6 text-weathered">{variant.description}</span><span className="mt-3 block font-semibold tabular-nums text-terrace">{variant.priceAdjustmentIdr === 0 ? "Included in shown price" : `${variant.priceAdjustmentIdr > 0 ? "+" : "âˆÛ›h‘éì¶»§q«^wİ\OÜÜ[ÜÜ[ÜÜ[‚ˆÛX™[ÂˆJ_BˆÙ]‚ˆÙšY[Ù]‚ˆ
+Hˆ[B‚ˆÜXÚİ\YÛœË›[™İÈ
+ˆšY[Ù]Û\ÜÓ˜[YOH›]N‚ˆYÙ[™Û\ÜÓ˜[YOH^^È›ÛX›Û\\˜Ø\ÙH˜XÚÚ[™ËVÌŒM[WH^XÛ^H”XÚİ\\™XOÛYÙ[™‚ˆÛ\ÜÓ˜[YOH›]Lˆ^\ÛHXY[™ËMˆ^]ÙX]\™Y•XYXÚİ\\È[˜ÛYYˆHÛ™Ù\ˆXÚİ\\™X\ÈØ\œHÛ™Hš^Yİ\˜Ú\™ÙH›ÜˆH™ZXÛK›İ\ˆİY\İÜ‚ˆ]ˆÛ\ÜÓ˜[YOH›]LÈÜšYØ\LÈÛN™ÜšYXÛÛËLˆ‚ˆX™[Û\ÜÓ˜[YO^ØÛŠ˜İ\œÛÜ‹\Ú[\ˆ›Ü™\ˆM˜[œÚ][Û‹XÛÛÜœÈİ™\˜™ËYœ˜[™Ú\[šH‹\Ù[XİYXÚİ\È˜›Ü™\‹]\œ˜XÙH™ËYœ˜[™Ú\[šHÚYİË\İ[ˆˆˆ˜›Ü™\‹XÚ\˜ÛØ[ÌHŠ_O‚ˆ[œ]\OHœ˜Y[Èˆ˜[YOHœXÚİ\X\™XHˆÚXÚÙY^È\Ù[XİYXÚİ\HÛÚ[™ÙO^Ê
+HOˆÚÛÜÙTXÚİ\
+[
+_HÛ\ÜÓ˜[YOH›\‹LÈÚ^™KMXØÙ[]\œ˜XÙHˆÏ‚ˆİ›Û™Ï•XYÜİ›Û™ÏÜ[ˆÛ\ÜÓ˜[YOH›[Lˆ^\ÛH^]ÙX]\™Y’[˜ÛYYÜÜ[‚ˆÛX™[‚ˆÜXÚİ\YÛœË›X\
 
-            {lunchAddon ? (
-              <fieldset className="mt-8">
-                <legend className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Lunch plan</legend>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <label className={cn("cursor-pointer border p-5 transition-colors hover:bg-frangipani", lunchIncluded ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25")}>
-                    <span className="flex items-start gap-3">
-                      <input type="radio" name="lunch-plan" checked={lunchIncluded} onChange={() => chooseLunch(true)} className="mt-1 size-5 shrink-0 accent-terrace" />
-                      <span>
-                        <strong className="block">Lunch included</strong>
-                        <span className="mt-1 block text-sm leading-6 text-weathered">{lunchAddon.description}</span>
-                        <span className="mt-3 block font-semibold tabular-nums text-terrace">+ {idr.format(lunchAddon.priceIdr * pax)} <span className="text-xs font-normal text-weathered">({idr.format(lunchAddon.priceIdr)} each)</span></span>
-                      </span>
-                    </span>
-                  </label>
-                  <label className={cn("cursor-pointer border p-5 transition-colors hover:bg-frangipani", !lunchIncluded ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25")}>
-                    <span className="flex items-start gap-3">
-                      <input type="radio" name="lunch-plan" checked={!lunchIncluded} onChange={() => chooseLunch(false)} className="mt-1 size-5 shrink-0 accent-terrace" />
-                      <span>
-                        <strong className="block">Choose where to eat</strong>
-                        <span className="mt-1 block text-sm leading-6 text-weathered">Your driver can suggest suitable stops, but you choose the restaurant and pay for your own food and drinks directly.</span>
-                        <span className="mt-3 block font-semibold text-terrace">No BaliXperience lunch charge</span>
-                      </span>
-                    </span>
-                  </label>
-                </div>
-              </fieldset>
-            ) : null}
+YÛŠHOˆ
+ˆX™[Ù^O^ØYÛ‹˜ÛÙ_HÛ\ÜÓ˜[YO^ØÛŠ˜İ\œÛÜ‹\Ú[\ˆ›Ü™\ˆM˜[œÚ][Û‹XÛÛÜœÈİ™\˜™ËYœ˜[™Ú\[šH‹Ù[XİYXÚİ\Ë˜ÛÙHOOHYÛ‹˜ÛÙHÈ˜›Ü™\‹]\œ˜XÙH™ËYœ˜[™Ú\[šHÚYİË\İ[ˆˆˆ˜›Ü™\‹XÚ\˜ÛØ[ÌHŠ_O‚ˆ[œ]\OHœ˜Y[Èˆ˜[YOHœXÚİ\X\™XHˆÚXÚÙY^ÜÙ[XİYXÚİ\Ë˜ÛÙHOOHYÛ‹˜ÛÙ_HÛÚ[™ÙO^Ê
+HOˆÚÛÜÙTXÚİ\
+YÛ‹˜ÛÙJ_HÛ\ÜÓ˜[YOH›\‹LÈÚ^™KMXØÙ[]\œ˜XÙHˆÏ‚ˆİ›Û™ÏØYÛ‹]Kœ™\XÙJ”XÚİ\œ›ÛH‹ˆŠ_OÜİ›Û™ÏÜ[ˆÛ\ÜÓ˜[YOH›[Lˆ^\ÛHX[\‹[[\È^]ÙX]\™YŠÈÚY‹™›Ü›X]
+YÛ‹œšXÙRYŠ_OÜÜ[‚ˆÛX™[‚ˆ
+J_BˆÙ]‚ˆÙšY[Ù]‚ˆ
+Hˆ[B‚ˆÛ[˜ÚYÛˆÈ
+ˆšY[Ù]Û\ÜÓ˜[YOH›]N‚ˆYÙ[™Û\ÜÓ˜[YOH^^È›ÛX›Û\\˜Ø\ÙH˜XÚÚ[™ËVÌŒM[WH^XÛ^H“[˜Ú[ÛYÙ[™‚ˆ]ˆÛ\ÜÓ˜[YOH›]LÈÜšYØ\LÈÛN™ÜšYXÛÛËLˆ‚ˆX™[Û\ÜÓ˜[YO^ØÛŠ˜İ\œÛÜ‹\Ú[\ˆ›Ü™\ˆMH˜[œÚ][Û‹XÛÛÜœÈİ™\˜™ËYœ˜[™Ú\[šH‹[˜Ú[˜ÛYYÈ˜›Ü™\‹]\œ˜XÙH™ËYœ˜[™Ú\[šHÚYİË\İ[ˆˆˆ˜›Ü™\‹XÚ\˜ÛØ[ÌHŠ_O‚ˆÜ[ˆÛ\ÜÓ˜[YOH™›^][\Ë\İ\Ø\LÈ‚ˆ[œ]\OHœ˜Y[Èˆ˜[YOH›[˜Ú\[ˆˆÚXÚÙY^Û[˜Ú[˜ÛYYHÛÚ[™ÙO^Ê
+HOˆÚÛÜÙS[˜Ú
+YJ_HÛ\ÜÓ˜[YOH›]LHÚ^™KMHÚš[šËLXØÙ[]\œ˜XÙHˆÏ‚ˆÜ[‚ˆİ›Û™ÈÛ\ÜÓ˜[YOH˜›ØÚÈ“[˜Ú[˜ÛYYÜİ›Û™Ï‚ˆÜ[ˆÛ\ÜÓ˜[YOH›]LH›ØÚÈ^\ÛHXY[™ËMˆ^]ÙX]\™YÛ[˜ÚYÛ‹™\ØÜš\[ÛŸOÜÜ[‚ˆÜ[ˆÛ\ÜÓ˜[YOH›]LÈ›ØÚÈ›Û\Ù[ZX›ÛX[\‹[[\È^]\œ˜XÙHŠÈÚY‹™›Ü›X]
+[˜ÚYÛ‹œšXÙRYˆ
+ˆ^
+_HÜ[ˆÛ\ÜÓ˜[YOH^^È›Û[›Ü›X[^]ÙX]\™YŠÚY‹™›Ü›X]
+[˜ÚYÛ‹œšXÙRYŠ_HXXÚ
+OÜÜ[ÜÜ[‚ˆÜÜ[‚ˆÜÜ[‚ˆÛX™[‚ˆX™[Û\ÜÓ˜[YO^ØÛŠ˜İ\œÛÜ‹\Ú[\ˆ›Ü™\ˆMH˜[œÚ][Û‹XÛÛÜœÈİ™\˜™ËYœ˜[™Ú\[šH‹[[˜Ú[˜ÛYYÈ˜›Ü™\‹]\œ˜XÙH™ËYœ˜[™Ú\[šHÚYİË\İ[ˆˆˆ˜›Ü™\‹XÚ\˜ÛØ[ÌHŠ_O‚ˆÜ[ˆÛ\ÜÓ˜[YOH™›^][\Ë\İ\Ø\LÈ‚ˆ[œ]\OHœ˜Y[Èˆ˜[YOH›[˜Ú\[ˆˆÚXÚÙY^È[[˜Ú[˜ÛYYHÛÚ[™ÙO^Ê
+HOˆÚÛÜÙS[˜Ú
+˜[ÙJ_HÛ\ÜÓ˜[YOH›]LHÚ^™KMHÚš[šËLXØÙ[]\œ˜XÙHˆÏ‚ˆÜ[‚ˆİ›Û™ÈÛ\ÜÓ˜[YOH˜›ØÚÈÚÛÜÙHÚ\™HÈX]Üİ›Û™Ï‚ˆÜ[ˆÛ\ÜÓ˜[YOH›]LH›ØÚÈ^\ÛHXY[™ËMˆ^]ÙX]\™Y–[İ\ˆš]™\ˆØ[ˆİYÙÙ\İİZ]X›HİÜË][İHÚÛÜÙHH™\İ]\˜[[™^H›Üˆ[İ\ˆİÛˆ›ÛÙ[™š[šÜÈ\™XİKÜÜ[‚ˆÜ[ˆÛ\ÜÓ˜[YOH›]LÈ›ØÚÈ›Û\Ù[ZX›Û^]\œ˜XÙH“›È˜[V\šY[˜ÙH[˜ÚÚ\™ÙOÜÜ[‚ˆÜÜ[‚ˆÜÜ[‚ˆÛX™[‚ˆÙ]‚ˆÙšY[Ù]‚ˆ
+Hˆ[B‚ˆÛİ\YÛœË›[™İÈ]ˆÛ\ÜÓ˜[YOH›]N]šYK^H]šYKXÚ\˜ÛØ[ÌŒ›Ü™\‹^H›Ü™\‹XÚ\˜ÛØ[ÌH‚ˆÛİ\YÛœË›X\
 
-            {otherAddons.length ? <div className="mt-8 divide-y divide-charcoal/20 border-y border-charcoal/25">
-              {otherAddons.map((addon) => {
-                const selected = selectedAddons.includes(addon.code);
-                const lineTotal = addon.priceIdr * (addon.pricingMode === "PER_PERSON" ? pax : 1);
-                return <label key={addon.code} className={cn("grid cursor-pointer grid-cols-[1.5rem_1fr_auto] gap-3 px-2 py-5 transition-colors hover:bg-frangipani sm:px-4", selected && "bg-frangipani")}>
-                  <input type="checkbox" checked={selected} onChange={() => setSelectedAddons((current) => selected ? current.filter((code) => code !== addon.code) : [...current, addon.code])} className="mt-1 size-5 accent-terrace" />
-                  <span><strong className="block">{addon.title}</strong><span className="mt-1 block text-sm leading-6 text-weathered">{addon.description}</span></span>
-                  <span className="text-right"><strong className="block tabular-nums">{idr.format(lineTotal)}</strong><span className="text-xs text-weathered">{addon.pricingMode === "PER_PERSON" ? `${idr.format(addon.priceIdr)} each` : "per booking"}</span></span>
-                </label>;
-              })}
-            </div> : null}
-            <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-              <Button variant="ghost" size="lg" onClick={() => setStep(1)}><ArrowLeft className="size-4" aria-hidden="true" /> Traveler details</Button>
-              <Button size="lg" onClick={() => { setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}>{mode === "request" ? "Review request" : "Review payment"} <ArrowRight className="size-4" aria-hidden="true" /></Button>
-            </div>
-          </section>
-        ) : null}
-
-        {step === 3 ? (
-          <section aria-labelledby="payment-heading">
-            <p className="text-xs font-bold uppercase tracking-[0.15em] text-clay">Step 3 of 3</p>
-            <h1 id="payment-heading" className="mt-2 font-serif text-4xl sm:text-5xl">{mode === "request" ? "Review your request" : "Review and pay"}</h1>
-            <div className="mt-7 border-l-4 border-gold bg-frangipani p-5 sm:p-6">
-              {mode === "request" ? <div className="flex gap-3"><CalendarCheck2 className="mt-0.5 size-5 shrink-0 text-terrace" aria-hidden="true" /><div><h2 className="font-bold">No payment today</h2><p className="mt-1 text-sm leading-6 text-weathered">Weâ€™ll check the driver and included arrangements, then contact you on WhatsApp. Your request is not confirmed and does not hold capacity until we accept it.</p></div></div> : <div className="flex gap-3"><LockKeyhole className="mt-0.5 size-5 shrink-0 text-terrace" aria-hidden="true" /><div><h2 className="font-bold">Youâ€™ll continue to Midtrans</h2><p className="mt-1 text-sm leading-6 text-weathered">Card, bank, or wallet details are entered only on Midtransâ€™s hosted checkout. BaliXperience never receives or stores raw card numbers.</p></div></div>}
-            </div>
-            <dl className="mt-8 divide-y divide-charcoal/20 border-y border-charcoal/25">
-              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lead traveler</dt><dd className="text-right font-semibold">{traveler.name}<br /><span className="font-normal text-weathered">{traveler.email}</span></dd></div>
-              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">{pricingMode === "PER_VEHICLE" ? `Vehicle for ${pax} guests` : "Package price"}</dt><dd className="font-semibold tabular-nums">{idr.format(basePackageTotalIdr)}</dd></div>
-              {pickupAddons.length ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Pickup area</dt><dd className="text-right font-semibold">{selectedPickup ? <>{selectedPickup.title.replace("Pickup from ", "")} Â· <span className="tabular-nums">+ {idr.format(selectedPickup.priceIdr)}</span></> : "Ubud Â· Included"}</dd></div> : null}
-              {lunchAddon ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? <>Included Â· <span className="tabular-nums">{idr.format(lunchAddon.priceIdr * pax)}</span></> : <>Choose your own Â· <span className="font-normal text-weathered">pay at restaurant</span></>}</dd></div> : null}
-              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold tabular-nums">{idr.format(addOnTotal - (lunchIncluded && lunchAddon ? lunchAddon.priceIdr * pax : 0))}</dd></div>
-              {activeDiscount ? <div className="flex justify-between gap-5 py-4 text-success"><dt>Package discount Â· {activeDiscount.label}</dt><dd className="font-semibold tabular-nums">âˆ’ {idr.format(discountAmountIdr)}</dd></div> : null}
-            </dl>
-            <div className="mt-6 border border-charcoal/25 bg-frangipani p-4">
-              {automaticDiscount ? <p className="mb-4 border-l-4 border-terrace bg-terrace/8 px-3 py-2 text-sm leading-6"><strong>{automaticDiscount.name}: {automaticDiscount.percentOff}% off</strong><span className="block text-weathered">Already applied for this travel dateâ€”no code needed.</span></p> : null}
-              <label htmlFor="discount-code" className="text-sm font-semibold">Discount code</label>
-              <div className="mt-2 flex gap-2">
-                <input id="discount-code" value={discountCode} onChange={(event) => { setDiscountCode(event.target.value.toUpperCase()); setPromoDiscount(null); }} maxLength={30} className="min-h-11 min-w-0 flex-1 rounded-field border border-charcoal/35 bg-limestone px-3.5 font-mono uppercase outline-none focus:border-terrace focus:ring-3 focus:ring-gold/30" />
-                <Button type="button" variant="outline" onClick={applyDiscount} loading={discountLoading}>Apply</Button>
-              </div>
-              {promoDiscount ? <p className="mt-2 text-xs font-semibold text-success">{activeDiscount?.label === promoDiscount.code ? `${promoDiscount.code} is applied to the package price.` : `${promoDiscount.code} is valid, but the seasonal offer gives you a better price.`}</p> : <p className="mt-2 text-xs text-weathered">Optional. Discounts apply to the package price, exclude optional extras, and do not stack.</p>}
-            </div>
-            <label className="mt-6 flex cursor-pointer items-start gap-3 border border-charcoal/25 bg-frangipani p-4 text-sm leading-6 text-weathered">
-              <input type="checkbox" required checked={termsAccepted} onChange={(event) => setTermsAccepted(event.target.checked)} className="mt-0.5 size-5 shrink-0 accent-terrace" />
-              <span>I have read and accept the <Link href="/terms" target="_blank" className="font-semibold text-terrace underline underline-offset-4">Booking Terms</Link> and acknowledge the <Link href="/privacy" target="_blank" className="font-semibold text-terrace underline underline-offset-4">Privacy Notice</Link>.</span>
-            </label>
-            {error ? <p role="alert" className="mt-5 border border-error/40 bg-error/8 p-4 text-sm font-semibold text-error">{error}</p> : null}
-            <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-              <Button variant="ghost" size="lg" onClick={() => setStep(2)} disabled={loading}><ArrowLeft className="size-4" aria-hidden="true" /> Trip options</Button>
-              <Button size="lg" onClick={submitBooking} loading={loading} disabled={!termsAccepted}>{mode === "request" ? "Send booking request" : "Pay securely in IDR"} <ArrowRight className="size-4" aria-hidden="true" /></Button>
-            </div>
-          </section>
-        ) : null}
-      </main>
-
-      <aside className="h-fit border border-charcoal/25 bg-frangipani p-5 shadow-sun lg:sticky lg:top-6" aria-label="Booking summary">
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Your booking</p>
-        <h2 className="mt-2 font-serif text-2xl leading-tight">{tour.title}</h2>
-        <p className="mt-2 text-sm text-weathered">{tour.location} Â· {tour.duration}</p>
-        <dl className="mt-5 space-y-3 border-y border-charcoal/20 py-4 text-sm">
-          <div className="flex justify-between gap-4"><dt className="text-weathered">Date</dt><dd className="text-right font-semibold">{dateLabel}</dd></div>
-          <div className="flex justify-between gap-4"><dt className="text-weathered">Travelers</dt><dd className="font-semibold">{pax}</dd></div>
-          {childPriceIdr !== null ? <div className="flex justify-between gap-4"><dt className="text-weathered">Mix</dt><dd className="font-semibold">{adultCount} adult Â· {childCount} child</dd></div> : null}
-          {lunchAddon ? <div className="flex justify-between gap-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? "Included" : "Choose & pay directly"}</dd></div> : null}
-          {pickupAddons.length ? <div className="flex justify-between gap-4"><dt className="text-weathered">Pickup</dt><dd className="text-right font-semibold">{selectedPickup ? selectedPickup.title.replace("Pickup from ", "") : "Ubud"}</dd></div> : null}
-          <div className="flex justify-between gap-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold">{selectedExtraCount || "None"}</dd></div>
-        </dl>
-        <div className="mt-5 flex items-end justify-between gap-3"><span className="text-sm text-weathered">{mode === "request" ? "Quoted total" : "Total"}</span><strong className="font-serif text-3xl tabular-nums">{idr.format(totalIdr)}</strong></div>
-        {activeDiscount ? <p className="mt-2 border-l-3 border-gold pl-3 text-xs font-bold leading-5 text-terrace">{activeDiscount.label} Â· {activeDiscount.percentOff}% off is included</p> : null}
-        <p className="mt-1 text-right text-xs text-weathered">â‰ˆ {usd.format(totalIdr / idrPerUsdEstimate)} estimate</p>
-        <p className="mt-5 flex gap-2 text-xs leading-5 text-weathered"><ShieldCheck className="size-4 shrink-0 text-terrace" aria-hidden="true" />{mode === "request" ? "No payment is taken when you submit. Any later payment arrangement will be stated clearly before you commit." : "The actual charge and settlement currency is IDR. Your bank determines any conversion rate or foreign transaction fee."}</p>
-      </aside>
-    </div>
-  );
-}
+YÛŠHOˆÂˆÛÛœİÙ[XİYHÙ[XİYYÛœËš[˜ÛY\ÊYÛ‹˜ÛÙJNÂˆÛÛœİ[™Uİ[HYÛ‹œšXÙRYˆ
+ˆ
+YÛ‹œšXÚ[™Ó[ÙHOOH”T—ÔT”ÓÓˆˆÈ^ˆJNÂˆ™]\›ˆX™[Ù^O^ØYÛ‹˜ÛÙ_HÛ\ÜÓ˜[YO^ØÛŠ™ÜšYİ\œÛÜ‹\Ú[\ˆÜšYXÛÛËVÌK\™[WÌYœ—Ø]]×HØ\LÈLˆKMH˜[œÚ][Û‹XÛÛÜœÈİ™\˜™ËYœ˜[™Ú\[šHÛNœM‹Ù[XİY	‰ˆ˜™ËYœ˜[™Ú\[šHŠ_O‚ˆ[œ]\OH˜ÚXÚØ›ŞˆÚXÚÙY^ÜÙ[XİYHÛÚ[™ÙO^Ê
+HOˆÙ]Ù[XİYYÛœÊ
+İ\œ™[
+HOˆÙ[XİYÈİ\œ™[™š[\Š
+ÛÙJHOˆÛÙHOOHYÛ‹˜ÛÙJHˆË‹‹˜İ\œ™[YÛ‹˜ÛÙWJ_HÛ\ÜÓ˜[YOH›]LHÚ^™KMHXØÙ[]\œ˜XÙHˆÏ‚ˆÜ[İ›Û™ÈÛ\ÜÓ˜[YOH˜›ØÚÈØYÛ‹]_OÜİ›Û™ÏÜ[ˆÛ\ÜÓ˜[YOH›]LH›ØÚÈ^\ÛHXY[™ËMˆ^]ÙX]\™YØYÛ‹™\ØÜš\[ÛŸOÜÜ[ÜÜ[‚ˆÜ[ˆÛ\ÜÓ˜[YOH^\šYÚİ›Û™ÈÛ\ÜÓ˜[YOH˜›ØÚÈX[\‹[[\ÈÚY‹™›Ü›X]
+[™Uİ[
+_OÜİ›Û™ÏÜ[ˆÛ\ÜÓ˜[YOH^^È^]ÙX]\™YØYÛ‹œšXÚ[™Ó[ÙHOOH”T—ÔT”ÓÓˆˆÈ	ÚY‹™›Ü›X]
+YÛ‹œšXÙRYŠ_HXXÚˆœ\ˆ›ÛÚÚ[™ÈŸOÜÜ[ÜÜ[‚ˆÛX™[ÂˆJ_BˆÙ]ˆˆ[Bˆ]ˆÛ\ÜÓ˜[YOH›]N›^›^XÛÛ\™]™\œÙHØ\LÈÛN™›^\›İÈÛNš\İYKX™]ÙY[ˆ‚ˆ]Ûˆ˜\šX[H™ÚÜİˆÚ^™OH›ÈˆÛÛXÚÏ^Ê
+HOˆÙ]İ\
+J_O\œ›İÓYÛ\ÜÓ˜[YOHœÚ^™KMˆ\šXKZY[HYHˆÏˆ˜]™[\ˆ]Z[ÏĞ]Û‚ˆ]ÛˆÚ^™OH›ÈˆÛÛXÚÏ^Ê
+HOˆÈÙ]İ\
+ÊNÈÚ[™İËœØÜ›ÛÊÈÜˆ™Z]š[ÜˆœÛ[ÛİˆJNÈ_OÛ[ÙHOOHœ™\]Y\İˆÈ”™]šY]È™\]Y\İˆˆ”™]šY]È^[Y[ŸH\œ›İÔšYÚÛ\ÜÓ˜[YOHœÚ^™KMˆ\šXKZY[HYHˆÏĞ]Û‚ˆÙ]‚ˆÜÙXİ[Û‚ˆ
+Hˆ[B‚ˆÜİ\OOHÈÈ
+ˆÙXİ[Ûˆ\šXK[X™[YOHœ^[Y[ZXY[™È‚ˆÛ\ÜÓ˜[YOH^^È›ÛX›Û\\˜Ø\ÙH˜XÚÚ[™ËVÌŒMY[WH^XÛ^H”İ\ÈÙˆÏÜ‚ˆHYHœ^[Y[ZXY[™ÈˆÛ\ÜÓ˜[YOH›]Lˆ›Û\Ù\šYˆ^MÛN^M^Û[ÙHOOHœ™\]Y\İˆÈ”™]šY]È[İ\ˆ™\]Y\İˆˆ”™]šY]È[™^HŸOÚO‚ˆ]ˆÛ\ÜÓ˜[YOH›]MÈ›Ü™\‹[M›Ü™\‹YÛÛ™ËYœ˜[™Ú\[šHMHÛNœMˆ‚ˆÛ[ÙHOOHœ™\]Y\İˆÈ]ˆÛ\ÜÓ˜[YOH™›^Ø\LÈØ[[™\ÚXÚÌˆÛ\ÜÓ˜[YOH›]LHÚ^™KMHÚš[šËL^]\œ˜XÙHˆ\šXKZY[HYHˆÏ]ˆÛ\ÜÓ˜[YOH™›ÛX›Û“›È^[Y[Ù^OÚÛ\ÜÓ˜[YOH›]LH^\ÛHXY[™ËMˆ^]ÙX]\™Y•Ùx &[ÚXÚÈHš]™\ˆ[™[˜ÛYY\œ˜[™Ù[Y[Ë[ˆÛÛXİ[İHÛˆÚ]Ğ\ˆ[İ\ˆ™\]Y\İ\È›İÛÛ™š\›YY[™Ù\È›İÛØ\XÚ]H[[ÙHXØÙ\]ÜÙ]Ù]ˆˆ]ˆÛ\ÜÓ˜[YOH™›^Ø\LÈØÚÒÙ^ZÛHÛ\ÜÓ˜[YOH›]LHÚ^™KMHÚš[šËL^]\œ˜XÙHˆ\šXKZY[HYHˆÏ]ˆÛ\ÜÓ˜[YOH™›ÛX›Û–[İx &[ÛÛ[YHÈZY˜[œÏÚÛ\ÜÓ˜[YOH›]LH^\ÛHXY[™ËMˆ^]ÙX]\™YØ\™˜[šËÜˆØ[]]Z[È\™H[\™YÛ›HÛˆZY˜[œø &\ÈÜİYÚXÚÛİ]ˆ˜[V\šY[˜ÙH™]™\ˆ™XÙZ]™\ÈÜˆİÜ™\È˜]ÈØ\™[X™\œËÜÙ]Ù]ŸBˆÙ]‚ˆÛ\ÜÓ˜[YOH›]N]šYK^H]šYKXÚ\˜ÛØ[ÌŒ›Ü™\‹^H›Ü™\‹XÚ\˜ÛØ[ÌH‚ˆ]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MHKMÛ\ÜÓ˜[YOH^]ÙX]\™Y“XY˜]™[\ÙÛ\ÜÓ˜[YOH^\šYÚ›Û\Ù[ZX›Ûİ˜]™[\‹›˜[Y_OœˆÏÜ[ˆÛ\ÜÓ˜[YOH™›Û[›Ü›X[^]ÙX]\™Yİ˜]™[\‹™[XZ[OÜÜ[ÙÙ]‚ˆ]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MHKMÛ\ÜÓ˜[YOH^]ÙX]\™YÜšXÚ[™Ó[ÙHOOH”T—Õ‘RPÓHˆÈ™ZXÛH›Üˆ	Ü^HİY\İØˆ”XÚØYÙHšXÙHŸOÙÛ\ÜÓ˜[YOH™›Û\Ù[ZX›ÛX[\‹[[\ÈÚY‹™›Ü›X]
+˜\ÙTXÚØYÙUİ[YŠ_OÙÙ]‚ˆÜÙ[XİY˜\šX[È]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MHKMÛ\ÜÓ˜[YOH^]ÙX]\™Y”šYHÜ[ÛÙÛ\ÜÓ˜[YOH^\šYÚ›Û\Ù[ZX›ÛÜÙ[XİY˜\šX[]_OÙÙ]ˆˆ[BˆÜXÚİ\YÛœË›[™İÈ]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MHKMÛ\ÜÓ˜[YOH^]ÙX]\™Y”XÚİ\\™XOÙÛ\ÜÓ˜[YOH^\šYÚ›Û\Ù[ZX›ÛÜÙ[XİYXÚİ\ÈÜÙ[XİYXÚİ\]Kœ™\XÙJ”XÚİ\œ›ÛH‹ˆŠ_H0­ÈÜ[ˆÛ\ÜÓ˜[YOHX[\‹[[\ÈŠÈÚY‹™›Ü›X]
+Ù[XİYXÚİ\œšXÙRYŠ_OÜÜ[Ïˆˆ•XY0­È[˜ÛYYŸOÙÙ]ˆˆ[BˆÛ[˜ÚYÛˆÈ]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MHKMÛ\ÜÓ˜[YOH^]ÙX]\™Y“[˜ÚÙÛ\ÜÓ˜[YOH^\šYÚ›Û\Ù[ZX›ÛÛ[˜Ú[˜ÛYYÈ’[˜ÛYY0­ÈÜ[ˆÛ\ÜÓ˜[YOHX[\‹[[\ÈÚY‹™›Ü›X]
+[˜ÚYÛ‹œšXÙRYˆ
+ˆ^
+_OÜÜ[ÏˆˆÚÛÜÙH[İ\ˆİÛˆ0­ÈÜ[ˆÛ\ÜÓ˜[YOH™›Û[›Ü›X[^]ÙX]\™Yœ^H]™\İ]\˜[ÜÜ[ÏŸOÙÙ]ˆˆ[Bˆ]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MHKMÛ\ÜÓ˜[YOH^]ÙX]\™Y“İ\ˆ^˜\ÏÙÛ\ÜÓ˜[YOH™›Û\Ù[ZX›ÛX[\‹[[\ÈÚY‹™›Ü›X]
+YÛ•İ[H
+[˜Ú[˜ÛYY	‰ˆ[˜ÚYÛˆÈ[˜ÚYÛ‹œšXÙRYˆ
+ˆ^ˆ
+J_OÙÙ]‚ˆØXİ]™Q\ØÛİ[È]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MHKM^\İXØÙ\ÜÈ”XÚØYÙH\ØÛİ[0­ÈØXİ]™Q\ØÛİ[›X™[OÙÛ\ÜÓ˜[YOH™›Û\Ù[ZX›ÛX[\‹[[\È¸¢$ˆÚY‹™›Ü›X]
+\ØÛİ[[[İ[YŠ_OÙÙ]ˆˆ[BˆÙ‚ˆ]ˆÛ\ÜÓ˜[YOH›]Mˆ›Ü™\ˆ›Ü™\‹XÚ\˜ÛØ[ÌH™ËYœ˜[™Ú\[šHM‚ˆØ]]ÛX]XÑ\ØÛİ[ÈÛ\ÜÓ˜[YOH›X‹M›Ü™\‹[M›Ü™\‹]\œ˜XÙH™Ë]\œ˜XÙKÎLÈKLˆ^\ÛHXY[™ËMˆİ›Û™ÏØ]]ÛX]XÑ\ØÛİ[›˜[Y_NˆØ]]ÛX]XÑ\ØÛİ[œ\˜Ù[Ù™ŸIHÙ™Üİ›Û™ÏÜ[ˆÛ\ÜÓ˜[YOH˜›ØÚÈ^]ÙX]\™Y[™XYH\YY›Üˆ\È˜]™[]x %›ÈÛÙH™YYYÜÜ[Üˆˆ[BˆX™[[›ÜH™\ØÛİ[XÛÙHˆÛ\ÜÓ˜[YOH^\ÛH›Û\Ù[ZX›Û‘\ØÛİ[ÛÙOÛX™[‚ˆ]ˆÛ\ÜÓ˜[YOH›]Lˆ›^Ø\Lˆ‚ˆ[œ]YH™\ØÛİ[XÛÙHˆ˜[YO^Ù\ØÛİ[ÛÙ_HÛÚ[™ÙO^Ê]™[
+HOˆÈÙ]\ØÛİ[ÛÙJ]™[\™Ù]˜[YKÕ\\Ø\ÙJ
+JNÈÙ]›Û[Ñ\ØÛİ[
+[
+NÈ_HX^[™İ^ÌÌHÛ\ÜÓ˜[YOH›Z[‹ZLLHZ[‹]ËL›^LH›İ[™YYšY[›Ü™\ˆ›Ü™\‹XÚ\˜ÛØ[ÌÍH™Ë[[Y\İÛ™HLËH›Û[[Û›È\\˜Ø\ÙHİ][™K[›Û™H›Øİ\Î˜›Ü™\‹]\œ˜XÙH›Øİ\Îœš[™ËLÈ›Øİ\Îœš[™ËYÛÛÌÌˆÏ‚ˆ]Ûˆ\OH˜]Ûˆˆ˜\šX[H›İ][™HˆÛÛXÚÏ^Ø\Q\ØÛİ[HØY[™Ï^Ù\ØÛİ[ØY[™ßO\OĞ]Û‚ˆÙ]‚ˆÜ›Û[Ñ\ØÛİ[ÈÛ\ÜÓ˜[YOH›]Lˆ^^È›Û\Ù[ZX›Û^\İXØÙ\ÜÈØXİ]™Q\ØÛİ[Ë›X™[OOH›Û[Ñ\ØÛİ[˜ÛÙHÈ	Ü›Û[Ñ\ØÛİ[˜ÛÙ_H\È\YYÈHXÚØYÙHšXÙK˜ˆ	Ü›Û[Ñ\ØÛİ[˜ÛÙ_H\È˜[Y]HÙX\ÛÛ˜[Ù™™\ˆÚ]™\È[İHH™]\ˆšXÙK˜OÜˆˆÛ\ÜÓ˜[YOH›]Lˆ^^È^]ÙX]\™Y“Ü[Û˜[ˆ\ØÛİ[È\HÈHXÚØYÙHšXÙK^ÛYHÜ[Û˜[^˜\Ë[™È›İİXÚËÜŸBˆÙ]‚ˆX™[Û\ÜÓ˜[YOH›]Mˆ›^İ\œÛÜ‹\Ú[\ˆ][\Ë\İ\Ø\LÈ›Ü™\ˆ›Ü™\‹XÚ\˜ÛØ[ÌH™ËYœ˜[™Ú\[šHM^\ÛHXY[™ËMˆ^]ÙX]\™Y‚ˆ[œ]\OH˜ÚXÚØ›Şˆ™\]Z\™YÚXÚÙY^İ\›\ĞXØÙ\YHÛÚ[™ÙO^Ê]™[
+HOˆÙ]\›\ĞXØÙ\Y
+]™[\™Ù]˜ÚXÚÙY
+_HÛ\ÜÓ˜[YOH›]LHÚ^™KMHÚš[šËLXØÙ[]\œ˜XÙHˆÏ‚ˆÜ[’H]™H™XY[™XØÙ\H[šÈ™YH‹İ\›\Èˆ\™Ù]H—Ø›[šÈˆÛ\ÜÓ˜[YOH™›Û\Ù[ZX›Û^]\œ˜XÙH[™\›[™H[™\›[™K[Ù™œÙ]M›ÛÚÚ[™È\›\ÏÓ[šÏˆ[™XÚÛ›İÛYÙHH[šÈ™YH‹Üš]˜XŞHˆ\™Ù]H—Ø›[šÈˆÛ\ÜÓ˜[YOH™›Û\Ù[ZX›Û^]\œ˜XÙH[™\›[™H[™\›[™K[Ù™œÙ]M”š]˜XŞH›İXÙOÓ[šÏ‹ÜÜ[‚ˆÛX™[‚ˆÙ\œ›ÜˆÈ›ÛOH˜[\ˆÛ\ÜÓ˜[YOH›]MH›Ü™\ˆ›Ü™\‹Y\œ›Ü‹Í™ËY\œ›Ü‹ÎM^\ÛH›Û\Ù[ZX›Û^Y\œ›ÜˆÙ\œ›ÜŸOÜˆˆ[Bˆ]ˆÛ\ÜÓ˜[YOH›]N›^›^XÛÛ\™]™\œÙHØ\LÈÛN™›^\›İÈÛNš\İYKX™]ÙY[ˆ‚ˆ]Ûˆ˜\šX[H™ÚÜİˆÚ^™OH›ÈˆÛÛXÚÏ^Ê
+HOˆÙ]İ\
+Š_H\ØX›Y^ÛØY[™ßO\œ›İÓYÛ\ÜÓ˜[YOHœÚ^™KMˆ\šXKZY[HYHˆÏˆš\Ü[ÛœÏĞ]Û‚ˆ]ÛˆÚ^™OH›ÈˆÛÛXÚÏ^ÜİX›Z]›ÛÚÚ[™ßHØY[™Ï^ÛØY[™ßH\ØX›Y^È]\›\ĞXØÙ\YOÛ[ÙHOOHœ™\]Y\İˆÈ”Ù[™›ÛÚÚ[™È™\]Y\İˆˆ”^HÙXİ\™[H[ˆQˆŸH\œ›İÔšYÚÛ\ÜÓ˜[YOHœÚ^™KMˆ\šXKZY[HYHˆÏĞ]Û‚ˆÙ]‚ˆÜÙXİ[Û‚ˆ
+Hˆ[BˆÛXZ[‚‚ˆ\ÚYHÛ\ÜÓ˜[YOHšYš]›Ü™\ˆ›Ü™\‹XÚ\˜ÛØ[ÌH™ËYœ˜[™Ú\[šHMHÚYİË\İ[ˆÎœİXÚŞHÎÜMˆˆ\šXK[X™[H›ÛÚÚ[™Èİ[[X\H‚ˆÛ\ÜÓ˜[YOH^^È›ÛX›Û\\˜Ø\ÙH˜XÚÚ[™ËVÌŒM[WH^XÛ^H–[İ\ˆ›ÛÚÚ[™ÏÜ‚ˆˆÛ\ÜÓ˜[YOH›]Lˆ›Û\Ù\šYˆ^LXY[™Ë]YÚİİ\‹]_OÚ‚ˆÛ\ÜÓ˜[YOH›]Lˆ^\ÛH^]ÙX]\™Yİİ\‹›ØØ][ÛŸH0­Èİİ\‹™\˜][ÛŸOÜ‚ˆÛ\ÜÓ˜[YOH›]MHÜXÙK^KLÈ›Ü™\‹^H›Ü™\‹XÚ\˜ÛØ[ÌŒKM^\ÛH‚ˆ]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MÛ\ÜÓ˜[YOH^]ÙX]\™Y‘]OÙÛ\ÜÓ˜[YOH^\šYÚ›Û\Ù[ZX›ÛÙ]SX™[OÙÙ]‚ˆ]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MÛ\ÜÓ˜[YOH^]ÙX]\™Y•˜]™[\œÏÙÛ\ÜÓ˜[YOH™›Û\Ù[ZX›ÛÜ^OÙÙ]‚ˆÜÙ[XİY˜\šX[È]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MÛ\ÜÓ˜[YOH^]ÙX]\™Y”šYHÜ[ÛÙÛ\ÜÓ˜[YOH^\šYÚ›Û\Ù[ZX›ÛÜÙ[XİY˜\šX[]_OÙÙ]ˆˆ[BˆØÚ[šXÙRYˆOOH[È]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MÛ\ÜÓ˜[YOH^]ÙX]\™Y“Z^ÙÛ\ÜÓ˜[YOH™›Û\Ù[ZX›ÛØY[Ûİ[HY[0­ÈØÚ[Ûİ[HÚ[ÙÙ]ˆˆ[BˆÛ[˜ÚYÛˆÈ]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MÛ\ÜÓ˜[YOH^]ÙX]\™Y“[˜ÚÙÛ\ÜÓ˜[YOH^\šYÚ›Û\Ù[ZX›ÛÛ[˜Ú[˜ÛYYÈ’[˜ÛYYˆˆÚÛÜÙH	ˆ^H\™XİHŸOÙÙ]ˆˆ[BˆÜXÚİ\YÛœË›[™İÈ]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MÛ\ÜÓ˜[YOH^]ÙX]\™Y”XÚİ\ÙÛ\ÜÓ˜[YOH^\šYÚ›Û\Ù[ZX›ÛÜÙ[XİYXÚİ\ÈÙ[XİYXÚİ\]Kœ™\XÙJ”XÚİ\œ›ÛH‹ˆŠHˆ•XYŸOÙÙ]ˆˆ[Bˆ]ˆÛ\ÜÓ˜[YOH™›^\İYKX™]ÙY[ˆØ\MÛ\ÜÓ˜[YOH^]ÙX]\™Y“İ\ˆ^˜\ÏÙÛ\ÜÓ˜[YOH™›Û\Ù[ZX›ÛÜÙ[XİY^˜PÛİ[“›Û™HŸOÙÙ]‚ˆÙ‚ˆ]ˆÛ\ÜÓ˜[YOH›]MH›^][\ËY[™\İYKX™]ÙY[ˆØ\LÈÜ[ˆÛ\ÜÓ˜[YOH^\ÛH^]ÙX]\™YÛ[ÙHOOHœ™\]Y\İˆÈ”][İYİ[ˆˆ•İ[ŸOÜÜ[İ›Û™ÈÛ\ÜÓ˜[YOH™›Û\Ù\šYˆ^LŞX[\‹[[\ÈÚY‹™›Ü›X]
+İ[YŠ_OÜİ›Û™ÏÙ]‚ˆØXİ]™Q\ØÛİ[ÈÛ\ÜÓ˜[YOH›]Lˆ›Ü™\‹[LÈ›Ü™\‹YÛÛLÈ^^È›ÛX›ÛXY[™ËMH^]\œ˜XÙHØXİ]™Q\ØÛİ[›X™[H0­ÈØXİ]™Q\ØÛİ[œ\˜Ù[Ù™ŸIHÙ™ˆ\È[˜ÛYYÜˆˆ[BˆÛ\ÜÓ˜[YOH›]LH^\šYÚ^^È^]ÙX]\™Y¸¢bİ\Ù™›Ü›X]
+İ[YˆÈY”\•\Ù\İ[X]J_H\İ[X]OÜ‚ˆÛ\ÜÓ˜[YOH›]MH›^Ø\Lˆ^^ÈXY[™ËMH^]ÙX]\™YÚY[ÚXÚÈÛ\ÜÓ˜[YOHœÚ^™KMÚš[šËL^]\œ˜XÙHˆ\šXKZY[HYHˆÏÛ[ÙHOOHœ™\]Y\İˆÈ“›È^[Y[\ÈZÙ[ˆÚ[ˆ[İHİX›Z]ˆ[H]\ˆ^[Y[\œ˜[™Ù[Y[Ú[™Hİ]YÛX\›H™Y›Ü™H[İHÛÛ[Z]ˆˆˆ•HXİX[Ú\™ÙH[™Ù][Y[İ\œ™[˜ŞH\ÈQ‹ˆ[İ\ˆ˜[šÈ]\›Z[™\È[HÛÛ™\œÚ[Ûˆ˜]HÜˆ›Ü™ZYÛˆ˜[œØXİ[Ûˆ™YKˆŸOÜ‚ˆØ\ÚYO‚ˆÙ]‚ˆ
+NÂŸB
