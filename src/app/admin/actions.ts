@@ -186,6 +186,7 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
         });
       }
       const variantCodes = variants.map((variant) => variant.code);
+      await tx.tourVariant.updateMany({ where: { tourId: tour.id }, data: { isDefault: false } });
       await tx.tourVariant.updateMany({ where: { tourId: tour.id, code: { notIn: variantCodes } }, data: { active: false, isDefault: false } });
       for (const variant of variants) {
         await tx.tourVariant.upsert({
