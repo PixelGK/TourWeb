@@ -68,17 +68,19 @@ export default async function AdminMarginsPage() {
         </div>
         <div className="overflow-x-auto border border-charcoal/25 bg-frangipani">
           <table className="w-full min-w-[68rem] text-left text-sm">
-            <thead className="bg-charcoal text-xs uppercase tracking-[0.08em] text-frangipani"><tr><th className="px-4 py-3">Package</th><th className="px-4 py-3">Example sale</th><th className="px-4 py-3">Known base cost</th><th className="px-4 py-3">Est. gross profit</th><th className="px-4 py-3">Margin</th><th className="px-4 py-3">Cost setup</th><th className="px-4 py-3 text-right">Edit</th></tr></thead>
+            <thead className="bg-charcoal text-xs uppercase tracking-[0.08em] text-frangipani"><tr><th className="px-4 py-3">Package</th><th className="px-4 py-3">Example sale</th><th className="px-4 py-3">Fixed cost</th><th className="px-4 py-3">Per traveler</th><th className="px-4 py-3">Example cost</th><th className="px-4 py-3">Est. gross profit</th><th className="px-4 py-3">Margin</th><th className="px-4 py-3">Cost setup</th><th className="px-4 py-3 text-right">Edit</th></tr></thead>
             <tbody className="divide-y divide-charcoal/15">
               {data.tours.map((tour) => {
-                const missing = tour.baseCostIdr === null || tour.addonsMissingCost > 0;
+                const missing = tour.exampleCostIdr === null || tour.addonsMissingCost > 0;
                 return <tr key={tour.id}>
                   <td className="px-4 py-4"><strong className="block max-w-72">{tour.title}</strong><span className="mt-1 block text-xs text-weathered">{tour.pricingMode === "PER_VEHICLE" ? "Per vehicle" : "Per person"} · {tour.published ? "Published" : "Draft"}</span></td>
                   <td className="px-4 py-4 font-semibold tabular-nums">{idr.format(tour.exampleRevenueIdr)}<span className="block text-xs font-normal text-weathered">for {tour.examplePax} guests</span></td>
                   <td className="px-4 py-4 tabular-nums">{tour.baseCostIdr === null ? "—" : idr.format(tour.baseCostIdr)}</td>
+                  <td className="px-4 py-4 tabular-nums">{tour.perPaxCostIdr === null ? "—" : idr.format(tour.perPaxCostIdr)}</td>
+                  <td className="px-4 py-4 tabular-nums">{tour.exampleCostIdr === null ? "—" : idr.format(tour.exampleCostIdr)}</td>
                   <td className={`px-4 py-4 font-semibold tabular-nums ${profitTone(tour.estimatedGrossProfitIdr)}`}>{tour.estimatedGrossProfitIdr === null ? "—" : idr.format(tour.estimatedGrossProfitIdr)}</td>
                   <td className={`px-4 py-4 font-semibold tabular-nums ${profitTone(tour.estimatedGrossProfitIdr)}`}>{percent(tour.estimatedGrossMarginPercent)}</td>
-                  <td className="px-4 py-4">{missing ? <span className="inline-flex max-w-48 items-start gap-2 text-xs leading-5 text-clay"><CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />{tour.baseCostIdr === null ? "Base cost missing" : `${tour.addonsMissingCost} of ${tour.addonCount} add-on costs missing`}</span> : <span className="text-xs font-semibold text-success">Costs entered</span>}</td>
+                  <td className="px-4 py-4">{missing ? <span className="inline-flex max-w-48 items-start gap-2 text-xs leading-5 text-clay"><CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />{tour.baseCostIdr === null ? "Fixed cost missing" : tour.pricingMode === "PER_PERSON" && tour.perPaxCostIdr === null ? "Supplier cost per traveler missing" : `${tour.addonsMissingCost} of ${tour.addonCount} add-on costs missing`}</span> : <span className="text-xs font-semibold text-success">Costs entered</span>}</td>
                   <td className="px-4 py-4 text-right"><Link href={`/admin/tours/${tour.id}`} className="inline-flex min-h-10 items-center gap-2 border border-charcoal/30 px-3 font-semibold hover:bg-charcoal hover:text-frangipani"><PencilLine className="size-4" aria-hidden="true" /> Edit</Link></td>
                 </tr>;
               })}
@@ -104,4 +106,3 @@ export default async function AdminMarginsPage() {
     </div>
   );
 }
-  

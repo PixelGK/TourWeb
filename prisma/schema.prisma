@@ -68,6 +68,7 @@ model Tour {
   durationMinutes    Int                 @map("duration_minutes")
   basePriceIdr       Int                 @map("base_price_idr")
   baseCostIdr        Int?                @map("base_cost_idr")
+  perPaxCostIdr      Int?                @map("per_pax_cost_idr")
   pricingMode        TourPricingMode     @default(PER_PERSON) @map("pricing_mode")
   childPriceIdr      Int?                @map("child_price_idr")
   childAgeLabel      String?             @map("child_age_label")
@@ -89,11 +90,34 @@ model Tour {
   availability       Availability[]
   bookings           Booking[]
   addons             TourAddon[]
+  variants           TourVariant[]
   discountCodes      DiscountCodeTour[]
 
   @@index([category, published])
   @@index([featured, published])
   @@map("tours")
+}
+
+model TourVariant {
+  id                     String    @id @default(uuid()) @db.Uuid
+  tourId                 String    @map("tour_id") @db.Uuid
+  code                   String
+  title                  String
+  description            String?
+  priceAdjustmentIdr     Int       @default(0) @map("price_adjustment_idr")
+  supplierUnitCostIdr    Int       @map("supplier_unit_cost_idr")
+  guestsPerUnit          Int       @default(1) @map("guests_per_unit")
+  remainderCostIdr       Int       @default(0) @map("remainder_cost_idr")
+  isDefault              Boolean   @default(false) @map("is_default")
+  active                 Boolean   @default(true)
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+  tour                   Tour      @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  bookings               Booking[]
+
+  @@unique([tourId, code])
+  @@index([tourId, active])
+  @@map("tour_variants")
 }
 
 model TourPricingTier {
@@ -178,6 +202,12 @@ model Booking {
   status                    BookingStatus       @default(PENDING)
   totalAmountIdr            Int                 @map("total_amount_idr")
   baseCostIdrSnapshot       Int?                @map("base_cost_idr_snapshot")
+  perPaxCostIdrSnapshot     Int?                @map("per_pax_cost_idr_snapshot")
+  variantId                  String?             @map("variant_id") @db.Uuid
+  variantCodeSnapshot        String?             @map("variant_code_snapshot")
+  variantTitleSnapshot       String?             @map("variant_title_snapshot")
+  variantPriceAdjustmentIdrSnapshot Int?          @map("variant_price_adjustment_idr_snapshot")
+  variantSupplierCostIdrSnapshot Int?             @map("variant_supplier_cost_idr_snapshot")
   discountCodeId            String?             @map("discount_code_id") @db.Uuid
   discountPercent           Int?                @map("discount_percent")
   discountAmountIdr         Int                 @default(0) @map("discount_amount_idr")
@@ -202,12 +232,14 @@ model Booking {
   availability              Availability        @relation(fields: [availabilityId], references: [id], onDelete: Restrict)
   addons                    BookingAddon[]
   discountCode              DiscountCode?       @relation(fields: [discountCodeId], references: [id], onDelete: SetNull)
+  variant                   TourVariant?        @relation(fields: [variantId], references: [id], onDelete: SetNull)
 
   @@index([availabilityId, status])
   @@index([tourId])
   @@index([status, createdAt])
   @@index([customerEmail])
   @@index([discountCodeId])
+  @@index([variantId])
   @@map("bookings")
 }
 
@@ -287,4 +319,3 @@ model RateLimitBucket {
   @@index([resetAt])
   @@map("rate_limit_buckets")
 }
-  
