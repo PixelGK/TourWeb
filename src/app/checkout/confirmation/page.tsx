@@ -34,11 +34,11 @@ export default async function ConfirmationPage({ searchParams }: { searchParams:
     <>
       <SiteHeader />
       {isPendingPayment ? <ConfirmationRefresh /> : null}
-      <main className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
-        <div className="border border-charcoal/25 bg-frangipani p-6 shadow-sun sm:p-10">
+      <main className="mx-auto max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
+        <div className="border border-charcoal/20 bg-white p-6 sm:p-10">
           <Icon aria-hidden="true" className={`size-12 ${isPaid ? "text-terrace" : isClosed ? "text-error" : "text-gold-dark"}`} />
           <Badge className="mt-6">{isConfirmed ? "Package confirmed" : isPaid ? "Payment verified" : isRequested ? "Request received" : isClosed ? "Booking not active" : "Checking payment"}</Badge>
-          <h1 className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">
+          <h1 className="mt-4 font-serif text-4xl font-normal leading-tight sm:text-5xl">
             {isConfirmed ? "Your Bali day is confirmed." : isPaid ? "We’re arranging your Bali day." : isRequested ? "We’ve received your request." : isClosed ? "This booking is not active." : "We’re confirming your payment."}
           </h1>
           <p className="mt-4 text-lg leading-8 text-weathered">

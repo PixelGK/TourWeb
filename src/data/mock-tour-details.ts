@@ -50,6 +50,9 @@ const imageLibrary = {
   giraffe: "https://images.unsplash.com/photo-1547721064-da6cfb341d50?auto=format&fit=crop&w=1400&q=82",
   waterpark: "https://images.unsplash.com/photo-1708157730402-67cc5b19e335?auto=format&fit=crop&w=1400&q=82",
   waterparkAerial: "https://images.unsplash.com/photo-1763051338904-e2434c7dd20a?auto=format&fit=crop&w=1400&q=82",
+  spa: "https://images.unsplash.com/photo-1661011612361-4e0704509a58?auto=format&fit=crop&w=1400&q=82",
+  yoga: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=1400&q=82",
+  offering: "https://images.unsplash.com/photo-1769485016814-943270cdb5db?auto=format&fit=crop&w=1400&q=82",
 };
 
 interface TourContentOverride {
@@ -395,6 +398,79 @@ const tourContentOverrides: Record<string, TourContentOverride> = {
     meetingNote: "Share rider heights, ages, and confidence levels before the date. The route can be shortened, but it still uses public village roads and uneven surfaces.",
     cancellationPolicy: "Cancel at least 24 hours before pickup for a full refund. Unsafe weather may require a route change, reschedule, or full refund.",
   },
+  "ubud-purification-spa-day": {
+    summary: "A slower private-driver day linking Tirta Empul with a spa in or near Ubud. The temple visit is treated respectfully, and you choose the treatment and budget before we confirm the route.",
+    itinerary: [
+      { time: "08:00", title: "Private pickup", description: "Leave from your confirmed area with temple clothing and the spa time agreed before departure." },
+      { time: "09:15", title: "Tirta Empul", description: "Visit the active water-temple complex. Purification is optional and follows the temple's current rules; BaliXperience does not present it as a performance." },
+      { time: "11:45", title: "Lunch at your pace", description: "Choose a simple local meal or a longer Ubud lunch and pay the restaurant directly." },
+      { time: "13:30", title: "Pre-booked spa time", description: "Your driver takes you to the spa you selected. Treatment availability and price are confirmed before the day." },
+      { time: "16:00", title: "Tea, short walk or return", description: "Add one nearby stop if it still feels restful, otherwise return directly to your hotel." },
+    ],
+    inclusions: ["Private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver", "Pickup and return in the confirmed area", "Fuel and parking", "Spa reservation coordination", "Drinking water"],
+    exclusions: ["Temple admission and purification requirements", "Spa treatment paid directly to the chosen spa", "Meals and drinks", "Licensed temple guide", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 850000 }],
+    meetingNote: "The listed price is for the private vehicle and driver. We confirm the spa, treatment price, and temple conditions separately before accepting the request.",
+  },
+  "ubud-yoga-spa-slow-day": {
+    summary: "Choose a public yoga class or private session, an unhurried lunch, and one spa treatment around Ubud. Your driver handles the gaps so the day does not become three separate transport bookings.",
+    itinerary: [
+      { time: "08:00", title: "Private pickup", description: "Pickup is timed around the class you choose and the location of your hotel." },
+      { time: "09:00", title: "Yoga or meditation session", description: "Attend a confirmed venue session suited to your level. Instruction is provided by the venue, not the driver." },
+      { time: "11:00", title: "Easy Ubud lunch", description: "Choose plant-based, local, or familiar food and pay the restaurant directly." },
+      { time: "13:00", title: "Spa treatment", description: "Continue to your selected spa with the treatment length and price agreed in advance." },
+      { time: "15:30", title: "Quiet final stop or return", description: "Finish with a short rice-field walk or head back without padding the day." },
+    ],
+    inclusions: ["Private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver", "Pickup and return in the confirmed area", "Fuel and parking", "Session and spa scheduling help", "Drinking water"],
+    exclusions: ["Yoga or meditation session fee", "Spa treatment", "Meals and drinks", "Wellness or medical advice", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 800000 }],
+    meetingNote: "This is a transport-and-timing package, not a retreat or medical-wellness service. Venue fees are confirmed before the day and paid directly unless a future listing states otherwise.",
+  },
+  "batur-hot-springs-highlands": {
+    summary: "See the Batur caldera without a 2am alarm: a later private drive, lakeside hot springs, and one quiet highland stop chosen around the weather.",
+    itinerary: [
+      { time: "07:30", title: "Private pickup", description: "Travel north before late-morning traffic reaches Kintamani." },
+      { time: "10:00", title: "Batur viewpoint", description: "Stop for the caldera view if cloud conditions make it worthwhile." },
+      { time: "11:00", title: "Lakeside hot springs", description: "Soak at your own pace with the venue package and facilities confirmed beforehand." },
+      { time: "13:30", title: "Highland lunch", description: "Choose the restaurant and budget rather than being routed to a compulsory buffet." },
+      { time: "15:00", title: "One highland stop", description: "Choose a short temple, village, or produce-market stop if weather and energy suit it." },
+      { time: "16:00", title: "Private return", description: "Head back before the busiest evening traffic." },
+    ],
+    inclusions: ["Private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver", "Pickup and return in the confirmed area", "Fuel and parking", "Route timing", "Drinking water"],
+    exclusions: ["Hot-spring admission and towel package", "Meals and drinks", "Temple admission if selected", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 950000 }],
+    meetingNote: "There is no sunrise climb in this package. The hot-spring venue and current admission price are confirmed before the request is accepted.",
+  },
+  "ubud-artisan-villages": {
+    summary: "Spend a day seeing different Balinese crafts where they are made: silver around Celuk, wood carving in Mas, and painting in Batuan. Studios are agreed in advance and buying is always optional.",
+    itinerary: [
+      { time: "08:30", title: "Private pickup", description: "Start from your confirmed area and travel toward the craft villages south of Ubud." },
+      { time: "09:30", title: "Celuk silver workshop", description: "See the working process at a studio that accepts visitors. A hands-on class can be requested separately." },
+      { time: "11:00", title: "Mas wood carving", description: "Visit a workshop where the focus is the craft, not a required purchase." },
+      { time: "12:30", title: "Lunch", description: "Choose where to eat and pay directly." },
+      { time: "14:00", title: "Batuan painting", description: "Finish with a painting studio or village gallery; specialist explanation comes from the host." },
+      { time: "16:00", title: "Ubud stop or return", description: "Add one short market or gallery stop only if the day still has room." },
+    ],
+    inclusions: ["Private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver", "Pickup and return in the confirmed area", "Fuel and parking", "Studio visit coordination", "Drinking water"],
+    exclusions: ["Hands-on class fees", "Purchases, commissions, and shipping", "Meals and drinks", "Licensed cultural guide", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 825000 }],
+    meetingNote: "Studio visits depend on the makers' availability. We confirm the stops before the day; purchases are optional and are paid directly to the maker.",
+  },
+  "kamasan-klungkung-heritage": {
+    summary: "A focused East Bali cultural route through classical Kamasan painting and Klungkung's former royal centre, with time for one coastal temple stop instead of a seven-stop highlights list.",
+    itinerary: [
+      { time: "08:00", title: "Private pickup", description: "Leave early for Klungkung with respectful temple clothing available in the vehicle." },
+      { time: "10:00", title: "Kamasan painting village", description: "Meet an available studio host and see how the classical narrative style is produced." },
+      { time: "12:00", title: "Lunch in Klungkung", description: "Choose a local restaurant and pay directly." },
+      { time: "13:30", title: "Kerta Gosa", description: "Visit the former royal court pavilion and painted ceilings at your own pace." },
+      { time: "15:00", title: "Goa Lawah or direct return", description: "Add the bat cave temple if ceremonies, traffic, and your energy allow." },
+      { time: "17:00", title: "Private return", description: "Head back without an unrelated shop or plantation detour." },
+    ],
+    inclusions: ["Private air-conditioned vehicle for up to 6 guests", "Experienced English-speaking local driver", "Pickup and return in the confirmed area", "Fuel and parking", "Painting-studio coordination", "Drinking water"],
+    exclusions: ["Site admissions and temple donation", "Studio purchases or workshop fee", "Meals and drinks", "Licensed cultural guide", "Personal travel insurance"],
+    pricingTiers: [{ minPax: 1, maxPax: 6, perPersonIdr: 900000 }],
+    meetingNote: "The driver handles transport and timing. Historical explanation at sites or studios is provided by their official or local hosts when available.",
+  },
 };
 
 const categoryItineraries: Record<string, ItineraryStop[]> = {
@@ -481,6 +557,19 @@ function buildPricing(basePrice: number): PricingTier[] {
 
 function galleryFor(tour: MockTour): TourGalleryImage[] {
   const main = { src: tour.image.replace("w=1200", "w=1600"), alt: tour.imageAlt };
+
+  if (["ubud-purification-spa-day", "ubud-yoga-spa-slow-day", "batur-hot-springs-highlands"].includes(tour.slug)) return [
+    main,
+    { src: imageLibrary.spa, alt: "A small spa building beside Ubud rice fields" },
+    { src: imageLibrary.yoga, alt: "A calm yoga session in tropical surroundings" },
+    { src: imageLibrary.terraces, alt: "Working rice terraces and tropical greenery near Ubud" },
+  ];
+  if (["ubud-artisan-villages", "kamasan-klungkung-heritage"].includes(tour.slug)) return [
+    main,
+    { src: imageLibrary.offering, alt: "A Balinese woman carrying offerings near a temple entrance" },
+    { src: imageLibrary.temple, alt: "Balinese temple buildings reflected in still water" },
+    { src: imageLibrary.jalan, alt: "A quiet road through Bali's village landscape" },
+  ];
 
   if (tour.slug === "ayung-river-rafting-ubud" || tour.slug === "ubud-rafting-atv-adventure") return [
     main,

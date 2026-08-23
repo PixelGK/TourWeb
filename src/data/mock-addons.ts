@@ -39,6 +39,11 @@ const pickupAddonSlugs = new Set([
   "east-bali-water-palaces",
   "tegalalang-swing-coffee-route",
   "tegalalang-terraces-coffee-morning",
+  "ubud-purification-spa-day",
+  "ubud-yoga-spa-slow-day",
+  "batur-hot-springs-highlands",
+  "ubud-artisan-villages",
+  "kamasan-klungkung-heritage",
 ]);
 
 export function getMockAddons(category: string, slug?: string) {

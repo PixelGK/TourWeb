@@ -56,6 +56,11 @@ const launchPublishedSlugs = new Set([
   "bali-highlights-three-days",
   "bali-four-region-private-journey",
   "five-day-bali-private-driver-circuit",
+  "ubud-purification-spa-day",
+  "ubud-yoga-spa-slow-day",
+  "batur-hot-springs-highlands",
+  "ubud-artisan-villages",
+  "kamasan-klungkung-heritage",
 ]);
 
 const launchFeaturedSlugs = new Set([

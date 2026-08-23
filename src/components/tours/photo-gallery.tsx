@@ -30,34 +30,16 @@ export function PhotoGallery({ images, title }: { images: TourGalleryImage[]; ti
 
   return (
     <>
-      <section aria-label={`Photo gallery for ${title}`} className="border-y border-charcoal bg-charcoal p-1">
-        <div className="mx-auto grid max-w-[1600px] auto-cols-[84%] grid-flow-col gap-1 overflow-x-auto pb-2 snap-x snap-mandatory [scrollbar-color:var(--color-gold)_transparent] sm:grid-flow-row sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-4">
-          {visibleImages.map((image, index) => (
-            <button
-              key={image.src}
-              type="button"
-              onClick={() => setActiveIndex(index)}
-              aria-label={`Open photo ${index + 1} of ${visibleImages.length}: ${image.alt}`}
-              className="group relative aspect-[4/3] snap-start overflow-hidden bg-limestone text-left focus-visible:z-10 focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-gold"
-            >
-              <Image
-                src={image.src}
-                alt={image.alt}
-                fill
-                priority={index === 0}
-                sizes="(max-width: 640px) 84vw, (max-width: 1024px) 50vw, 25vw"
-                className="object-cover transition duration-base group-hover:scale-[1.025]"
-              />
-              <span className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-charcoal/90 to-transparent px-4 pb-3 pt-12 text-frangipani">
-                <span className="text-[0.65rem] font-bold uppercase tracking-[0.12em]">
-                  {String(index + 1).padStart(2, "0")} / {String(visibleImages.length).padStart(2, "0")}
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold opacity-90">
-                  View full photo <Maximize2 aria-hidden="true" className="size-3.5" />
-                </span>
-              </span>
-            </button>
-          ))}
+      <section aria-label={`Photo gallery for ${title}`} className="bg-[#fbfaf6] py-5 sm:py-8">
+        <div className="site-shell max-w-[90rem] grid auto-cols-[86%] grid-flow-col gap-3 overflow-x-auto pb-3 snap-x snap-mandatory [scrollbar-color:var(--color-gold)_transparent] lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible lg:pb-0">
+          <GalleryButton image={visibleImages[0]} index={0} count={visibleImages.length} priority onOpen={setActiveIndex} className="aspect-[16/10] lg:col-span-3" />
+          {visibleImages.length > 1 ? (
+            <div className="contents">
+              {visibleImages.slice(1).map((image, offset) => (
+                <GalleryButton key={image.src} image={image} index={offset + 1} count={visibleImages.length} onOpen={setActiveIndex} className="aspect-[16/10]" />
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -95,5 +77,21 @@ export function PhotoGallery({ images, title }: { images: TourGalleryImage[]; ti
         </div>
       ) : null}
     </>
+  );
+}
+
+function GalleryButton({ image, index, count, priority = false, onOpen, className }: { image: TourGalleryImage; index: number; count: number; priority?: boolean; onOpen: (index: number) => void; className: string }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(index)}
+      aria-label={`Open photo ${index + 1} of ${count}: ${image.alt}`}
+      className={`group relative snap-start overflow-hidden bg-limestone text-left focus-visible:z-10 focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-gold ${className}`}
+    >
+      <Image src={image.src} alt={image.alt} fill priority={priority} sizes={index === 0 ? "(max-width: 1024px) 86vw, 90rem" : "(max-width: 1024px) 86vw, 30vw"} className="object-cover transition-transform duration-base group-hover:scale-[1.015]" />
+      <span className="absolute right-3 top-3 flex min-h-10 items-center gap-2 bg-charcoal/82 px-3 text-xs font-semibold text-frangipani opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+        {index + 1} / {count} <Maximize2 aria-hidden="true" className="size-3.5" />
+      </span>
+    </button>
   );
 }

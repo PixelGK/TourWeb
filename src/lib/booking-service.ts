@@ -59,7 +59,7 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
       where: { slug: input.tourSlug },
       include: {
         pricingTiers: { orderBy: { minPax: "asc" } },
-        addons: { where: { active: true, code: { in: input.addonCodes } } },
+        addons: { where: { active: true } },
         variants: { where: { active: true }, orderBy: [{ isDefault: "desc" }, { title: "asc" }] },
         availability: { where: { date, isOpen: true }, take: 1 },
         itinerary: { orderBy: { position: "asc" }, take: 1, select: { timeLabel: true } },
@@ -67,8 +67,13 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
     });
     if (!tour?.published) throw new BookingError("This tour is not available for online booking", "NOT_FOUND", 404);
     if (input.pax > tour.maxGroupSize) throw new BookingError(`This tour accepts up to ${tour.maxGroupSize} travelers`, "INVALID");
-    if (tour.addons.length !== input.addonCodes.length) throw new BookingError("One or more selected add-ons are unavailable", "INVALID");
-    if (tour.addons.filter((addon) => addon.code.startsWith("pickup-")).length > 1) throw new BookingError("Choose only one pickup area", "INVALID");
+    const selectedAddons = tour.addons.filter((addon) => input.addonCodes.includes(addon.code));
+    if (selectedAddons.length !== input.addonCodes.length) throw new BookingError("One or more selected add-ons are unavailable", "INVALID");
+    const pickupOptions = tour.addons.filter((addon) => addon.code.startsWith("pickup-"));
+    if (pickupOptions.length && !input.pickupArea) throw new BookingError("Choose your pickup area so the total is accurate", "INVALID");
+    const expectedPickupCode = input.pickupArea && input.pickupArea !== "ubud" ? `pickup-${input.pickupArea}` : null;
+    const selectedPickupCode = selectedAddons.find((addon) => addon.code.startsWith("pickup-"))?.code ?? null;
+    if (expectedPickupCode !== selectedPickupCode) throw new BookingError("Pickup area and surcharge do not match", "INVALID");
     const variant = input.variantCode ? tour.variants.find((item) => item.code === input.variantCode) : tour.variants.find((item) => item.isDefault) ?? tour.variants[0];
     if (tour.variants.length && !variant) throw new BookingError("Choose an available ride option", "INVALID");
     if (!tour.variants.length && input.variantCode) throw new BookingError("This package does not have ride options", "INVALID");
@@ -115,7 +120,7 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
     const tier = tour.pricingTiers.find((item) => input.pax >= item.minPax && input.pax <= item.maxPax);
     const perPersonIdr = tier?.perPersonIdr ?? tour.basePriceIdr;
     const childPriceIdr = tour.childPriceIdr ?? perPersonIdr;
-    const addonRows = tour.addons.map((addon) => ({
+    const addonRows = selectedAddons.map((addon) => ({
       addonId: addon.id,
       quantity: addon.pricingMode === AddonPricingMode.PER_PERSON ? input.pax : 1,
       unitPriceIdr: addon.priceIdr,
@@ -191,7 +196,7 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
         customerPhone: input.traveler.phone,
         customerCountry: input.traveler.country,
         hotelName: input.traveler.hotelName || null,
-        notes: input.traveler.notes || null,
+        notes: [input.pickupArea ? `Pickup area: ${input.pickupArea[0].toUpperCase()}${input.pickupArea.slice(1)}` : "", input.traveler.notes].filter(Boolean).join("\n") || null,
         totalAmountIdr,
         baseCostIdrSnapshot: tour.baseCostIdr,
         perPaxCostIdrSnapshot: tour.perPaxCostIdr,

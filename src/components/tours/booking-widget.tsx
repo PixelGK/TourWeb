@@ -37,9 +37,9 @@ export function BookingWidget({ tourSlug, pricingTiers, pricingMode, variants = 
 
   return (
     <>
-      <aside className="sticky top-6 hidden border border-charcoal/25 bg-frangipani p-6 shadow-sun-raised lg:block" aria-label="Book this tour">
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Reserve your date</p>
-        <h2 className="mt-2 font-serif text-3xl">Book direct</h2>
+      <aside className="sticky top-6 hidden border border-charcoal/20 bg-white p-6 lg:block" aria-label="Book this tour">
+        <h2 className="font-serif text-3xl font-normal">Choose your date</h2>
+        <p className="mt-2 text-sm leading-6 text-weathered">See the total for your group before sending the request.</p>
         {advertisedDiscount ? <p className="mt-4 border-l-3 border-gold bg-limestone px-3 py-2 text-xs font-semibold leading-5 text-terrace">{advertisedDiscount.name}: up to {advertisedDiscount.percentOff}% off selected dates. Choose a date to see the exact price.</p> : null}
         <BookingForm tourSlug={tourSlug} pax={pax} setPax={updatePax} variants={variants} variantCode={variantCode} setVariantCode={setVariantCode} maxGroupSize={maxGroupSize} minDate={bookingWindow.minDate} maxDate={bookingWindow.maxDate} blackoutDates={blackoutDates} selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
         <div className="mt-5 border-y border-charcoal/20 py-4">
@@ -54,10 +54,10 @@ export function BookingWidget({ tourSlug, pricingTiers, pricingMode, variants = 
           <p className="mt-1 text-right text-xs text-weathered">≈ {usdFormatter.format(usdEstimate)} · final price in IDR</p>
         </div>
         <Button type="submit" form="desktop-booking-form" size="lg" className="mt-5 w-full">Continue to booking <ArrowRight aria-hidden="true" className="size-4" /></Button>
-        <p className="mt-3 text-center text-xs leading-5 text-weathered">No payment today. Send a request and we’ll confirm the driver and included arrangements with you.</p>
+        <p className="mt-3 border-t border-charcoal/15 pt-3 text-center text-xs font-semibold leading-5 text-terrace">No payment today. We confirm the driver first.</p>
       </aside>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-charcoal/30 bg-frangipani p-3 shadow-[0_-5px_18px_rgb(28_27_24_/_0.16)] lg:hidden" aria-label="Mobile booking bar">
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t-2 border-terrace bg-frangipani px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_14px_rgb(28_27_24_/_0.12)] lg:hidden" aria-label="Mobile booking bar">
         <form id="mobile-booking-form" action="/checkout" method="get" className="mx-auto grid max-w-xl grid-cols-[1fr_4.5rem] gap-2">
           <input type="hidden" name="tour" value={tourSlug} />
           {variants.length ? <label className="col-span-2"><span className="sr-only">Ride option</span><select name="variant" value={variantCode} onChange={(event) => setVariantCode(event.target.value)} className="min-h-10 w-full rounded-control border border-charcoal/30 bg-limestone px-3 text-xs font-semibold text-charcoal outline-none focus:border-terrace focus:ring-2 focus:ring-gold/30">{variants.map((variant) => <option key={variant.code} value={variant.code} disabled={variant.guestsPerUnit > pax}>{variant.title}</option>)}</select></label> : null}

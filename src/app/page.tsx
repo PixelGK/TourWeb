@@ -1,13 +1,4 @@
-import {
-  ArrowRight,
-  CalendarCheck2,
-  Check,
-  ChevronRight,
-  CircleDollarSign,
-  Headphones,
-  MapPinned,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,188 +8,177 @@ import { SearchPanel } from "@/components/site/search-panel";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { TourCard } from "@/components/site/tour-card";
-import { Badge } from "@/components/ui/badge";
 import { bestAutomaticOffer, getAutomaticDiscountOffers } from "@/lib/automatic-discounts";
 import { getFeaturedPublicTours } from "@/lib/public-tour-data";
+import { getAppUrl } from "@/lib/server-env";
 
 export const metadata: Metadata = {
-  title: "Private Bali Drivers & Experience Days",
-  description: "Book private Bali day trips with an experienced local driver, including clearly bundled attraction and activity experiences.",
+  title: "Private Bali Driver & Day Trips",
+  description: "Book private Bali driver days with hotel pickup, clear IDR prices, realistic routes, and clearly listed admissions.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "BaliXperience — Private Bali Driver & Day Trips",
+    description: "Choose a ready-made Bali day or arrange a private driver around the places you want to visit.",
+    url: "/",
+    images: [{ url: "https://images.unsplash.com/photo-1769485016814-943270cdb5db?auto=format&fit=crop&w=1800&q=84", alt: "A Balinese woman carrying offerings near an ornate temple entrance" }],
+  },
 };
 
 export const revalidate = 300;
 
-const categories = [
-  ["01", "Trekking"],
-  ["02", "Water sports"],
-  ["03", "Cultural tours"],
-  ["04", "Car charter"],
-  ["05", "Multi-day trips"],
-  ["06", "Experience days"],
-  ["07", "Custom tour"],
-] as const;
-
-const directReasons = [
+const dayStyles = [
   {
-    number: "01",
-    title: "One contact from start to finish",
-    copy: "Ask questions before you book, then message the same local contact when it is time for pickup.",
-    icon: Headphones,
+    label: "Adventure",
+    duration: "8–10 hours",
+    description: "Rafting, ATV rides and early starts for Mount Batur.",
+    href: "/tours?collection=adventure",
+    image: "https://images.unsplash.com/photo-1669108724321-aa81435896f4?auto=format&fit=crop&w=900&q=82",
   },
   {
-    number: "02",
-    title: "Prices are charged in IDR",
-    copy: "You see what is included before you commit. USD is shown as an estimate so you can compare costs easily.",
-    icon: CircleDollarSign,
+    label: "Culture",
+    duration: "6–8 hours",
+    description: "Temple visits, village craft and days around Ubud.",
+    href: "/tours?collection=culture",
+    image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=900&q=82",
   },
   {
-    number: "03",
-    title: "Your date is reserved",
-    copy: "The availability calendar is tied to the places left for that tour, not a request waiting for someone to approve it.",
-    icon: CalendarCheck2,
+    label: "Wellness",
+    duration: "7–9 hours",
+    description: "Spa, yoga, purification and hot-spring days.",
+    href: "/tours?collection=wellness",
+    image: "https://images.unsplash.com/photo-1661011612361-4e0704509a58?auto=format&fit=crop&w=900&q=82",
   },
   {
-    number: "04",
-    title: "Pickup is confirmed on WhatsApp",
-    copy: "We send the pickup time and driver details directly, and stay reachable if traffic or weather changes the plan.",
-    icon: MapPinned,
+    label: "Scenic Bali",
+    duration: "8–10 hours",
+    description: "Rice terraces, waterfalls and quieter roads.",
+    href: "/tours?collection=nature",
+    image: "https://images.unsplash.com/photo-1555865138-193ba536d7e0?auto=format&fit=crop&w=900&q=82",
+  },
+  {
+    label: "Private driver",
+    duration: "10 hours",
+    description: "A car and driver for the day. You choose the stops.",
+    href: "/tours?collection=driver",
+    image: "https://images.unsplash.com/photo-1506797848948-339596317992?auto=format&fit=crop&w=900&q=82",
+  },
+  {
+    label: "Multi-day",
+    duration: "2+ days",
+    description: "Two or more days without rebuilding the plan each morning.",
+    href: "/plan",
+    image: "https://images.unsplash.com/photo-1551058624-e9390c71d17d?auto=format&fit=crop&w=900&q=82",
   },
 ] as const;
 
 export default async function HomePage() {
   const topTours = await getFeaturedPublicTours(4);
   const automaticOffers = await getAutomaticDiscountOffers(topTours.map((tour) => tour.slug));
+  const websiteData = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: "BaliXperience",
+    url: getAppUrl(),
+    description: "Private Bali driver days, ready-made routes, and experience packages with clear IDR pricing.",
+    areaServed: { "@type": "AdministrativeArea", name: "Bali, Indonesia" },
+  };
 
   return (
-    <main>
+    <main className="bg-[#fbfaf6]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteData).replace(/</g, "\\u003c") }} />
       <SiteHeader />
 
-      <section className="relative overflow-hidden bg-limestone" aria-labelledby="hero-heading">
-        <div className="mx-auto grid w-full xl:min-h-[36rem] xl:w-[94%] xl:max-w-[1520px] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)]">
-          <div className="relative z-10 flex min-w-0 flex-col justify-center px-5 py-12 sm:px-8 sm:py-16 lg:px-12 xl:px-14 xl:pb-20 xl:pt-16 2xl:px-16">
-            <Badge tone="category" className="w-fit bg-transparent">
-              <MapPinned aria-hidden="true" className="size-3.5" /> Bali-based · direct booking
-            </Badge>
-            <h1 id="hero-heading" className="mt-6 max-w-[12ch] font-serif text-[clamp(3rem,5.2vw,5.5rem)] leading-[0.93] tracking-[-0.04em] text-charcoal">
-              See Bali with a local driver.
-            </h1>
-            <p className="mt-7 max-w-lg text-lg leading-8 text-weathered">
-              Private day tours and driver hire, planned around where you are staying and how much you want to fit in.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm font-semibold text-charcoal">
-              <span className="inline-flex items-center gap-2"><Check aria-hidden="true" className="size-4 text-terrace" /> Your group only</span>
-              <span className="inline-flex items-center gap-2"><Check aria-hidden="true" className="size-4 text-terrace" /> Pickup confirmed by WhatsApp</span>
-            </div>
-          </div>
-
-          <div className="relative aspect-[16/11] min-w-0 w-full overflow-hidden bg-terrace sm:aspect-[16/9] xl:aspect-auto xl:min-h-[36rem]">
-            <Image
-              src="https://images.unsplash.com/photo-1573593198586-9335916930e5?auto=format&fit=crop&w=1800&q=84"
-              alt="Layered green rice terraces and palms near Ubud, Bali"
-              fill
-              priority
-              sizes="(max-width: 1279px) 100vw, min(50vw, 790px)"
-              className="object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-charcoal/20 via-transparent to-transparent" aria-hidden="true" />
-            <div className="absolute bottom-8 left-5 right-5 flex min-w-0 flex-col items-start gap-1 border-l-4 border-gold bg-charcoal/90 px-5 py-4 text-frangipani shadow-lg backdrop-blur-sm sm:bottom-10 sm:left-8 sm:right-auto sm:max-w-md sm:px-6 xl:bottom-14">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold">Tegalalang / North of Ubud</p>
-              <p className="font-serif text-base leading-snug sm:text-lg">Routes shaped around real Bali traffic</p>
-            </div>
-          </div>
+      <section className="site-shell grid overflow-hidden border-x border-b border-charcoal/15 bg-frangipani lg:min-h-[34rem] lg:grid-cols-[minmax(0,1.42fr)_minmax(25rem,1fr)]" aria-labelledby="hero-heading">
+        <div className="relative h-48 overflow-hidden bg-terrace sm:h-auto sm:aspect-[16/9] lg:aspect-auto lg:min-h-[34rem]">
+          <Image
+            src="https://images.unsplash.com/photo-1769485016814-943270cdb5db?auto=format&fit=crop&w=2200&q=84"
+            alt="A Balinese woman carrying offerings near an ornate temple entrance"
+            fill
+            priority
+            sizes="(max-width: 1023px) 100vw, 58vw"
+            className="object-cover object-[center_42%] brightness-[0.86] saturate-[0.9]"
+          />
+          <p className="absolute bottom-4 left-4 border-l-2 border-gold bg-charcoal/88 px-3 py-2 text-xs font-semibold text-frangipani sm:bottom-6 sm:left-6">
+            Bali · a morning offering
+          </p>
         </div>
 
-        <div className="relative z-20 mx-auto -mt-5 max-w-7xl px-5 pb-8 sm:-mt-8 sm:px-8 lg:-mt-10 lg:px-12">
-          <SearchPanel />
+        <div className="flex flex-col justify-center bg-frangipani px-5 py-8 sm:px-9 sm:py-12 lg:px-12 lg:py-14 xl:px-14">
+          <h1 id="hero-heading" className="max-w-[11ch] font-serif text-[clamp(2.9rem,4.8vw,4.8rem)] font-normal leading-[0.95] tracking-[-0.035em] text-terrace">
+            Bali, with your own driver.
+          </h1>
+          <p className="mt-5 max-w-[31rem] text-base leading-7 text-charcoal/72 sm:mt-6 sm:text-[1.0625rem]">
+            Choose a ready-made day or tell us where you want to go. We’ll confirm the pickup, timing and what’s included before you book.
+          </p>
+          <div className="mt-6 max-w-xl sm:mt-7">
+            <SearchPanel />
+          </div>
+          <p className="mt-4 hidden text-xs leading-5 text-weathered sm:block">Private vehicle · final total in IDR · pickup arranged directly</p>
         </div>
       </section>
 
-      <section id="experiences" className="scroll-mt-24 border-y border-charcoal/20 bg-frangipani py-6" aria-labelledby="categories-heading">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
-          <h2 id="categories-heading" className="sr-only">Browse tour categories</h2>
-          <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {categories.map(([number, label]) => (
-              <Link key={label} href={`/tours?category=${encodeURIComponent(label.toLowerCase())}`} className="group flex min-h-14 min-w-fit snap-start items-center border border-charcoal/25 bg-limestone pr-4 transition-[background-color,border-color,color] duration-fast hover:border-terrace hover:bg-terrace hover:text-frangipani focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus">
-                <span className="self-stretch border-r border-current/20 px-3 py-4 text-xs font-bold tabular-nums text-clay group-hover:text-gold">{number}</span>
-                <span className="pl-4 text-sm font-semibold">{label}</span>
-                <ChevronRight aria-hidden="true" className="ml-4 size-4 text-weathered transition-transform duration-fast group-hover:translate-x-1 group-hover:text-gold" />
-              </Link>
+      <aside className="border-b border-charcoal/15 bg-charcoal text-frangipani" aria-label="Bali driving note">
+        <div className="site-shell grid gap-3 py-5 sm:grid-cols-[10rem_1fr_auto] sm:items-center sm:gap-7">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-gold">From the driver’s seat</p>
+          <p className="max-w-4xl font-serif text-xl font-normal leading-snug text-frangipani sm:text-2xl">In Bali, distance is a poor guide to drive time. Your hotel area changes which stops make a good day.</p>
+          <Link href="/plan" className="inline-flex min-h-11 w-fit items-center gap-2 border-b border-frangipani/45 text-sm font-semibold text-frangipani hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus">
+            Plan from my hotel <ArrowRight aria-hidden="true" className="size-4" />
+          </Link>
+        </div>
+      </aside>
+
+      <section id="experiences" className="scroll-mt-20 border-b border-charcoal/15 bg-[#fbfaf6] py-14 lg:py-20" aria-labelledby="categories-heading">
+        <div className="site-shell">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <h2 id="categories-heading" className="font-serif text-4xl font-normal leading-none tracking-[-0.02em] text-charcoal sm:text-5xl">Ways to experience Bali</h2>
+            <Link href="/tours" className="inline-flex min-h-11 w-fit items-center gap-2 border-b border-charcoal/35 text-sm font-semibold text-charcoal hover:border-gold hover:text-terrace focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus">
+              See every tour <ArrowRight aria-hidden="true" className="size-4" />
+            </Link>
+          </div>
+          <div className="mt-9 grid gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {dayStyles.map((style) => (
+              <ExperienceChapter key={style.label} {...style} />
             ))}
           </div>
         </div>
       </section>
 
-      <section id="top-picks" className="scroll-mt-20 overflow-hidden bg-limestone py-16 lg:py-24" aria-labelledby="top-picks-heading">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
-          <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay">Popular day tours</p>
-              <h2 id="top-picks-heading" className="mt-3 font-serif text-4xl leading-none sm:text-5xl">Good places to start</h2>
-            </div>
-            <Link href="/tours" className="inline-flex min-h-11 items-center gap-2 border-b border-charcoal pb-1 text-sm font-bold text-charcoal hover:border-gold hover:text-terrace focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus">
-              See all tours <ArrowRight aria-hidden="true" className="size-4" />
-            </Link>
+      <section id="top-picks" className="scroll-mt-20 bg-limestone py-14 lg:py-20" aria-labelledby="top-picks-heading">
+        <div className="site-shell">
+          <div className="grid gap-6 border-b border-charcoal/20 pb-8 lg:grid-cols-12 lg:items-end">
+            <h2 id="top-picks-heading" className="font-serif text-4xl font-normal leading-none tracking-[-0.02em] text-charcoal sm:text-5xl lg:col-span-7">Popular private days</h2>
+            <p className="max-w-xl text-base leading-7 text-weathered lg:col-span-5">These are the routes people ask for most. Each page shows the planned stops, estimated length and what the price covers.</p>
           </div>
-
-          <div className="-mx-5 mt-10 grid snap-x snap-mandatory auto-cols-[84%] grid-flow-col gap-5 overflow-x-auto px-5 pb-7 [scrollbar-color:var(--color-gold)_transparent] sm:-mx-8 sm:auto-cols-[46%] sm:px-8 lg:-mx-12 lg:auto-cols-[calc((100%-3rem)/3)] lg:px-12">
-            {topTours.map((tour, index) => {
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {topTours.slice(0, 3).map((tour, index) => {
               const promotion = bestAutomaticOffer(automaticOffers, tour.slug);
               return (
-                <div key={tour.slug} className="snap-start">
-                  <TourCard tour={tour} priority={index === 0} promotion={promotion ? { ...promotion, exactForSelectedDate: false } : null} />
-                </div>
+                <TourCard key={tour.slug} tour={tour} priority={index === 0} promotion={promotion ? { ...promotion, exactForSelectedDate: false } : null} />
               );
             })}
           </div>
-          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.11em] text-weathered">Swipe or scroll to explore <span aria-hidden="true">→</span></p>
         </div>
       </section>
 
       <DayPlanPromise />
 
-      <section id="why-direct" className="scroll-mt-20 bg-frangipani py-16 lg:py-24" aria-labelledby="direct-heading">
-        <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-12 lg:px-12">
-          <div className="lg:col-span-4">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay">Why book direct</p>
-            <h2 id="direct-heading" className="mt-4 font-serif text-4xl leading-[1.02] sm:text-5xl">Book with the person arranging your day.</h2>
-            <p className="mt-5 max-w-sm text-base leading-7 text-weathered">Ask questions before you commit, confirm pickup on WhatsApp, and know who to contact if plans change.</p>
-          </div>
-          <div className="border-t border-charcoal/30 lg:col-span-8">
-            {directReasons.map(({ number, title, copy, icon: Icon }) => (
-              <div key={number} className="group grid gap-4 border-b border-charcoal/25 py-6 sm:grid-cols-[3rem_1fr_1.3fr_auto] sm:items-center">
-                <span className="text-xs font-bold tabular-nums text-clay">{number}</span>
-                <h3 className="font-serif text-2xl text-charcoal">{title}</h3>
-                <p className="text-sm leading-6 text-weathered">{copy}</p>
-                <Icon aria-hidden="true" className="hidden size-5 text-terrace transition-transform duration-fast group-hover:translate-x-1 sm:block" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="custom-tour" className="scroll-mt-20 border-y border-charcoal/20 bg-limestone">
-        <div className="mx-auto grid max-w-7xl lg:grid-cols-2">
-          <div className="relative min-h-80 overflow-hidden bg-terrace lg:min-h-[31rem]">
+      <section id="custom-tour" className="scroll-mt-20 border-y border-charcoal/15 bg-frangipani">
+        <div className="site-shell grid lg:grid-cols-2">
+          <div className="relative min-h-72 overflow-hidden bg-terrace lg:min-h-[30rem]">
             <Image
               src="https://images.unsplash.com/photo-1557093793-d149a38a1be8?auto=format&fit=crop&w=1400&q=82"
-              alt="Layered rice terraces in Ubud, Bali"
+              alt="Layered rice terraces in central Bali"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
             />
-            <div className="absolute inset-0 bg-charcoal/15" aria-hidden="true" />
-            <div className="absolute bottom-5 left-5 bg-charcoal px-4 py-3 text-frangipani sm:bottom-8 sm:left-8">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-gold">Pick the stops. We’ll sort the route.</p>
-            </div>
           </div>
-          <div className="flex flex-col justify-center px-5 py-12 sm:px-8 lg:px-14 lg:py-16">
-            <Sparkles aria-hidden="true" className="size-6 text-clay" />
-            <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-clay">Build your own day</p>
-            <h2 className="mt-3 max-w-xl font-serif text-4xl leading-[1.02] sm:text-5xl">Want to combine a few places?</h2>
-            <p className="mt-5 max-w-xl text-base leading-7 text-weathered">Send your hotel area and the places you have in mind. We’ll tell you what fits, what doesn’t, and the total price.</p>
+          <div className="flex flex-col justify-center px-5 py-12 sm:px-10 lg:px-14 lg:py-16">
+            <h2 className="max-w-xl font-serif text-4xl font-normal leading-[1.02] tracking-[-0.02em] sm:text-5xl">Already have a few places in mind?</h2>
+            <p className="mt-5 max-w-xl text-base leading-7 text-weathered">Send us your hotel area and your list. We’ll tell you which stops fit together, roughly how long the drive will take, and the price for the vehicle.</p>
             <div className="mt-7 flex flex-wrap gap-4">
-              <Link href="#footer-contact" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-gold bg-gold px-6 text-base font-semibold text-charcoal shadow-sun transition hover:-translate-y-0.5 hover:bg-gold-dark hover:shadow-sun-raised">Plan my day <ArrowRight aria-hidden="true" className="size-4" /></Link>
-              <Link href="/tours" className="inline-flex min-h-12 items-center justify-center rounded-control border border-charcoal/45 px-6 text-base font-semibold text-charcoal transition hover:bg-charcoal hover:text-frangipani">Browse tours</Link>
+              <Link href="/plan" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-control border border-gold bg-gold px-6 text-base font-semibold text-charcoal hover:bg-gold-dark focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus">Plan your day <ArrowRight aria-hidden="true" className="size-4" /></Link>
+              <Link href="/tours" className="inline-flex min-h-12 items-center justify-center rounded-control border border-charcoal/35 px-6 text-base font-semibold text-charcoal hover:bg-charcoal hover:text-frangipani focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-focus">Browse tours</Link>
             </div>
           </div>
         </div>
@@ -206,5 +186,23 @@ export default async function HomePage() {
 
       <SiteFooter />
     </main>
+  );
+}
+
+function ExperienceChapter({ label, duration, description, href, image }: (typeof dayStyles)[number]) {
+  return (
+    <Link href={href} className="group grid min-w-0 grid-cols-[7.5rem_1fr] gap-4 border-t border-charcoal/20 pt-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus sm:block sm:border-t-0 sm:pt-0">
+      <div className="relative aspect-[4/3] overflow-hidden bg-limestone sm:aspect-[4/5]">
+        <Image src={image} alt="" fill sizes="(max-width: 639px) 120px, (max-width: 1279px) 33vw, 16vw" className="object-cover transition-transform duration-slow group-hover:scale-[1.025]" />
+      </div>
+      <div className="sm:pt-4">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="font-serif text-2xl font-normal leading-none text-charcoal">{label}</h3>
+          <ArrowRight aria-hidden="true" className="mt-1 size-4 shrink-0 text-weathered transition-transform group-hover:translate-x-1 group-hover:text-terrace" />
+        </div>
+        <p className="mt-2 text-xs font-semibold text-clay">{duration}</p>
+        <p className="mt-3 text-sm leading-5 text-weathered">{description}</p>
+      </div>
+    </Link>
   );
 }

@@ -16,6 +16,7 @@ export const checkoutRequestSchema = z.object({
   discountCode: z.string().trim().toUpperCase().regex(/^[A-Z0-9-]{3,30}$/).optional().or(z.literal("")),
   variantCode: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional().or(z.literal("")),
   addonCodes: z.array(z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)).max(10).transform((items) => [...new Set(items)].sort()),
+  pickupArea: z.enum(["ubud", "kuta", "canggu", "uluwatu"]).optional(),
   termsAccepted: z.literal(true),
   traveler: z.object({
     name: singleLine(2, 100),
@@ -31,6 +32,11 @@ export const checkoutRequestSchema = z.object({
   }
   if (value.addonCodes.filter((code) => code.startsWith("pickup-")).length > 1) {
     context.addIssue({ code: "custom", path: ["addonCodes"], message: "Choose only one pickup area" });
+  }
+  const expectedPickupCode = value.pickupArea && value.pickupArea !== "ubud" ? `pickup-${value.pickupArea}` : null;
+  const selectedPickupCode = value.addonCodes.find((code) => code.startsWith("pickup-")) ?? null;
+  if (expectedPickupCode !== selectedPickupCode) {
+    context.addIssue({ code: "custom", path: ["pickupArea"], message: "Pickup area and surcharge do not match" });
   }
 });
 

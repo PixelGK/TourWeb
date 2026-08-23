@@ -93,7 +93,7 @@ export function TourFilters({ filters, categories }: { filters: ActiveFilters; c
       </details>
 
       <aside className="hidden lg:block" aria-label="Tour filters">
-        <div className="sticky top-6 border border-charcoal/25 bg-frangipani p-6 shadow-sun">
+        <div className="sticky top-6 border-t-4 border-terrace bg-frangipani p-6">
           <div className="mb-6 flex items-center justify-between border-b border-charcoal/20 pb-4">
             <h2 className="inline-flex items-center gap-2 font-serif text-2xl"><Filter aria-hidden="true" className="size-4 text-clay" /> Filter tours</h2>
             <Link href="/tours" className="text-xs font-bold uppercase tracking-[0.1em] text-weathered underline decoration-charcoal/30 underline-offset-4 hover:text-clay">Clear</Link>

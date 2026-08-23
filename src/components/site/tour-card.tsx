@@ -2,7 +2,6 @@ import { ArrowUpRight, Clock3, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
 import { PriceTag } from "@/components/ui/price-tag";
 import type { PublicTourCard } from "@/types/public-tour";
 
@@ -12,38 +11,38 @@ interface TourCardPromotion {
   exactForSelectedDate: boolean;
 }
 
-export function TourCard({ tour, priority = false, bookingQuery, promotion }: { tour: PublicTourCard; priority?: boolean; bookingQuery?: string; promotion?: TourCardPromotion | null }) {
+export function TourCard({ tour, priority = false, bookingQuery, promotion, layout = "standard" }: { tour: PublicTourCard; priority?: boolean; bookingQuery?: string; promotion?: TourCardPromotion | null; layout?: "standard" | "wide" }) {
   const href = bookingQuery ? `/tours/${tour.slug}?${bookingQuery}` : `/tours/${tour.slug}`;
+  const isWide = layout === "wide";
 
   return (
-    <article className="group h-full border border-charcoal/20 bg-frangipani transition-[border-color,box-shadow,transform] duration-base hover:-translate-y-1 hover:border-charcoal/50 hover:shadow-sun-raised">
-      <Link href={href} className="flex h-full flex-col focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus">
-        <div className="relative aspect-[4/3] overflow-hidden bg-terrace">
+    <article className="group h-full bg-frangipani">
+      <Link href={href} className={`grid h-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus ${isWide ? "md:grid-cols-[1.2fr_0.8fr]" : "grid-rows-[auto_1fr]"}`}>
+        <div className={`relative overflow-hidden bg-terrace ${isWide ? "aspect-[16/10] md:aspect-auto md:min-h-[27rem]" : "aspect-[16/10]"}`}>
           <Image
             src={tour.image}
             alt={tour.imageAlt}
             fill
             priority={priority}
-            sizes="(max-width: 640px) 84vw, (max-width: 1024px) 44vw, 360px"
+            sizes={isWide ? "(max-width: 768px) 100vw, 42vw" : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 38vw"}
             className="object-cover transition-transform duration-slow group-hover:scale-[1.025]"
           />
-          <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
-            <Badge tone="neutral" className="bg-frangipani/95">{tour.category}</Badge>
-            <span className="flex size-10 items-center justify-center rounded-control bg-charcoal text-frangipani transition-transform duration-fast group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
-              <ArrowUpRight aria-hidden="true" className="size-4" />
-            </span>
-          </div>
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charcoal/90 to-transparent px-4 pb-4 pt-10 text-xs font-semibold text-frangipani">
-            {tour.note}
-          </div>
         </div>
 
-        <div className="flex flex-1 flex-col p-5">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-weathered">
+        <div className={`flex flex-1 flex-col border border-charcoal/20 ${isWide ? "border-t-0 p-5 md:border-l-0 md:border-t md:p-7 lg:p-8" : "border-t-0 p-5 sm:p-6"}`}>
+          <div className="flex items-center justify-between gap-4 text-xs font-semibold text-weathered">
+            <span className="text-clay">{tour.category}</span>
+            <span>Private vehicle</span>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-weathered">
             <span className="inline-flex items-center gap-1.5"><MapPin aria-hidden="true" className="size-3.5 text-clay" />{tour.location}</span>
             <span className="inline-flex items-center gap-1.5"><Clock3 aria-hidden="true" className="size-3.5 text-clay" />{tour.duration}</span>
           </div>
-          <h3 className="mt-3 font-serif text-[1.65rem] leading-[1.08] text-charcoal">{tour.title}</h3>
+          <div className="mt-4 flex items-start justify-between gap-4">
+            <h3 className={`font-serif font-normal leading-[1.04] text-charcoal ${isWide ? "text-3xl lg:text-4xl" : "text-[1.75rem]"}`}>{tour.title}</h3>
+            <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center border border-charcoal/30 text-charcoal transition-colors group-hover:border-terrace group-hover:bg-terrace group-hover:text-frangipani"><ArrowUpRight aria-hidden="true" className="size-4" /></span>
+          </div>
+          <p className="mt-4 text-sm leading-6 text-weathered">{tour.note}</p>
           <div className="mt-auto pt-6">
             {promotion ? (
               <p className="mb-3 border-l-3 border-gold pl-3 text-xs font-bold leading-5 text-terrace">

@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowRight, MapPin } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -12,8 +11,8 @@ export function SearchPanel() {
   const [bookingWindow] = useState(getBookingWindow);
 
   return (
-    <form action="/tours" method="get" className="grid gap-4 rounded-surface border border-charcoal/25 bg-frangipani p-4 shadow-sun-raised sm:p-5 md:grid-cols-2 lg:grid-cols-[1.25fr_1fr_0.8fr_auto] lg:items-end" aria-label="Search Bali tours">
-      <Select label="Where or what?" name="destination" defaultValue="all">
+    <form action="/tours" method="get" className="grid gap-2.5" aria-label="Search Bali tours">
+      <Select label="Where in Bali?" name="destination" defaultValue="all" containerClassName="[&_label]:text-xs [&_select]:bg-white [&_select]:min-h-11">
         <option value="all">Anywhere in Bali</option>
         <option value="ubud">Ubud & central Bali</option>
         <option value="batur">Mount Batur</option>
@@ -31,20 +30,17 @@ export function SearchPanel() {
         <option value="blue-lagoon">Blue Lagoon snorkeling</option>
         <option value="sidemen">Sidemen</option>
       </Select>
-      <DatePicker label="Travel date" name="date" min={bookingWindow.minDate} max={bookingWindow.maxDate} suppressHydrationWarning />
-      <Select label="Travelers" name="pax" defaultValue="2">
+      <DatePicker label="Travel date" name="date" min={bookingWindow.minDate} max={bookingWindow.maxDate} suppressHydrationWarning containerClassName="min-w-0 [&_label]:text-xs [&_input]:min-h-11 [&_input]:bg-white" />
+      <Select label="Travelers" name="pax" defaultValue="2" containerClassName="min-w-0 [&_label]:text-xs [&_select]:min-h-11 [&_select]:bg-white">
         <option value="1">1 traveler</option>
         <option value="2">2 travelers</option>
         <option value="3">3 travelers</option>
         <option value="4">4 travelers</option>
         <option value="5">5+ travelers</option>
       </Select>
-      <Button type="submit" size="lg" className="w-full lg:min-w-38">
-        Find tours <ArrowRight aria-hidden="true" className="size-4" />
+      <Button type="submit" size="lg" className="w-full shadow-none lg:min-w-48">
+        Search available tours
       </Button>
-      <p className="flex items-center gap-1.5 text-xs text-weathered md:col-span-2 lg:col-span-4">
-        <MapPin aria-hidden="true" className="size-3.5 text-clay" /> Hotel pickup is available across Bali on most tours.
-      </p>
     </form>
   );
 }

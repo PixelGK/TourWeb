@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import type { PricingTier, PublicTourVariant, TourPricingMode } from "@/types/public-tour";
 import type { MockAddon } from "@/data/mock-addons";
 import { cn } from "@/lib/utils";
@@ -44,6 +45,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
   const [step, setStep] = useState(1);
   const [traveler, setTraveler] = useState<TravelerState>({ name: "", email: "", phone: "", country: "", hotelName: "", notes: "" });
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+  const [pickupArea, setPickupArea] = useState("");
   const [variantCode, setVariantCode] = useState(initialVariantCode);
   const hasLunchOption = addons.some((addon) => addon.code === "local-lunch");
   const [loading, setLoading] = useState(false);
@@ -98,6 +100,11 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
     ]);
   }
 
+  function choosePickupArea(area: string) {
+    setPickupArea(area);
+    choosePickup(area === "ubud" ? null : `pickup-${area}`);
+  }
+
   function updateTravelerCounts(adults: number, children: number) {
     if (adults + children > pax) return;
     setAdultCount(adults);
@@ -147,10 +154,10 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
           discountCode: promoDiscount?.code ?? "",
           variantCode,
           addonCodes: selectedAddons,
+          pickupArea: pickupAddons.length ? pickupArea : undefined,
           termsAccepted,
           traveler: {
             ...traveler,
-            notes: [selectedPickup ? `Pickup area: ${selectedPickup.title.replace("Pickup from ", "")}` : pickupAddons.length ? "Pickup area: Ubud" : "", traveler.notes].filter(Boolean).join("\n"),
           },
         }),
       });
@@ -175,13 +182,13 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
   }
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:py-12">
+    <div className="site-shell max-w-[90rem] grid gap-10 py-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:py-14">
       <main>
-        <ol aria-label="Checkout progress" className="mb-8 grid grid-cols-3 border border-charcoal/25 bg-frangipani">
+        <ol aria-label="Checkout progress" className="mb-10 grid grid-cols-3 border-b border-charcoal/25">
           {["Traveler", "Options", mode === "request" ? "Request" : "Payment"].map((label, index) => {
             const number = index + 1;
-            return <li key={label} aria-current={step === number ? "step" : undefined} className={cn("flex min-h-14 items-center gap-2 border-r border-charcoal/20 px-3 text-sm last:border-r-0 sm:px-5", step === number && "bg-terrace text-frangipani", step > number && "text-terrace")}>
-              <span className={cn("grid size-6 shrink-0 place-items-center rounded-full border text-xs font-bold", step === number ? "border-frangipani/60" : "border-current")}>{step > number ? <Check className="size-3.5" aria-hidden="true" /> : number}</span>
+            return <li key={label} aria-current={step === number ? "step" : undefined} className={cn("flex min-h-14 items-center gap-2 border-b-2 border-transparent px-1 text-sm sm:px-3", step === number && "border-gold text-terrace", step > number && "text-terrace")}>
+              <span className="grid size-6 shrink-0 place-items-center rounded-full border border-current text-xs font-bold">{step > number ? <Check className="size-3.5" aria-hidden="true" /> : number}</span>
               <span className="hidden font-semibold sm:inline">{label}</span>
             </li>;
           })}
@@ -189,14 +196,30 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
 
         {step === 1 ? (
           <section aria-labelledby="traveler-heading">
-            <p className="text-xs font-bold uppercase tracking-[0.15em] text-clay">Step 1 of 3</p>
-            <h1 id="traveler-heading" className="mt-2 font-serif text-4xl sm:text-5xl">Traveler details</h1>
+            <p className="text-sm font-semibold text-clay">Step 1 of 3</p>
+            <h1 id="traveler-heading" className="mt-2 font-serif text-4xl font-normal sm:text-5xl">Traveler details</h1>
             <p className="mt-3 max-w-2xl text-weathered">Tell us who is making the booking and where you are staying. You can confirm the hotel later if you have not booked it yet.</p>
             <form onSubmit={continueFromTraveler} className="mt-8 grid gap-5 sm:grid-cols-2">
               <Input label="Full name" autoComplete="name" required value={traveler.name} onChange={(event) => updateTraveler("name", event.target.value)} />
               <Input label="Email" type="email" autoComplete="email" required value={traveler.email} onChange={(event) => updateTraveler("email", event.target.value)} />
               <Input label="WhatsApp / phone" type="tel" autoComplete="tel" required hint="Include your country code, for example +61." value={traveler.phone} onChange={(event) => updateTraveler("phone", event.target.value)} />
               <Input label="Country" autoComplete="country-name" required value={traveler.country} onChange={(event) => updateTraveler("country", event.target.value)} />
+              {pickupAddons.length ? (
+                <Select
+                  label="Pickup area"
+                  required
+                  value={pickupArea}
+                  onChange={(event) => choosePickupArea(event.target.value)}
+                  hint="Choose the area now so the total includes the correct vehicle charge."
+                  containerClassName="sm:col-span-2"
+                >
+                  <option value="" disabled>Select your pickup area</option>
+                  <option value="ubud">Ubud — included</option>
+                  {pickupAddons.map((addon) => (
+                    <option key={addon.code} value={addon.code.replace("pickup-", "")}>{addon.title.replace("Pickup from ", "")} — + {idr.format(addon.priceIdr)} per vehicle</option>
+                  ))}
+                </Select>
+              ) : null}
               <Input label="Bali hotel or villa" autoComplete="organization" hint="Optional—you can confirm this later on WhatsApp." value={traveler.hotelName} onChange={(event) => updateTraveler("hotelName", event.target.value)} containerClassName="sm:col-span-2" />
               <label className="space-y-2 sm:col-span-2">
                 <span className="block text-sm font-semibold">Notes for the operator <span className="font-normal text-weathered">(optional)</span></span>
@@ -209,8 +232,8 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
 
         {step === 2 ? (
           <section aria-labelledby="addons-heading">
-            <p className="text-xs font-bold uppercase tracking-[0.15em] text-clay">Step 2 of 3</p>
-            <h1 id="addons-heading" className="mt-2 font-serif text-4xl sm:text-5xl">{hasLunchOption ? "Choose lunch and extras" : "Choose optional extras"}</h1>
+            <p className="text-sm font-semibold text-clay">Step 2 of 3</p>
+            <h1 id="addons-heading" className="mt-2 font-serif text-4xl font-normal sm:text-5xl">{hasLunchOption ? "Choose lunch and extras" : "Choose optional extras"}</h1>
             <p className="mt-3 text-weathered">{hasLunchOption ? `Lunch is optional. Every extra is priced in IDR before you ${mode === "request" ? "send the request" : "pay"}.` : `Add only what you need. Every extra is priced in IDR before you ${mode === "request" ? "send the request" : "pay"}.`}</p>
 
             {childPriceIdr !== null ? (
@@ -231,7 +254,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   {variants.map((variant) => {
                     const unavailable = variant.guestsPerUnit > pax;
-                    return <label key={variant.code} className={cn("border p-5 transition-colors", unavailable ? "cursor-not-allowed border-charcoal/15 opacity-55" : "cursor-pointer hover:bg-frangipani", variantCode === variant.code && !unavailable ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25") }>
+                    return <label key={variant.code} className={cn("border p-5 transition-colors", unavailable ? "cursor-not-allowed border-charcoal/15 opacity-55" : "cursor-pointer hover:bg-frangipani", variantCode === variant.code && !unavailable ? "border-terrace border-l-4 bg-frangipani" : "border-charcoal/25") }>
                       <span className="flex items-start gap-3"><input type="radio" name="ride-option" value={variant.code} checked={variantCode === variant.code} disabled={unavailable} onChange={() => setVariantCode(variant.code)} className="mt-1 size-5 shrink-0 accent-terrace" /><span><strong className="block">{variant.title}</strong><span className="mt-1 block text-sm leading-6 text-weathered">{variant.description}</span><span className="mt-3 block font-semibold tabular-nums text-terrace">{variant.priceAdjustmentIdr === 0 ? "Included in shown price" : `${variant.priceAdjustmentIdr > 0 ? "+" : "−"} ${idr.format(Math.abs(variant.priceAdjustmentIdr) * pax)} for your group`}</span></span></span>
                     </label>;
                   })}
@@ -239,30 +262,13 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
               </fieldset>
             ) : null}
 
-            {pickupAddons.length ? (
-              <fieldset className="mt-8">
-                <legend className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Pickup area</legend>
-                <p className="mt-2 text-sm leading-6 text-weathered">Ubud pickup is included. The longer pickup areas carry one fixed surcharge for the vehicle, not per guest.</p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <label className={cn("cursor-pointer border p-4 transition-colors hover:bg-frangipani", !selectedPickup ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25")}>
-                    <input type="radio" name="pickup-area" checked={!selectedPickup} onChange={() => choosePickup(null)} className="mr-3 size-4 accent-terrace" />
-                    <strong>Ubud</strong><span className="ml-2 text-sm text-weathered">Included</span>
-                  </label>
-                  {pickupAddons.map((addon) => (
-                    <label key={addon.code} className={cn("cursor-pointer border p-4 transition-colors hover:bg-frangipani", selectedPickup?.code === addon.code ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25")}>
-                      <input type="radio" name="pickup-area" checked={selectedPickup?.code === addon.code} onChange={() => choosePickup(addon.code)} className="mr-3 size-4 accent-terrace" />
-                      <strong>{addon.title.replace("Pickup from ", "")}</strong><span className="ml-2 text-sm tabular-nums text-weathered">+ {idr.format(addon.priceIdr)}</span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-            ) : null}
+            {pickupAddons.length ? <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-y border-charcoal/20 py-4 text-sm"><span><strong>Pickup:</strong> {pickupArea === "ubud" ? "Ubud · included" : selectedPickup ? `${selectedPickup.title.replace("Pickup from ", "")} · + ${idr.format(selectedPickup.priceIdr)} per vehicle` : "Not selected"}</span><button type="button" onClick={() => setStep(1)} className="min-h-11 border-b border-charcoal/40 font-semibold text-terrace hover:border-gold">Change pickup</button></div> : null}
 
             {lunchAddon ? (
               <fieldset className="mt-8">
                 <legend className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Lunch plan</legend>
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <label className={cn("cursor-pointer border p-5 transition-colors hover:bg-frangipani", lunchIncluded ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25")}>
+                  <label className={cn("cursor-pointer border p-5 transition-colors hover:bg-frangipani", lunchIncluded ? "border-terrace border-l-4 bg-frangipani" : "border-charcoal/25")}>
                     <span className="flex items-start gap-3">
                       <input type="radio" name="lunch-plan" checked={lunchIncluded} onChange={() => chooseLunch(true)} className="mt-1 size-5 shrink-0 accent-terrace" />
                       <span>
@@ -272,7 +278,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
                       </span>
                     </span>
                   </label>
-                  <label className={cn("cursor-pointer border p-5 transition-colors hover:bg-frangipani", !lunchIncluded ? "border-terrace bg-frangipani shadow-sun" : "border-charcoal/25")}>
+                  <label className={cn("cursor-pointer border p-5 transition-colors hover:bg-frangipani", !lunchIncluded ? "border-terrace border-l-4 bg-frangipani" : "border-charcoal/25")}>
                     <span className="flex items-start gap-3">
                       <input type="radio" name="lunch-plan" checked={!lunchIncluded} onChange={() => chooseLunch(false)} className="mt-1 size-5 shrink-0 accent-terrace" />
                       <span>
@@ -306,8 +312,8 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
 
         {step === 3 ? (
           <section aria-labelledby="payment-heading">
-            <p className="text-xs font-bold uppercase tracking-[0.15em] text-clay">Step 3 of 3</p>
-            <h1 id="payment-heading" className="mt-2 font-serif text-4xl sm:text-5xl">{mode === "request" ? "Review your request" : "Review and pay"}</h1>
+            <p className="text-sm font-semibold text-clay">Step 3 of 3</p>
+            <h1 id="payment-heading" className="mt-2 font-serif text-4xl font-normal sm:text-5xl">{mode === "request" ? "Review your request" : "Review and pay"}</h1>
             <div className="mt-7 border-l-4 border-gold bg-frangipani p-5 sm:p-6">
               {mode === "request" ? <div className="flex gap-3"><CalendarCheck2 className="mt-0.5 size-5 shrink-0 text-terrace" aria-hidden="true" /><div><h2 className="font-bold">No payment today</h2><p className="mt-1 text-sm leading-6 text-weathered">We’ll check the driver and included arrangements, then contact you on WhatsApp. Your request is not confirmed and does not hold capacity until we accept it.</p></div></div> : <div className="flex gap-3"><LockKeyhole className="mt-0.5 size-5 shrink-0 text-terrace" aria-hidden="true" /><div><h2 className="font-bold">You’ll continue to Midtrans</h2><p className="mt-1 text-sm leading-6 text-weathered">Card, bank, or wallet details are entered only on Midtrans’s hosted checkout. BaliXperience never receives or stores raw card numbers.</p></div></div>}
             </div>
@@ -315,7 +321,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lead traveler</dt><dd className="text-right font-semibold">{traveler.name}<br /><span className="font-normal text-weathered">{traveler.email}</span></dd></div>
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">{pricingMode === "PER_VEHICLE" ? `Vehicle for ${pax} guests` : "Package price"}</dt><dd className="font-semibold tabular-nums">{idr.format(basePackageTotalIdr)}</dd></div>
               {selectedVariant ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Ride option</dt><dd className="text-right font-semibold">{selectedVariant.title}</dd></div> : null}
-              {pickupAddons.length ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Pickup area</dt><dd className="text-right font-semibold">{selectedPickup ? <>{selectedPickup.title.replace("Pickup from ", "")} · <span className="tabular-nums">+ {idr.format(selectedPickup.priceIdr)}</span></> : "Ubud · Included"}</dd></div> : null}
+              {pickupAddons.length ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Pickup area</dt><dd className="text-right font-semibold">{pickupArea === "ubud" ? "Ubud · Included" : selectedPickup ? <>{selectedPickup.title.replace("Pickup from ", "")} · <span className="tabular-nums">+ {idr.format(selectedPickup.priceIdr)}</span></> : "Not selected"}</dd></div> : null}
               {lunchAddon ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? <>Included · <span className="tabular-nums">{idr.format(lunchAddon.priceIdr * pax)}</span></> : <>Choose your own · <span className="font-normal text-weathered">pay at restaurant</span></>}</dd></div> : null}
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold tabular-nums">{idr.format(addOnTotal - (lunchIncluded && lunchAddon ? lunchAddon.priceIdr * pax : 0))}</dd></div>
               {activeDiscount ? <div className="flex justify-between gap-5 py-4 text-success"><dt>Package discount · {activeDiscount.label}</dt><dd className="font-semibold tabular-nums">− {idr.format(discountAmountIdr)}</dd></div> : null}
@@ -342,7 +348,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
         ) : null}
       </main>
 
-      <aside className="h-fit border border-charcoal/25 bg-frangipani p-5 shadow-sun lg:sticky lg:top-6" aria-label="Booking summary">
+      <aside className="h-fit border border-charcoal/20 bg-white p-5 lg:sticky lg:top-6" aria-label="Booking summary">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Your booking</p>
         <h2 className="mt-2 font-serif text-2xl leading-tight">{tour.title}</h2>
         <p className="mt-2 text-sm text-weathered">{tour.location} · {tour.duration}</p>
@@ -352,7 +358,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
           {selectedVariant ? <div className="flex justify-between gap-4"><dt className="text-weathered">Ride option</dt><dd className="text-right font-semibold">{selectedVariant.title}</dd></div> : null}
           {childPriceIdr !== null ? <div className="flex justify-between gap-4"><dt className="text-weathered">Mix</dt><dd className="font-semibold">{adultCount} adult · {childCount} child</dd></div> : null}
           {lunchAddon ? <div className="flex justify-between gap-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? "Included" : "Choose & pay directly"}</dd></div> : null}
-          {pickupAddons.length ? <div className="flex justify-between gap-4"><dt className="text-weathered">Pickup</dt><dd className="text-right font-semibold">{selectedPickup ? selectedPickup.title.replace("Pickup from ", "") : "Ubud"}</dd></div> : null}
+          {pickupAddons.length ? <div className="flex justify-between gap-4"><dt className="text-weathered">Pickup</dt><dd className="text-right font-semibold">{pickupArea === "ubud" ? "Ubud · included" : selectedPickup ? selectedPickup.title.replace("Pickup from ", "") : "Select area"}</dd></div> : null}
           <div className="flex justify-between gap-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold">{selectedExtraCount || "None"}</dd></div>
         </dl>
         <div className="mt-5 flex items-end justify-between gap-3"><span className="text-sm text-weathered">{mode === "request" ? "Quoted total" : "Total"}</span><strong className="font-serif text-3xl tabular-nums">{idr.format(totalIdr)}</strong></div>

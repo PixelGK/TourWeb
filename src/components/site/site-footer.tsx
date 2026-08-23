@@ -6,11 +6,10 @@ import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 export function SiteFooter() {
   return (
     <footer id="footer-contact" className="bg-charcoal text-frangipani">
-      <div className="mx-auto grid max-w-7xl gap-12 px-5 py-14 sm:px-8 lg:grid-cols-12 lg:px-12 lg:py-20">
+      <div className="site-shell grid gap-12 py-14 lg:grid-cols-12 lg:py-20">
         <div className="lg:col-span-7">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-gold">Talk to us on WhatsApp</p>
-          <h2 className="mt-4 max-w-2xl font-serif text-4xl leading-[1.02] sm:text-5xl">Not sure which tour fits? Ask us.</h2>
-          <p className="mt-5 max-w-xl text-base leading-7 text-frangipani/70">Send your travel date, hotel area, and what you want to see. We’ll reply with a route and price.</p>
+          <h2 className="max-w-2xl font-serif text-4xl font-normal leading-[1.02] sm:text-5xl">Tell us where you’re staying and what you’d like to see.</h2>
+          <p className="mt-5 max-w-xl text-base leading-7 text-frangipani/70">We’ll reply with a route that fits the day and the price for the vehicle.</p>
           <WhatsAppButton className="mt-7 border-gold bg-gold text-charcoal">Message BaliXperience</WhatsAppButton>
         </div>
 
@@ -28,12 +27,12 @@ export function SiteFooter() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold">Based in Bali</p>
             <p className="mt-4 flex items-start gap-2 text-sm leading-6 text-frangipani/70"><MapPin aria-hidden="true" className="mt-1 size-4 shrink-0" />Private tours and driver hire across the island.</p>
-            <p className="mt-3 flex items-start gap-2 text-sm leading-6 text-frangipani/70"><MessageCircle aria-hidden="true" className="mt-1 size-4 shrink-0" />WhatsApp support before pickup and during your trip.</p>
+            <p className="mt-3 flex items-start gap-2 text-sm leading-6 text-frangipani/70"><MessageCircle aria-hidden="true" className="mt-1 size-4 shrink-0" />Direct support before pickup and during your trip.</p>
           </div>
         </div>
       </div>
       <div className="border-t border-frangipani/15 px-5 py-5 text-xs text-frangipani/55">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 sm:px-3 lg:px-7">
+        <div className="site-shell flex flex-wrap items-center justify-between gap-3">
           <span>© 2026 BaliXperience</span>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <span>Prices shown in IDR · USD estimates for comparison</span>

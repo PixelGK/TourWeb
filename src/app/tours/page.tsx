@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Compass, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, ArrowRight, Compass } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -176,32 +176,31 @@ export default async function ToursPage({ searchParams }: { searchParams: Search
     <main>
       <SiteHeader />
 
-      <section className="border-b border-charcoal/20 bg-terrace text-frangipani">
-        <div className="mx-auto grid max-w-7xl gap-8 px-5 py-12 sm:px-8 lg:grid-cols-[1fr_auto] lg:items-end lg:px-12 lg:py-16">
-          <div>
-            <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-2 text-xs font-semibold text-frangipani/65">
-              <Link href="/" className="hover:text-gold">Home</Link><span aria-hidden="true">/</span><span aria-current="page">Tours</span>
+      <section className="border-b border-charcoal/15 bg-[#fbfaf6]">
+        <div className="site-shell grid gap-8 py-12 sm:py-14 lg:grid-cols-12 lg:items-end lg:py-16">
+          <div className="lg:col-span-8">
+            <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-2 text-xs font-semibold text-weathered">
+              <Link href="/" className="hover:text-terrace">Home</Link><span aria-hidden="true">/</span><span aria-current="page">Tours</span>
             </nav>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-gold">Day tours, drivers and activities</p>
-            <h1 className="mt-3 max-w-4xl font-serif text-5xl leading-[0.95] sm:text-6xl lg:text-7xl">Private Bali day trips</h1>
+            <h1 className="max-w-4xl font-serif text-5xl font-normal leading-[0.95] tracking-[-0.03em] text-terrace sm:text-6xl">Choose a Bali day</h1>
           </div>
-          <div className="flex items-center gap-3 border-l-2 border-gold pl-4 text-sm text-frangipani/70 lg:max-w-xs">
-            <Compass aria-hidden="true" className="size-5 shrink-0 text-gold" /> Choose a ready-made route or ask us to adjust the stops.
+          <div className="flex items-start gap-3 text-sm leading-6 text-weathered lg:col-span-4 lg:max-w-sm lg:justify-self-end">
+            <Compass aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-clay" /> Pick a ready-made route, or start with a private driver and choose the stops yourself.
           </div>
         </div>
       </section>
 
       <TourCollectionNav active={filters.collection as TourCollectionId | undefined} counts={collectionCounts} date={filters.date} pax={filters.pax} />
 
-      <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-12 lg:py-14">
+      <div className="site-shell py-10 lg:py-14">
         <div className="grid gap-9 lg:grid-cols-[17.5rem_1fr] lg:items-start">
           <TourFilters filters={filters} categories={tourCategories} />
 
           <section aria-labelledby="results-heading">
             <div className="flex flex-col gap-5 border-b border-charcoal/25 pb-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.13em] text-clay"><SlidersHorizontal aria-hidden="true" className="size-3.5" /> {activeFilterCount ? `${activeFilterCount} active filters` : "All experiences"}</p>
-                <h2 id="results-heading" className="mt-2 font-serif text-3xl text-charcoal">{results.length} {results.length === 1 ? "experience" : "experiences"} found</h2>
+                <h2 id="results-heading" className="font-serif text-3xl font-normal text-charcoal">{results.length} {results.length === 1 ? "day" : "days"} found</h2>
+                {activeFilterCount ? <p className="mt-2 text-xs font-semibold text-clay">{activeFilterCount} active {activeFilterCount === 1 ? "filter" : "filters"}</p> : null}
                 {searchContext ? <p className="mt-2 text-sm text-weathered">Your search: <span className="font-semibold text-charcoal">{searchContext}</span></p> : null}
               </div>
               <TourSort filters={filters} />
@@ -209,9 +208,9 @@ export default async function ToursPage({ searchParams }: { searchParams: Search
 
             {visibleTours.length ? (
               <div className="mt-7 grid gap-6 sm:grid-cols-2">
-                {visibleTours.map((tour) => {
+                {visibleTours.map((tour, index) => {
                   const promotion = bestAutomaticOffer(automaticOffers, tour.slug, filters.date);
-                  return <TourCard key={tour.slug} tour={tour} bookingQuery={bookingQuery} promotion={promotion ? { ...promotion, exactForSelectedDate: Boolean(filters.date) } : null} />;
+                  return <div key={tour.slug} className={index === 0 ? "sm:col-span-2" : ""}><TourCard tour={tour} layout={index === 0 ? "wide" : "standard"} bookingQuery={bookingQuery} promotion={promotion ? { ...promotion, exactForSelectedDate: Boolean(filters.date) } : null} /></div>;
                 })}
               </div>
             ) : (
