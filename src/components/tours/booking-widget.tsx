@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { getBookingWindow } from "@/lib/booking-window";
 import type { PricingTier, PublicTourVariant, TourPricingMode } from "@/types/public-tour";
 import { calculatePackageTotal, calculateVariantPriceAdjustment } from "@/lib/tour-pricing";
+import { trackConversion } from "@/lib/analytics";
 
 const idrFormatter = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
 const usdFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -41,7 +42,7 @@ export function BookingWidget({ tourSlug, pricingTiers, pricingMode, variants = 
         <h2 className="font-serif text-3xl font-normal">Choose your date</h2>
         <p className="mt-2 text-sm leading-6 text-weathered">See the total for your group before sending the request.</p>
         {advertisedDiscount ? <p className="mt-4 border-l-3 border-gold bg-limestone px-3 py-2 text-xs font-semibold leading-5 text-terrace">{advertisedDiscount.name}: up to {advertisedDiscount.percentOff}% off selected dates. Choose a date to see the exact price.</p> : null}
-        <BookingForm tourSlug={tourSlug} pax={pax} setPax={updatePax} variants={variants} variantCode={variantCode} setVariantCode={setVariantCode} maxGroupSize={maxGroupSize} minDate={bookingWindow.minDate} maxDate={bookingWindow.maxDate} blackoutDates={blackoutDates} selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+        <BookingForm tourSlug={tourSlug} pax={pax} totalIdr={discountedTotal} setPax={updatePax} variants={variants} variantCode={variantCode} setVariantCode={setVariantCode} maxGroupSize={maxGroupSize} minDate={bookingWindow.minDate} maxDate={bookingWindow.maxDate} blackoutDates={blackoutDates} selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
         <div className="mt-5 border-y border-charcoal/20 py-4">
           {activeDiscount ? <p className="mb-2 text-xs font-bold text-terrace">{activeDiscount.name} · {activeDiscount.percentOff}% off</p> : null}
           <div className="flex items-baseline justify-between gap-4">
@@ -58,13 +59,13 @@ export function BookingWidget({ tourSlug, pricingTiers, pricingMode, variants = 
       </aside>
 
       <div className="fixed inset-x-0 bottom-0 z-50 border-t-2 border-terrace bg-frangipani px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_14px_rgb(28_27_24_/_0.12)] lg:hidden" aria-label="Mobile booking bar">
-        <form id="mobile-booking-form" action="/checkout" method="get" className="mx-auto grid max-w-xl grid-cols-[1fr_4.5rem] gap-2">
+        <form id="mobile-booking-form" action="/checkout" method="get" onSubmit={() => trackConversion("checkout_started", { tourSlug, pax, valueIdr: discountedTotal })} className="mx-auto grid max-w-xl grid-cols-[1fr_4.5rem] gap-2">
           <input type="hidden" name="tour" value={tourSlug} />
           {variants.length ? <label className="col-span-2"><span className="sr-only">Ride option</span><select name="variant" value={variantCode} onChange={(event) => setVariantCode(event.target.value)} className="min-h-10 w-full rounded-control border border-charcoal/30 bg-limestone px-3 text-xs font-semibold text-charcoal outline-none focus:border-terrace focus:ring-2 focus:ring-gold/30">{variants.map((variant) => <option key={variant.code} value={variant.code} disabled={variant.guestsPerUnit > pax}>{variant.title}</option>)}</select></label> : null}
           <label className="relative block">
             <span className="sr-only">Travel date</span>
             <CalendarDays aria-hidden="true" className="pointer-events-none absolute left-2.5 top-3 size-4 text-clay" />
-            <input type="date" name="date" min={bookingWindow.minDate} max={bookingWindow.maxDate} value={selectedDate} required suppressHydrationWarning onChange={(event) => { setSelectedDate(event.currentTarget.value); event.currentTarget.setCustomValidity(blackoutDates.includes(event.currentTarget.value) ? "This is an island-wide closure date. Please choose another day." : ""); }} className="min-h-10 w-full rounded-control border border-charcoal/30 bg-limestone py-2 pl-8 pr-2 text-xs text-charcoal outline-none focus:border-terrace focus:ring-2 focus:ring-gold/30" />
+            <input type="date" name="date" min={bookingWindow.minDate} max={bookingWindow.maxDate} value={selectedDate} required suppressHydrationWarning onChange={(event) => { setSelectedDate(event.currentTarget.value); if (event.currentTarget.value) trackConversion("date_selected", { tourSlug }); event.currentTarget.setCustomValidity(blackoutDates.includes(event.currentTarget.value) ? "This is an island-wide closure date. Please choose another day." : ""); }} className="min-h-10 w-full rounded-control border border-charcoal/30 bg-limestone py-2 pl-8 pr-2 text-xs text-charcoal outline-none focus:border-terrace focus:ring-2 focus:ring-gold/30" />
           </label>
           <label className="relative block">
             <span className="sr-only">Travelers</span>
@@ -87,14 +88,14 @@ export function BookingWidget({ tourSlug, pricingTiers, pricingMode, variants = 
   );
 }
 
-function BookingForm({ tourSlug, pax, setPax, variants, variantCode, setVariantCode, maxGroupSize, minDate, maxDate, blackoutDates, selectedDate, setSelectedDate }: { tourSlug: string; pax: number; setPax: (pax: number) => void; variants: PublicTourVariant[]; variantCode: string; setVariantCode: (code: string) => void; maxGroupSize: number; minDate: string; maxDate: string; blackoutDates: string[]; selectedDate: string; setSelectedDate: (date: string) => void }) {
+function BookingForm({ tourSlug, pax, totalIdr, setPax, variants, variantCode, setVariantCode, maxGroupSize, minDate, maxDate, blackoutDates, selectedDate, setSelectedDate }: { tourSlug: string; pax: number; totalIdr: number; setPax: (pax: number) => void; variants: PublicTourVariant[]; variantCode: string; setVariantCode: (code: string) => void; maxGroupSize: number; minDate: string; maxDate: string; blackoutDates: string[]; selectedDate: string; setSelectedDate: (date: string) => void }) {
   return (
-    <form id="desktop-booking-form" action="/checkout" method="get" className="mt-5 space-y-4">
+    <form id="desktop-booking-form" action="/checkout" method="get" onSubmit={() => trackConversion("checkout_started", { tourSlug, pax, valueIdr: totalIdr })} className="mt-5 space-y-4">
       <input type="hidden" name="tour" value={tourSlug} />
       {variants.length ? <label className="block space-y-2"><span className="text-sm font-semibold">Ride option</span><select name="variant" value={variantCode} onChange={(event) => setVariantCode(event.target.value)} className="min-h-12 w-full rounded-field border border-charcoal/35 bg-limestone px-3.5 text-base text-charcoal outline-none focus:border-terrace focus:ring-3 focus:ring-gold/30">{variants.map((variant) => <option key={variant.code} value={variant.code} disabled={variant.guestsPerUnit > pax}>{variant.title}{variant.priceAdjustmentIdr === 0 ? "" : ` (${variant.priceAdjustmentIdr > 0 ? "+" : "−"}${idrFormatter.format(Math.abs(variant.priceAdjustmentIdr))} each)`}</option>)}</select><span className="block text-xs leading-5 text-weathered">Shared ATVs require at least two travelers.</span></label> : null}
       <label className="block space-y-2">
         <span className="text-sm font-semibold">Travel date</span>
-        <input type="date" name="date" min={minDate} max={maxDate} value={selectedDate} required suppressHydrationWarning onChange={(event) => { setSelectedDate(event.currentTarget.value); event.currentTarget.setCustomValidity(blackoutDates.includes(event.currentTarget.value) ? "This is an island-wide closure date. Please choose another day." : ""); }} className="min-h-12 w-full rounded-field border border-charcoal/35 bg-limestone px-3.5 text-base text-charcoal outline-none focus:border-terrace focus:ring-3 focus:ring-gold/30" />
+        <input type="date" name="date" min={minDate} max={maxDate} value={selectedDate} required suppressHydrationWarning onChange={(event) => { setSelectedDate(event.currentTarget.value); if (event.currentTarget.value) trackConversion("date_selected", { tourSlug }); event.currentTarget.setCustomValidity(blackoutDates.includes(event.currentTarget.value) ? "This is an island-wide closure date. Please choose another day." : ""); }} className="min-h-12 w-full rounded-field border border-charcoal/35 bg-limestone px-3.5 text-base text-charcoal outline-none focus:border-terrace focus:ring-3 focus:ring-gold/30" />
         <span className="block text-xs leading-5 text-weathered">Dates open for 12 months. Nyepi and other island-wide closures are unavailable.</span>
       </label>
       <label className="block space-y-2">

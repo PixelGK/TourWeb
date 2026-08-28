@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DayPlanPromise } from "@/components/site/day-plan-promise";
+import { TourViewTracker } from "@/components/analytics/tour-view-tracker";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { BookingWidget } from "@/components/tours/booking-widget";
@@ -77,6 +78,7 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
   return (
     <main className="bg-[#fbfaf6] pb-36 lg:pb-0">
       <SiteHeader />
+      <TourViewTracker tourSlug={tour.slug} />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
 

@@ -319,3 +319,19 @@ model RateLimitBucket {
   @@index([resetAt])
   @@map("rate_limit_buckets")
 }
+
+model ConversionEvent {
+  id          BigInt   @id @default(autoincrement())
+  name        String
+  path        String?
+  tourSlug    String?  @map("tour_slug")
+  collection  String?
+  destination String?
+  pax         Int?
+  valueIdr    Int?     @map("value_idr")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([name, createdAt])
+  @@index([createdAt])
+  @@map("conversion_events")
+}

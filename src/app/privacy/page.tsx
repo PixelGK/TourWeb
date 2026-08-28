@@ -39,7 +39,8 @@ const privacySections = [
     "You can also complain to the relevant data protection authority. Contact us first if you can—we would like the opportunity to understand and resolve the concern.",
   ]],
   ["8. Cookies and analytics", [
-    "The public website does not currently use advertising cookies. Essential cookies or similar storage may be used for security, administration login, and core site operation. Hosting systems may record standard request logs. If we add non-essential analytics or advertising tools, we will update this notice and provide any consent controls required by law.",
+    "The public website does not use advertising cookies. Essential cookies or similar storage may be used for security, administration login, and core site operation. Vercel provides aggregate pageview and website-performance measurements and may process standard request information as our hosting provider.",
+    "We also count a small set of first-party actions—such as tour searches, tour views, checkout starts, booking requests, and WhatsApp clicks—to understand whether the website is useful. Those event records do not contain your name, email address, phone number, IP address, cookie identifier, or browser identifier. Personal details submitted with a booking are stored separately for operating that booking.",
   ]],
   ["9. Children", [
     "Bookings must be made by an adult. We collect a child's age or other limited details only when needed for transport, pricing, entry, or activity safety. Do not send additional information about a child unless it is necessary for the booking.",

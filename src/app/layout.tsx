@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Newsreader, Source_Sans_3 } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "./globals.css";
 import { getAppUrl } from "@/lib/server-env";
@@ -36,7 +38,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${newsreader.variable} ${sourceSans.variable}`}>
-      <body>{children}</body>
+      <body>{children}<Analytics /><SpeedInsights /></body>
     </html>
   );
 }

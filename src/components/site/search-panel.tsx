@@ -6,12 +6,16 @@ import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Select } from "@/components/ui/select";
 import { getBookingWindow } from "@/lib/booking-window";
+import { trackConversion } from "@/lib/analytics";
 
 export function SearchPanel() {
   const [bookingWindow] = useState(getBookingWindow);
 
   return (
-    <form action="/tours" method="get" className="grid gap-2.5" aria-label="Search Bali tours">
+    <form action="/tours" method="get" onSubmit={(event) => {
+      const data = new FormData(event.currentTarget);
+      trackConversion("tour_search", { destination: String(data.get("destination") ?? "all"), pax: Number(data.get("pax") ?? 2) });
+    }} className="grid gap-2.5" aria-label="Search Bali tours">
       <Select label="Where in Bali?" name="destination" defaultValue="all" containerClassName="[&_label]:text-xs [&_select]:bg-white [&_select]:min-h-11">
         <option value="all">Anywhere in Bali</option>
         <option value="ubud">Ubud & central Bali</option>

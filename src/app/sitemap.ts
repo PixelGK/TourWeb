@@ -6,7 +6,7 @@ import { getAppUrl } from "@/lib/server-env";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getAppUrl();
   const tours = await getPublicTours();
-  const staticPages = ["", "/tours", "/about", "/contact", "/terms", "/privacy"];
+  const staticPages = ["", "/tours", "/plan", "/about", "/contact", "/terms", "/privacy"];
 
   return [
     ...staticPages.map((path) => ({

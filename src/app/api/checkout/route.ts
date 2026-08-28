@@ -10,6 +10,7 @@ import { getPaymentProvider } from "@/lib/payments/provider";
 import { PaymentProviderError } from "@/lib/payments/types";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { getRequestIp, readJsonBody, RequestBodyError } from "@/lib/request";
+import { getPrisma } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,6 +37,15 @@ export async function POST(request: Request) {
 
     if (mode === "request") {
       after(async () => {
+        await getPrisma().conversionEvent.create({ data: {
+          name: "booking_request_submitted",
+          path: "/checkout",
+          tourSlug: input.tourSlug,
+          pax: input.pax,
+          valueIdr: reservation.booking.totalAmountIdr,
+        } }).catch((analyticsError) => {
+          console.error("Booking conversion event failed", analyticsError instanceof Error ? analyticsError.name : "UnknownError");
+        });
         try {
           await sendBookingRequestEmails(reservation.booking);
           await markBookingRequestEmailSent(reservation.booking.id);

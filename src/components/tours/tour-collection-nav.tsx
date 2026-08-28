@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 
 import { tourCollections, type TourCollectionId } from "@/lib/tour-collections";
+import { trackConversion } from "@/lib/analytics";
 
 interface TourCollectionNavProps {
   active?: TourCollectionId;
@@ -23,7 +26,7 @@ export function TourCollectionNav({ active, counts, date, pax }: TourCollectionN
           const isActive = active === collection.id;
 
           return (
-            <Link key={collection.id} href={`/tours?${params.toString()}`} aria-current={isActive ? "page" : undefined} className={collectionClass(isActive)}>
+            <Link key={collection.id} href={`/tours?${params.toString()}`} onClick={() => trackConversion("collection_selected", { collection: collection.id })} aria-current={isActive ? "page" : undefined} className={collectionClass(isActive)}>
               <span>{collection.label}</span>
               <span className="text-xs font-normal text-weathered">{counts[collection.id]}</span>
             </Link>

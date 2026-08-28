@@ -1,7 +1,10 @@
+"use client";
+
 import { MessageCircle } from "lucide-react";
 import type { AnchorHTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
+import { trackConversion } from "@/lib/analytics";
 
 export interface WhatsAppButtonProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> {
   phone?: string;
@@ -15,6 +18,7 @@ export function WhatsAppButton({
   compact = false,
   className,
   children,
+  onClick,
   ...props
 }: WhatsAppButtonProps) {
   const normalizedPhone = phone?.replace(/[^0-9]/g, "");
@@ -44,6 +48,10 @@ export function WhatsAppButton({
       target="_blank"
       rel="noopener noreferrer"
       className={sharedClassName}
+      onClick={(event) => {
+        trackConversion("whatsapp_clicked");
+        onClick?.(event);
+      }}
       {...props}
     >
       <MessageCircle aria-hidden="true" className="size-5" />
