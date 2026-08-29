@@ -19,6 +19,7 @@ import type { PublicTourCard } from "@/types/public-tour";
 export const metadata: Metadata = {
   title: "Bali Tours & Private Experiences",
   description: "Compare private Bali driver days, activity packages, trekking, water sports, car charters, and multi-day routes with clear IDR pricing.",
+  alternates: { canonical: "/tours" },
 };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
