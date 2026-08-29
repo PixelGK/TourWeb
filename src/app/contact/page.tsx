@@ -9,6 +9,7 @@ import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 export const metadata: Metadata = {
   title: "Contact",
   description: "Contact BaliXperience on WhatsApp or email to ask about Bali tours, pickup areas, dates, and custom routes.",
+  alternates: { canonical: "/contact" },
 };
 
 const details = [
