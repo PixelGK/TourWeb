@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site/site-header";
 export const metadata: Metadata = {
   title: "Privacy",
   description: "How BaliXperience collects, uses, shares, and protects booking, payment-status, communication, and website data.",
+  alternates: { canonical: "/privacy" },
 };
 
 const privacySections = [
