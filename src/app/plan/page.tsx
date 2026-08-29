@@ -9,6 +9,7 @@ import { getPublicTours } from "@/lib/public-tour-data";
 export const metadata: Metadata = {
   title: "Build a Multi-Day Bali Plan",
   description: "Combine two to five private Bali day routes and send one clear itinerary request to BaliXperience.",
+  alternates: { canonical: "/plan" },
 };
 
 export default async function PlanPage() {
