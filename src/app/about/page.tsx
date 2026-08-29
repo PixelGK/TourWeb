@@ -10,6 +10,7 @@ import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 export const metadata: Metadata = {
   title: "About",
   description: "How BaliXperience plans private driver days and activity packages with one local point of contact.",
+  alternates: { canonical: "/about" },
 };
 
 const principles = [
