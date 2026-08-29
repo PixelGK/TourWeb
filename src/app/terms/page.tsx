@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site/site-header";
 export const metadata: Metadata = {
   title: "Booking Terms",
   description: "The booking, payment, cancellation, supplier, and guest terms for BaliXperience driver and experience packages.",
+  alternates: { canonical: "/terms" },
 };
 
 const sections = [
