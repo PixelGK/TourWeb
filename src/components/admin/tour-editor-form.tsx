@@ -8,7 +8,9 @@ import { initialAdminActionState } from "@/lib/admin-action-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { TourStructuredFields } from "@/components/admin/tour-structured-fields";
 import type { AdminTourEditorData } from "@/lib/admin-data";
+import type { TourReadinessIssue } from "@/lib/tour-readiness";
 
 const categories = ["TREKKING", "WATER_SPORTS", "CULTURAL_TOUR", "CAR_CHARTER", "MULTI_DAY_TRIP", "CUSTOM_TOUR", "ISLAND_TRIP", "NATURE", "EXPERIENCE_DAY"];
 const textAreaClass = "w-full rounded-field border border-charcoal/35 bg-frangipani px-3.5 py-3 text-sm leading-6 text-charcoal outline-none focus:border-terrace focus:ring-3 focus:ring-gold/30 disabled:bg-limestone disabled:text-weathered";
@@ -21,17 +23,14 @@ function Feedback({ state }: { state: { ok: boolean; message: string } }) {
   return state.message ? <p role="status" className={`border-l-4 p-3 text-sm font-semibold ${state.ok ? "border-success bg-success/8 text-success" : "border-error bg-error/8 text-error"}`}>{state.message}</p> : null;
 }
 
-export function TourEditorForm({ tour, preview }: { tour: AdminTourEditorData; preview: boolean }) {
+export function TourEditorForm({ tour, preview, readinessIssues = [] }: { tour: AdminTourEditorData; preview: boolean; readinessIssues?: TourReadinessIssue[] }) {
   const [state, action, pending] = useActionState(saveTourAction, initialAdminActionState);
   const [deleteState, deleteAction, deleting] = useActionState(deleteTourAction, initialAdminActionState);
-  const itinerary = tour.itinerary.map((stop) => `${stop.timeLabel} | ${stop.title} | ${stop.description}`).join("\n");
-  const pricing = tour.pricingTiers.map((tier) => `${tier.minPax}-${tier.maxPax} | ${tier.perPersonIdr}`).join("\n");
-  const addons = tour.addons.map((addon) => `${addon.code} | ${addon.title} | ${addon.priceIdr} | ${addon.pricingMode} | ${addon.costPriceIdr ?? ""} | ${addon.description ?? ""}`).join("\n");
-  const variants = tour.variants.map((variant) => `${variant.code} | ${variant.title} | ${variant.priceAdjustmentIdr} | ${variant.supplierUnitCostIdr} | ${variant.guestsPerUnit} | ${variant.remainderCostIdr} | ${variant.isDefault ? "yes" : "no"} | ${variant.description ?? ""}`).join("\n");
 
   return (
     <div className="space-y-8">
       {preview ? <p className="border-l-4 border-gold bg-frangipani p-4 text-sm leading-6 text-weathered"><strong className="text-charcoal">Read-only preview.</strong> The complete editor is visible, but saving activates only after Supabase and the admin account are connected.</p> : null}
+      {tour.id && readinessIssues.length ? <section aria-labelledby="readiness-checks" className="border border-clay/35 bg-clay/8 p-5"><h2 id="readiness-checks" className="font-serif text-2xl">Before this package is fully ready</h2><p className="mt-2 text-sm leading-6 text-weathered">These are advisory checks. The package stays published while you complete them.</p><ul className="mt-4 grid gap-2 sm:grid-cols-2">{readinessIssues.map((issue) => <li key={issue.code} className="border-l-2 border-clay pl-3 text-sm leading-5">{issue.message}</li>)}</ul></section> : null}
       <form action={action}>
         <fieldset disabled={preview || pending} className="space-y-10 disabled:opacity-75">
           {tour.id ? <input type="hidden" name="id" value={tour.id} /> : null}
@@ -61,24 +60,19 @@ export function TourEditorForm({ tour, preview }: { tour: AdminTourEditorData; p
           </section>
 
           <section aria-labelledby="tour-route" className="border-t-2 border-charcoal pt-5">
-            <div className="mb-6 grid grid-cols-[2rem_1fr] gap-3"><span className="font-serif text-2xl text-gold-dark">02</span><div><h2 id="tour-route" className="font-serif text-2xl">Route and guest expectations</h2><p className="text-sm text-weathered">One structured stop per line keeps the public timeline consistent.</p></div></div>
-            <div className="space-y-5">
+            <div className="mb-6 grid grid-cols-[2rem_1fr] gap-3"><span className="font-serif text-2xl text-gold-dark">02</span><div><h2 id="tour-route" className="font-serif text-2xl">Route, pricing and guest choices</h2><p className="text-sm text-weathered">Build the day with clear rows. Reorder items with the arrow controls instead of editing coded text.</p></div></div>
+            <div className="space-y-6">
               <Input label="Meeting point" name="meetingPoint" required defaultValue={tour.meetingPoint} />
-              <div><FieldLabel htmlFor="itinerary" hint="time | title | description">Itinerary</FieldLabel><textarea id="itinerary" name="itinerary" required rows={10} defaultValue={itinerary} className={`${textAreaClass} font-mono text-xs`} /></div>
-              <div><FieldLabel htmlFor="inclusions" hint="one item per line">Inclusions</FieldLabel><textarea id="inclusions" name="inclusions" rows={6} defaultValue={tour.inclusions.join("\n")} className={textAreaClass} /></div>
-              <div><FieldLabel htmlFor="exclusions" hint="one item per line">Exclusions</FieldLabel><textarea id="exclusions" name="exclusions" rows={5} defaultValue={tour.exclusions.join("\n")} className={textAreaClass} /></div>
               <div><FieldLabel htmlFor="cancellationPolicy">Cancellation policy</FieldLabel><textarea id="cancellationPolicy" name="cancellationPolicy" required rows={5} defaultValue={tour.cancellationPolicy} className={textAreaClass} /></div>
+              <TourStructuredFields tour={tour} />
             </div>
           </section>
 
           <section aria-labelledby="tour-commerce" className="border-t-2 border-charcoal pt-5">
-            <div className="mb-6 grid grid-cols-[2rem_1fr] gap-3"><span className="font-serif text-2xl text-gold-dark">03</span><div><h2 id="tour-commerce" className="font-serif text-2xl">Photos and pricing</h2><p className="text-sm text-weathered">URLs are CDN-ready. Pricing and extras are parsed into database rows, not stored as blobs.</p></div></div>
+            <div className="mb-6 grid grid-cols-[2rem_1fr] gap-3"><span className="font-serif text-2xl text-gold-dark">03</span><div><h2 id="tour-commerce" className="font-serif text-2xl">Tour photography</h2><p className="text-sm text-weathered">Use one image URL and one plain-language description per line, in the same order.</p></div></div>
             <div className="space-y-5">
               <div><FieldLabel htmlFor="images" hint="one URL per line">Image URLs</FieldLabel><textarea id="images" name="images" required rows={6} defaultValue={tour.images.join("\n")} className={`${textAreaClass} font-mono text-xs`} /></div>
               <div><FieldLabel htmlFor="imageAlts" hint="one plain-language description per image, in the same order">Image descriptions</FieldLabel><textarea id="imageAlts" name="imageAlts" required rows={6} defaultValue={tour.imageAlts.join("\n")} className={textAreaClass} /></div>
-              <div><FieldLabel htmlFor="pricingTiers" hint="min-max | price in IDR (uses the pricing method above)">Group pricing tiers</FieldLabel><textarea id="pricingTiers" name="pricingTiers" required rows={5} defaultValue={pricing} className={`${textAreaClass} font-mono text-xs`} /></div>
-              <div><FieldLabel htmlFor="addons" hint="code | title | selling price | mode | internal cost | description">Optional add-ons</FieldLabel><textarea id="addons" name="addons" rows={6} defaultValue={addons} className={`${textAreaClass} font-mono text-xs`} /></div>
-              <div><FieldLabel htmlFor="variants" hint="code | title | price adjustment per guest | supplier unit cost | guests per unit | odd guest cost | yes/no default | description">Package options</FieldLabel><textarea id="variants" name="variants" rows={6} defaultValue={variants} className={`${textAreaClass} font-mono text-xs`} /><p className="mt-2 text-xs leading-5 text-weathered">Use this for selectable versions such as standard/premium or solo/shared. Enter one default option. Supplier costs stay private.</p></div>
             </div>
           </section>
 

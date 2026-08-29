@@ -8,12 +8,13 @@ import { getAdminTourEditor, getAdminTours } from "@/lib/admin-data";
 export default async function EditAdminTourPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [session, tours] = await Promise.all([requireAdminPageSession(), getAdminTours()]);
-  if (!tours.some((tour) => tour.id === id)) notFound();
+  const inventoryRow = tours.find((tour) => tour.id === id);
+  if (!inventoryRow) notFound();
   const tour = await getAdminTourEditor(id);
   return (
     <div className="space-y-8">
       <AdminPageHeader eyebrow="Tour desk · Edit listing" title={tour.title} description="Changes here shape both the guest-facing detail page and the rules used at checkout." />
-      <TourEditorForm tour={tour} preview={session.preview} />
+      <TourEditorForm tour={tour} preview={session.preview} readinessIssues={inventoryRow.readinessIssues} />
     </div>
   );
 }

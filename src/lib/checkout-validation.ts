@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { isInsideBookingWindow } from "@/lib/booking-window";
+import { pickupAreaCodes } from "@/lib/pickup-areas";
 
 const cleanSingleLine = (value: string) => value.replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim();
 const cleanNotes = (value: string) => value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "").trim();
@@ -16,7 +17,7 @@ export const checkoutRequestSchema = z.object({
   discountCode: z.string().trim().toUpperCase().regex(/^[A-Z0-9-]{3,30}$/).optional().or(z.literal("")),
   variantCode: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional().or(z.literal("")),
   addonCodes: z.array(z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)).max(10).transform((items) => [...new Set(items)].sort()),
-  pickupArea: z.enum(["ubud", "kuta", "canggu", "uluwatu"]).optional(),
+  pickupArea: z.enum(pickupAreaCodes).optional(),
   termsAccepted: z.literal(true),
   traveler: z.object({
     name: singleLine(2, 100),

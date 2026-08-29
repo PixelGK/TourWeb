@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgePercent, CalendarRange, ChartNoAxesCombined, ChartSpline, LayoutDashboard, MapPinned, ReceiptText } from "lucide-react";
+import { BadgePercent, CalendarRange, ChartNoAxesCombined, ChartSpline, ClipboardCheck, LayoutDashboard, MapPinned, ReceiptText } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -14,12 +14,13 @@ const items = [
   { href: "/admin/commerce", label: "Rules", number: "05", icon: BadgePercent },
   { href: "/admin/margins", label: "Margins", number: "06", icon: ChartNoAxesCombined },
   { href: "/admin/analytics", label: "Analytics", number: "07", icon: ChartSpline },
+  { href: "/admin/runbook", label: "Playbook", number: "08", icon: ClipboardCheck },
 ];
 
 export function AdminNav() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Admin navigation" className="grid grid-cols-4 sm:grid-cols-7 lg:block">
+    <nav aria-label="Admin navigation" className="grid grid-cols-4 lg:block">
       {items.map((item) => {
         const active = item.href === "/admin" ? pathname === item.href : pathname.startsWith(item.href);
         const Icon = item.icon;

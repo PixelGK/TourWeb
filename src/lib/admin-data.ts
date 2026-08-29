@@ -9,6 +9,7 @@ import { allTours, topTours } from "@/data/mock-tours";
 import { getPrisma } from "@/lib/db";
 import { hasDatabaseConfiguration } from "@/lib/server-env";
 import { calculatePackageTotal, calculateVariantPriceAdjustment, calculateVariantSupplierCost } from "@/lib/tour-pricing";
+import { evaluateTourReadiness, type TourReadinessIssue, type TourReadinessStatus } from "@/lib/tour-readiness";
 
 export interface AdminTourRow {
   id: string;
@@ -22,6 +23,8 @@ export interface AdminTourRow {
   published: boolean;
   bookingCount: number;
   openDateCount: number;
+  readinessStatus: TourReadinessStatus;
+  readinessIssues: TourReadinessIssue[];
 }
 
 export interface AdminBookingRow {
@@ -86,8 +89,8 @@ export interface AdminTourEditorData {
   published: boolean;
   itinerary: Array<{ timeLabel: string; title: string; description: string }>;
   pricingTiers: Array<{ minPax: number; maxPax: number; perPersonIdr: number }>;
-  addons: Array<{ code: string; title: string; priceIdr: number; costPriceIdr: number | null; pricingMode: string; description: string | null }>;
-  variants: Array<{ code: string; title: string; description: string | null; priceAdjustmentIdr: number; supplierUnitCostIdr: number; guestsPerUnit: number; remainderCostIdr: number; isDefault: boolean }>;
+  addons: Array<{ code: string; title: string; priceIdr: number; costPriceIdr: number | null; pricingMode: string; description: string | null; active: boolean }>;
+  variants: Array<{ code: string; title: string; description: string | null; priceAdjustmentIdr: number; supplierUnitCostIdr: number; guestsPerUnit: number; remainderCostIdr: number; isDefault: boolean; active: boolean }>;
 }
 
 export interface AdminMarginTourRow {
@@ -135,40 +138,79 @@ function categoryLabel(category: string) {
 }
 
 function mockTours(): AdminTourRow[] {
-  return allTours.map((tour, index) => ({
-    id: tour.slug,
-    slug: tour.slug,
-    title: tour.title,
-    category: tour.category,
-    durationMinutes: tour.durationHours * 60,
-    basePriceIdr: tour.priceIdr,
-    pricingMode: tour.slug === "private-car-charter-bali" ? "PER_VEHICLE" : "PER_PERSON",
-    maxGroupSize: 6,
-    published: index !== allTours.length - 1,
-    bookingCount: [18, 11, 9, 22, 5, 7, 31, 13, 4, 8, 3, 2][index] ?? 0,
-    openDateCount: 120 - index * 3,
-  }));
+  return allTours.map((tour, index) => {
+    const detail = getTourDetail(tour);
+    const published = index !== allTours.length - 1;
+    const pricingMode = tour.slug === "private-car-charter-bali" ? "PER_VEHICLE" : "PER_PERSON";
+    const addons = getMockAddons(tour.category, tour.slug).map((addon) => ({ ...addon, costPriceIdr: addon.code.startsWith("pickup-") ? 100000 : null, active: true }));
+    const variants = getMockVariants(tour.slug).map((variant) => ({ ...variant, active: true }));
+    const openDateCount = 120 - index * 3;
+    const readiness = evaluateTourReadiness({
+      published,
+      pricingMode,
+      baseCostIdr: 500000,
+      perPaxCostIdr: pricingMode === "PER_PERSON" && !variants.length ? null : 0,
+      maxGroupSize: detail.maxGroupSize,
+      images: detail.gallery.map((image) => image.src),
+      imageAlts: detail.gallery.map((image) => image.alt),
+      inclusions: detail.inclusions,
+      exclusions: detail.exclusions,
+      meetingPoint: detail.meetingPoint,
+      cancellationPolicy: detail.cancellationPolicy,
+      itinerary: detail.itinerary.map((stop) => ({ timeLabel: stop.time, title: stop.title, description: stop.description })),
+      pricingTiers: detail.pricingTiers,
+      addons,
+      variants,
+      openDateCount,
+    });
+    return {
+      id: tour.slug,
+      slug: tour.slug,
+      title: tour.title,
+      category: tour.category,
+      durationMinutes: tour.durationHours * 60,
+      basePriceIdr: tour.priceIdr,
+      pricingMode,
+      maxGroupSize: detail.maxGroupSize,
+      published,
+      bookingCount: [18, 11, 9, 22, 5, 7, 31, 13, 4, 8, 3, 2][index] ?? 0,
+      openDateCount,
+      readinessStatus: readiness.status,
+      readinessIssues: readiness.issues,
+    };
+  });
 }
 
 export async function getAdminTours(): Promise<AdminTourRow[]> {
   if (!hasDatabaseConfiguration()) return mockTours();
   const tours = await getPrisma().tour.findMany({
     orderBy: [{ published: "desc" }, { title: "asc" }],
-    include: { _count: { select: { bookings: true, availability: { where: { date: { gte: new Date() } } } } } },
+    include: {
+      itinerary: { orderBy: { position: "asc" } },
+      pricingTiers: { orderBy: { minPax: "asc" } },
+      addons: true,
+      variants: true,
+      _count: { select: { bookings: true, availability: { where: { date: { gte: new Date() }, isOpen: true } } } },
+    },
   });
-  return tours.map((tour) => ({
-    id: tour.id,
-    slug: tour.slug,
-    title: tour.title,
-    category: categoryLabel(tour.category),
-    durationMinutes: tour.durationMinutes,
-    basePriceIdr: tour.basePriceIdr,
-    pricingMode: tour.pricingMode,
-    maxGroupSize: tour.maxGroupSize,
-    published: tour.published,
-    bookingCount: tour._count.bookings,
-    openDateCount: tour._count.availability,
-  }));
+  return tours.map((tour) => {
+    const readiness = evaluateTourReadiness({ ...tour, openDateCount: tour._count.availability });
+    return {
+      id: tour.id,
+      slug: tour.slug,
+      title: tour.title,
+      category: categoryLabel(tour.category),
+      durationMinutes: tour.durationMinutes,
+      basePriceIdr: tour.basePriceIdr,
+      pricingMode: tour.pricingMode,
+      maxGroupSize: tour.maxGroupSize,
+      published: tour.published,
+      bookingCount: tour._count.bookings,
+      openDateCount: tour._count.availability,
+      readinessStatus: readiness.status,
+      readinessIssues: readiness.issues,
+    };
+  });
 }
 
 export async function getAdminBookings(filters: BookingFilters = {}): Promise<AdminBookingRow[]> {
@@ -463,13 +505,13 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
       published: true,
       itinerary: detail.itinerary.map((stop) => ({ timeLabel: stop.time, title: stop.title, description: stop.description })),
       pricingTiers: detail.pricingTiers,
-      addons: getMockAddons(tour.category, tour.slug).map((addon) => ({ ...addon, costPriceIdr: addon.code === "local-lunch" ? 120000 : addon.code.startsWith("pickup-") ? 100000 : null, description: addon.description })),
-      variants: getMockVariants(tour.slug).map((variant) => ({ ...variant, description: variant.description, supplierUnitCostIdr: variant.code === "standard-solo" ? 275000 : variant.code === "standard-tandem" ? 375000 : variant.code === "premium-solo" ? 500000 : 750000, remainderCostIdr: variant.code.startsWith("standard") ? 275000 : 500000 })),
+      addons: getMockAddons(tour.category, tour.slug).map((addon) => ({ ...addon, costPriceIdr: addon.code === "local-lunch" ? 120000 : addon.code.startsWith("pickup-") ? 100000 : null, description: addon.description, active: true })),
+      variants: getMockVariants(tour.slug).map((variant) => ({ ...variant, description: variant.description, supplierUnitCostIdr: variant.code === "standard-solo" ? 275000 : variant.code === "standard-tandem" ? 375000 : variant.code === "premium-solo" ? 500000 : 750000, remainderCostIdr: variant.code.startsWith("standard") ? 275000 : 500000, active: true })),
     };
   }
   const tour = await getPrisma().tour.findUnique({
     where: { id },
-    include: { itinerary: { orderBy: { position: "asc" } }, pricingTiers: { orderBy: { minPax: "asc" } }, addons: { where: { active: true }, orderBy: { title: "asc" } }, variants: { where: { active: true }, orderBy: [{ isDefault: "desc" }, { title: "asc" }] } },
+    include: { itinerary: { orderBy: { position: "asc" } }, pricingTiers: { orderBy: { minPax: "asc" } }, addons: { orderBy: [{ active: "desc" }, { title: "asc" }] }, variants: { orderBy: [{ active: "desc" }, { isDefault: "desc" }, { title: "asc" }] } },
   });
   if (!tour) return getAdminTourEditor();
   const knownTour = allTours.find((item) => item.slug === tour.slug);
@@ -500,8 +542,8 @@ export async function getAdminTourEditor(id?: string): Promise<AdminTourEditorDa
     published: tour.published,
     itinerary: tour.itinerary.map((stop) => ({ timeLabel: stop.timeLabel, title: stop.title, description: stop.description })),
     pricingTiers: tour.pricingTiers,
-    addons: tour.addons.map((addon) => ({ code: addon.code, title: addon.title, priceIdr: addon.priceIdr, costPriceIdr: addon.costPriceIdr, pricingMode: addon.pricingMode, description: addon.description })),
-    variants: tour.variants.map((variant) => ({ code: variant.code, title: variant.title, description: variant.description, priceAdjustmentIdr: variant.priceAdjustmentIdr, supplierUnitCostIdr: variant.supplierUnitCostIdr, guestsPerUnit: variant.guestsPerUnit, remainderCostIdr: variant.remainderCostIdr, isDefault: variant.isDefault })),
+    addons: tour.addons.map((addon) => ({ code: addon.code, title: addon.title, priceIdr: addon.priceIdr, costPriceIdr: addon.costPriceIdr, pricingMode: addon.pricingMode, description: addon.description, active: addon.active })),
+    variants: tour.variants.map((variant) => ({ code: variant.code, title: variant.title, description: variant.description, priceAdjustmentIdr: variant.priceAdjustmentIdr, supplierUnitCostIdr: variant.supplierUnitCostIdr, guestsPerUnit: variant.guestsPerUnit, remainderCostIdr: variant.remainderCostIdr, isDefault: variant.isDefault, active: variant.active })),
   };
 }
 

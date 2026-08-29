@@ -13,6 +13,7 @@ import {
 import type { CheckoutRequest } from "@/lib/checkout-validation";
 import type { BookingFlowMode } from "@/lib/booking-mode";
 import { getPrisma } from "@/lib/db";
+import { pickupAreaLabel } from "@/lib/pickup-areas";
 import { TERMS_VERSION } from "@/lib/legal";
 import type { PaymentState } from "@/lib/payments/types";
 import { calculatePackageTotal, calculateVariantSupplierCost } from "@/lib/tour-pricing";
@@ -196,7 +197,7 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
         customerPhone: input.traveler.phone,
         customerCountry: input.traveler.country,
         hotelName: input.traveler.hotelName || null,
-        notes: [input.pickupArea ? `Pickup area: ${input.pickupArea[0].toUpperCase()}${input.pickupArea.slice(1)}` : "", input.traveler.notes].filter(Boolean).join("\n") || null,
+        notes: [input.pickupArea ? `Pickup area: ${pickupAreaLabel(input.pickupArea)}` : "", input.traveler.notes].filter(Boolean).join("\n") || null,
         totalAmountIdr,
         baseCostIdrSnapshot: tour.baseCostIdr,
         perPaxCostIdrSnapshot: tour.perPaxCostIdr,

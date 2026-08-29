@@ -18,58 +18,67 @@ function lines(value: FormDataEntryValue | null) {
   return String(value ?? "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 }
 
-function parseItinerary(value: FormDataEntryValue | null) {
-  return lines(value).map((line, position) => {
-    const [timeLabel, title, ...descriptionParts] = line.split("|").map((part) => part.trim());
-    const description = descriptionParts.join(" | ");
-    if (!timeLabel || !title || !description) throw new Error(`Itinerary line ${position + 1} needs time | title | description`);
-    return { position, timeLabel, title, description };
-  });
-}
+const idrValue = z.coerce.number().int().min(0).max(2_000_000_000);
+const nullableIdrValue = z.union([z.literal(""), z.null(), idrValue]).transform((value) => value === "" ? null : value);
+const codeValue = z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use a lowercase code with hyphens only").max(80);
 
-function parsePricing(value: FormDataEntryValue | null) {
-  return lines(value).map((line, index) => {
-    const [range, priceText] = line.split("|").map((part) => part.trim());
-    const [minText, maxText = minText] = range?.split("-").map((part) => part.trim()) ?? [];
-    const minPax = Number(minText);
-    const maxPax = Number(maxText);
-    const perPersonIdr = Number(priceText);
-    if (!Number.isInteger(minPax) || !Number.isInteger(maxPax) || minPax < 1 || maxPax < minPax || !Number.isInteger(perPersonIdr) || perPersonIdr < 0) {
-      throw new Error(`Pricing line ${index + 1} needs min-max | price in IDR`);
-    }
-    return { minPax, maxPax, perPersonIdr };
+const structuredTourSchema = z.object({
+  itinerary: z.array(z.object({
+    timeLabel: z.string().trim().min(1, "Every itinerary stop needs a time or timing label").max(80),
+    title: z.string().trim().min(2, "Every itinerary stop needs a title").max(160),
+    description: z.string().trim().min(3, "Every itinerary stop needs a description").max(1_000),
+  })).min(1, "Add at least one itinerary stop").max(30),
+  inclusions: z.array(z.string().trim().min(2).max(300)).min(1, "Add at least one inclusion").max(40),
+  exclusions: z.array(z.string().trim().min(2).max(300)).min(1, "Add at least one exclusion").max(40),
+  pricingTiers: z.array(z.object({
+    minPax: z.coerce.number().int().min(1).max(50),
+    maxPax: z.coerce.number().int().min(1).max(50),
+    perPersonIdr: idrValue,
+  })).min(1, "Add at least one pricing tier").max(50),
+  addons: z.array(z.object({
+    code: codeValue,
+    title: z.string().trim().min(2).max(160),
+    priceIdr: idrValue,
+    costPriceIdr: nullableIdrValue,
+    pricingMode: z.enum(AddonPricingMode),
+    description: z.string().trim().max(500).nullable().transform((value) => value || null),
+    active: z.boolean(),
+  })).max(50),
+  variants: z.array(z.object({
+    code: codeValue,
+    title: z.string().trim().min(2).max(160),
+    description: z.string().trim().max(500).nullable().transform((value) => value || null),
+    priceAdjustmentIdr: z.coerce.number().int().min(-2_000_000_000).max(2_000_000_000),
+    supplierUnitCostIdr: idrValue,
+    guestsPerUnit: z.coerce.number().int().min(1).max(20),
+    remainderCostIdr: idrValue,
+    isDefault: z.boolean(),
+    active: z.boolean(),
+  })).max(30),
+}).superRefine((value, context) => {
+  if (new Set(value.addons.map((addon) => addon.code)).size !== value.addons.length) {
+    context.addIssue({ code: "custom", path: ["addons"], message: "Add-on codes must be unique" });
+  }
+  if (new Set(value.variants.map((variant) => variant.code)).size !== value.variants.length) {
+    context.addIssue({ code: "custom", path: ["variants"], message: "Package option codes must be unique" });
+  }
+  const activeVariants = value.variants.filter((variant) => variant.active);
+  if (activeVariants.length && activeVariants.filter((variant) => variant.isDefault).length !== 1) {
+    context.addIssue({ code: "custom", path: ["variants"], message: "Choose exactly one default active package option" });
+  }
+  value.variants.forEach((variant, index) => {
+    if (!variant.active && variant.isDefault) context.addIssue({ code: "custom", path: ["variants", index, "isDefault"], message: "An inactive option cannot be the default" });
   });
-}
+});
 
-function parseAddons(value: FormDataEntryValue | null) {
-  return lines(value).map((line, index) => {
-    const [code, title, priceText, modeText, costText, ...descriptionParts] = line.split("|").map((part) => part.trim());
-    const priceIdr = Number(priceText);
-    const costPriceIdr = costText === "" ? null : Number(costText);
-    const pricingMode = modeText as AddonPricingMode;
-    if (!code?.match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) || !title || !Number.isInteger(priceIdr) || priceIdr < 0 || (costPriceIdr !== null && (!Number.isInteger(costPriceIdr) || costPriceIdr < 0)) || !Object.values(AddonPricingMode).includes(pricingMode)) {
-      throw new Error(`Add-on line ${index + 1} needs code | title | selling price | PER_PERSON or PER_BOOKING | internal cost | description`);
-    }
-    return { code, title, priceIdr, costPriceIdr, pricingMode, description: descriptionParts.join(" | ") || null };
-  });
-}
-
-function parseVariants(value: FormDataEntryValue | null) {
-  const variants = lines(value).map((line, index) => {
-    const [code, title, adjustmentText, costText, guestsText, remainderText, defaultText, ...descriptionParts] = line.split("|").map((part) => part.trim());
-    const priceAdjustmentIdr = Number(adjustmentText);
-    const supplierUnitCostIdr = Number(costText);
-    const guestsPerUnit = Number(guestsText);
-    const remainderCostIdr = Number(remainderText);
-    const isDefault = /^(yes|true|default)$/i.test(defaultText ?? "");
-    if (!code?.match(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) || !title || !Number.isInteger(priceAdjustmentIdr) || Math.abs(priceAdjustmentIdr) > 2_000_000_000 || !Number.isInteger(supplierUnitCostIdr) || supplierUnitCostIdr < 0 || !Number.isInteger(guestsPerUnit) || guestsPerUnit < 1 || guestsPerUnit > 6 || !Number.isInteger(remainderCostIdr) || remainderCostIdr < 0) {
-      throw new Error(`Option line ${index + 1} needs code | title | price adjustment per guest | supplier unit cost | guests per unit | odd guest cost | yes/no default | description`);
-    }
-    return { code, title, priceAdjustmentIdr, supplierUnitCostIdr, guestsPerUnit, remainderCostIdr, isDefault, description: descriptionParts.join(" | ") || null };
-  });
-  if (new Set(variants.map((variant) => variant.code)).size !== variants.length) throw new Error("Ride option codes must be unique");
-  if (variants.length && variants.filter((variant) => variant.isDefault).length !== 1) throw new Error("Choose exactly one default ride option");
-  return variants;
+function parseStructuredTour(value: FormDataEntryValue | null) {
+  if (typeof value !== "string") throw new Error("The structured tour details are missing");
+  try {
+    return structuredTourSchema.parse(JSON.parse(value));
+  } catch (error) {
+    if (error instanceof SyntaxError) throw new Error("The structured tour details could not be read");
+    throw error;
+  }
 }
 
 const tourSchema = z.object({
@@ -127,13 +136,10 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
     });
     const images = lines(formData.get("images"));
     const imageAlts = lines(formData.get("imageAlts"));
-    const inclusions = lines(formData.get("inclusions"));
-    const exclusions = lines(formData.get("exclusions"));
-    const itinerary = parseItinerary(formData.get("itinerary"));
-    const pricingTiers = parsePricing(formData.get("pricingTiers"));
-    const addons = parseAddons(formData.get("addons"));
-    const variants = parseVariants(formData.get("variants"));
-    if (!images.length || !itinerary.length || !pricingTiers.length) throw new Error("Add at least one image, itinerary stop, and pricing tier");
+    const structured = parseStructuredTour(formData.get("structuredTourData"));
+    const { inclusions, exclusions, pricingTiers, addons, variants } = structured;
+    const itinerary = structured.itinerary.map((stop, position) => ({ ...stop, position }));
+    if (!images.length) throw new Error("Add at least one image");
     if (images.some((image) => { try { const url = new URL(image); return !["http:", "https:"].includes(url.protocol); } catch { return true; } })) throw new Error("Every image must be a valid http or https URL");
     if (imageAlts.length !== images.length) throw new Error("Add one image description for each image URL");
     const orderedTiers = pricingTiers.toSorted((a, b) => a.minPax - b.minPax);
@@ -181,8 +187,8 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
       for (const addon of addons) {
         await tx.tourAddon.upsert({
           where: { tourId_code: { tourId: tour.id, code: addon.code } },
-          update: { ...addon, active: true },
-          create: { ...addon, tourId: tour.id, active: true },
+          update: addon,
+          create: { ...addon, tourId: tour.id },
         });
       }
       const variantCodes = variants.map((variant) => variant.code);
@@ -191,8 +197,8 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
       for (const variant of variants) {
         await tx.tourVariant.upsert({
           where: { tourId_code: { tourId: tour.id, code: variant.code } },
-          update: { ...variant, active: true },
-          create: { ...variant, tourId: tour.id, active: true },
+          update: variant,
+          create: { ...variant, tourId: tour.id },
         });
       }
       return tour;
@@ -207,7 +213,59 @@ export async function saveTourAction(_previous: AdminActionState, formData: Form
     revalidatePath(`/tours/${record.slug}`);
     return { ok: true, message: input.id ? "Tour updated" : "Tour created", recordId: record.id };
   } catch (error) {
-    return { ok: false, message: error instanceof Error ? error.message : "Tour could not be saved" };
+    const message = error instanceof z.ZodError ? error.issues[0]?.message : error instanceof Error ? error.message : "Tour could not be saved";
+    return { ok: false, message: message || "Tour could not be saved" };
+  }
+}
+
+export async function copyPickupRulesAction(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    await mutableSession();
+    const sourceTourId = z.string().uuid().parse(formData.get("sourceTourId"));
+    const targetTourIds = z.array(z.string().uuid()).min(1, "Choose at least one destination tour").max(100).parse(formData.getAll("targetTourIds"));
+    const uniqueTargetIds = [...new Set(targetTourIds)].filter((id) => id !== sourceTourId);
+    if (!uniqueTargetIds.length) throw new Error("Choose at least one destination tour other than the source");
+
+    const prisma = getPrisma();
+    const [sourceRules, targetTours] = await Promise.all([
+      prisma.tourAddon.findMany({ where: { tourId: sourceTourId, code: { startsWith: "pickup-" } } }),
+      prisma.tour.findMany({ where: { id: { in: uniqueTargetIds } }, select: { id: true, slug: true } }),
+    ]);
+    if (!sourceRules.length) throw new Error("The source tour does not have any pickup rules to copy");
+    if (targetTours.length !== uniqueTargetIds.length) throw new Error("One or more destination tours could not be found");
+
+    await prisma.$transaction(async (tx) => {
+      await tx.tourAddon.updateMany({
+        where: { tourId: { in: uniqueTargetIds }, code: { startsWith: "pickup-" } },
+        data: { active: false },
+      });
+      for (const rule of sourceRules) {
+        const data = {
+          title: rule.title,
+          description: rule.description,
+          priceIdr: rule.priceIdr,
+          costPriceIdr: rule.costPriceIdr,
+          pricingMode: rule.pricingMode,
+          active: rule.active,
+        };
+        await tx.tourAddon.updateMany({
+          where: { tourId: { in: uniqueTargetIds }, code: rule.code },
+          data,
+        });
+        await tx.tourAddon.createMany({
+          data: uniqueTargetIds.map((tourId) => ({ ...data, tourId, code: rule.code })),
+          skipDuplicates: true,
+        });
+      }
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, timeout: 12_000 });
+
+    revalidatePath("/admin/tours");
+    revalidatePath("/checkout");
+    for (const tour of targetTours) revalidatePath(`/tours/${tour.slug}`);
+    return { ok: true, message: `Pickup rules copied to ${targetTours.length} ${targetTours.length === 1 ? "tour" : "tours"}` };
+  } catch (error) {
+    const message = error instanceof z.ZodError ? error.issues[0]?.message : error instanceof Error ? error.message : "Pickup rules could not be copied";
+    return { ok: false, message: message || "Pickup rules could not be copied" };
   }
 }
 

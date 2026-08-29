@@ -3,6 +3,7 @@ import { AdminStatus } from "@/components/admin/admin-status";
 import { BookingActions } from "@/components/admin/booking-actions";
 import { requireAdminPageSession } from "@/lib/admin-auth";
 import { getAdminBookings, getAdminTours } from "@/lib/admin-data";
+import Link from "next/link";
 
 const idr = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
 
@@ -22,7 +23,7 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
   ]);
   return (
     <div className="space-y-8">
-      <AdminPageHeader eyebrow="04 · Guest ledger" title="Bookings" description="Review new requests, confirm available packages, or cancel a booking and restore reserved capacity." />
+      <AdminPageHeader eyebrow="04 · Guest ledger" title="Bookings" description="Review new requests, confirm available packages, or cancel a booking and restore reserved capacity." action={<Link href="/admin/runbook" className="inline-flex min-h-11 items-center border-b border-charcoal/40 text-sm font-semibold text-terrace hover:border-gold">Booking playbook →</Link>} />
       <form className="grid gap-3 border border-charcoal/30 bg-frangipani p-4 sm:grid-cols-[1fr_0.7fr_0.9fr_auto] sm:items-end">
         <label className="text-sm font-semibold">Guest or reference<input name="q" defaultValue={filters.q} placeholder="BX-… or guest name" className="mt-2 min-h-11 w-full border border-charcoal/35 bg-limestone px-3 font-normal outline-none focus:border-terrace" /></label>
         <label className="text-sm font-semibold">Status<select name="status" defaultValue={filters.status ?? "ALL"} className="mt-2 min-h-11 w-full border border-charcoal/35 bg-limestone px-3 font-normal"><option value="ALL">All statuses</option>{["REQUESTED", "CONFIRMED", "PENDING", "PAID", "CANCELLED", "REFUNDED"].map((status) => <option key={status}>{status}</option>)}</select></label>
