@@ -59,20 +59,36 @@ export default async function TourDetailPage({ params, searchParams }: PageProps
   const initialDate = query.date && /^\d{4}-\d{2}-\d{2}$/.test(query.date) && isInsideBookingWindow(query.date) ? query.date : undefined;
   const requestedPax = Number(query.pax);
   const initialPax = Number.isInteger(requestedPax) && requestedPax >= 1 && requestedPax <= tour.maxGroupSize ? requestedPax : 2;
+  const tourUrl = `${getAppUrl()}/tours/${tour.slug}`;
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "Product",
-    name: tour.title,
-    description: tour.summary,
-    image: tour.gallery.map((image) => image.src),
-    category: tour.category,
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "IDR",
-      price: tour.priceIdr,
-      availability: "https://schema.org/InStock",
-      url: `${getAppUrl()}/tours/${tour.slug}`,
-    },
+    "@graph": [
+      {
+        "@type": "Product",
+        "@id": `${tourUrl}#product`,
+        name: tour.title,
+        description: tour.summary,
+        image: tour.gallery.map((image) => image.src),
+        category: tour.category,
+        url: tourUrl,
+        offers: {
+          "@type": "Offer",
+          priceCurrency: "IDR",
+          price: tour.priceIdr,
+          availability: "https://schema.org/InStock",
+          url: tourUrl,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${tourUrl}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: getAppUrl() },
+          { "@type": "ListItem", position: 2, name: "Tours", item: `${getAppUrl()}/tours` },
+          { "@type": "ListItem", position: 3, name: tour.title, item: tourUrl },
+        ],
+      },
+    ],
   };
 
   return (
