@@ -24,6 +24,9 @@ export class BookingError extends Error {
   }
 }
 
+const RECENT_REQUEST_WINDOW_MS = 60 * 60 * 1000;
+const MAX_RECENT_EMAIL_REQUESTS = 5;
+
 function requestHash(input: CheckoutRequest) {
   return createHash("sha256").update(JSON.stringify(input)).digest("hex");
 }
@@ -53,7 +56,41 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
     const existing = await tx.booking.findUnique({ where: { idempotencyKey }, include: { tour: true, availability: true } });
     if (existing) {
       if (existing.idempotencyRequestHash !== fingerprint) throw new BookingError("This retry key was already used for different booking details", "CONFLICT", 409);
+      const expectedProvider = mode === "request" ? PaymentProviderName.MANUAL : PaymentProviderName.MIDTRANS;
+      if (existing.paymentProvider !== expectedProvider) throw new BookingError("This retry key belongs to a different checkout flow", "CONFLICT", 409);
+      if (mode === "request" && existing.status !== BookingStatus.REQUESTED && existing.status !== BookingStatus.CONFIRMED) {
+        throw new BookingError("This booking request is no longer active. Start a new request if you still want this date.", "CONFLICT", 409);
+      }
       return { booking: existing, created: false };
+    }
+
+    if (mode === "request") {
+      const recentSince = new Date(Date.now() - RECENT_REQUEST_WINDOW_MS);
+      const duplicate = await tx.booking.findFirst({
+        where: {
+          idempotencyRequestHash: fingerprint,
+          paymentProvider: PaymentProviderName.MANUAL,
+          status: { in: [BookingStatus.REQUESTED, BookingStatus.CONFIRMED] },
+          createdAt: { gte: recentSince },
+        },
+        orderBy: { createdAt: "desc" },
+        select: { id: true },
+      });
+      if (duplicate) {
+        throw new BookingError("We already received a matching recent request. Check your email or message us if you need help.", "CONFLICT", 409);
+      }
+
+      const recentEmailRequests = await tx.booking.count({
+        where: {
+          paymentProvider: PaymentProviderName.MANUAL,
+          status: { in: [BookingStatus.REQUESTED, BookingStatus.CONFIRMED] },
+          createdAt: { gte: recentSince },
+          customerEmail: input.traveler.email,
+        },
+      });
+      if (recentEmailRequests >= MAX_RECENT_EMAIL_REQUESTS) {
+        throw new BookingError("We already have several recent requests for this email. Please check your inbox or message us if you need help.", "CONFLICT", 429);
+      }
     }
 
     const tour = await tx.tour.findUnique({

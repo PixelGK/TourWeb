@@ -7,6 +7,7 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { TurnstileWidget } from "@/components/security/turnstile-widget";
 import type { PricingTier, PublicTourVariant, TourPricingMode } from "@/types/public-tour";
 import type { MockAddon } from "@/data/mock-addons";
 import { cn } from "@/lib/utils";
@@ -39,9 +40,10 @@ interface CheckoutFlowProps {
   childAgeLabel: string | null;
   automaticDiscount: { name: string; percentOff: number } | null;
   mode: "request" | "payment";
+  turnstileSiteKey: string;
 }
 
-export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addons, variants, initialVariantCode, childPriceIdr, childAgeLabel, automaticDiscount, mode }: CheckoutFlowProps) {
+export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addons, variants, initialVariantCode, childPriceIdr, childAgeLabel, automaticDiscount, mode, turnstileSiteKey }: CheckoutFlowProps) {
   const [step, setStep] = useState(1);
   const [traveler, setTraveler] = useState<TravelerState>({ name: "", email: "", phone: "", country: "", hotelName: "", notes: "" });
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
@@ -57,6 +59,8 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
   const [discountCode, setDiscountCode] = useState("");
   const [promoDiscount, setPromoDiscount] = useState<{ code: string; percentOff: number } | null>(null);
   const [discountLoading, setDiscountLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
 
   const lunchAddon = addons.find((addon) => addon.code === "local-lunch");
   const pickupAddons = addons.filter((addon) => addon.code.startsWith("pickup-"));
@@ -139,6 +143,10 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
       setError(`Please accept the Booking Terms and Privacy Notice before ${mode === "request" ? "sending your request" : "continuing to payment"}.`);
       return;
     }
+    if (!turnstileToken) {
+      setError("Please wait for the security check to finish, then try again.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -159,12 +167,13 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
           traveler: {
             ...traveler,
           },
+          turnstileToken,
         }),
       });
-      const result = await response.json() as { error?: string; redirectUrl?: string; confirmationUrl?: string };
+      const result = await response.json() as { error?: string; code?: string; redirectUrl?: string; confirmationUrl?: string };
       const destination = mode === "request" ? result.confirmationUrl : result.redirectUrl;
       if (!response.ok || !destination) {
-        if (response.status === 502) setIdempotencyKey(crypto.randomUUID());
+        if (response.status === 502 || result.code?.startsWith("SECURITY_CHECK_")) setIdempotencyKey(crypto.randomUUID());
         throw new Error(result.error ?? (mode === "request" ? "Your booking request could not be sent" : "Secure payment could not be started"));
       }
 
@@ -176,6 +185,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
       }
       window.location.assign(redirect.toString());
     } catch (caught) {
+      setTurnstileResetSignal((current) => current + 1);
       setError(caught instanceof Error ? caught.message : (mode === "request" ? "Your booking request could not be sent" : "Secure payment could not be started"));
       setLoading(false);
     }
@@ -339,10 +349,13 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
               <input type="checkbox" required checked={termsAccepted} onChange={(event) => setTermsAccepted(event.target.checked)} className="mt-0.5 size-5 shrink-0 accent-terrace" />
               <span>I have read and accept the <Link href="/terms" target="_blank" className="font-semibold text-terrace underline underline-offset-4">Booking Terms</Link> and acknowledge the <Link href="/privacy" target="_blank" className="font-semibold text-terrace underline underline-offset-4">Privacy Notice</Link>.</span>
             </label>
+            <div className="mt-4">
+              <TurnstileWidget siteKey={turnstileSiteKey} resetSignal={turnstileResetSignal} onTokenChange={setTurnstileToken} />
+            </div>
             {error ? <p role="alert" className="mt-5 border border-error/40 bg-error/8 p-4 text-sm font-semibold text-error">{error}</p> : null}
             <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
               <Button variant="ghost" size="lg" onClick={() => setStep(2)} disabled={loading}><ArrowLeft className="size-4" aria-hidden="true" /> Trip options</Button>
-              <Button size="lg" onClick={submitBooking} loading={loading} disabled={!termsAccepted}>{mode === "request" ? "Send booking request" : "Pay securely in IDR"} <ArrowRight className="size-4" aria-hidden="true" /></Button>
+              <Button size="lg" onClick={submitBooking} loading={loading} disabled={!termsAccepted || !turnstileToken || !turnstileSiteKey}>{mode === "request" ? "Send booking request" : "Pay securely in IDR"} <ArrowRight className="size-4" aria-hidden="true" /></Button>
             </div>
           </section>
         ) : null}

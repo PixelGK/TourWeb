@@ -54,6 +54,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
         childAgeLabel={tour.childAgeLabel}
         automaticDiscount={automaticDiscount ? { name: automaticDiscount.name ?? "Seasonal offer", percentOff: automaticDiscount.percentOff } : null}
         mode={getBookingFlowMode()}
+        turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? (process.env.NODE_ENV === "development" ? "1x00000000000000000000AA" : "")}
       />
       <SiteFooter />
     </>

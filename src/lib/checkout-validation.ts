@@ -42,4 +42,5 @@ export const checkoutRequestSchema = z.object({
 });
 
 export const idempotencyKeySchema = z.uuid();
+export const turnstileTokenSchema = z.string().trim().min(1).max(2048);
 export type CheckoutRequest = z.infer<typeof checkoutRequestSchema>;

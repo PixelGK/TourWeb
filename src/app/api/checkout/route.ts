@@ -4,13 +4,14 @@ import { ZodError } from "zod";
 import { BookingError, markBookingRequestEmailSent, releasePendingBooking, reserveBooking, toPaymentBooking } from "@/lib/booking-service";
 import { isTrustedMutationRequest } from "@/lib/admin-auth";
 import { getBookingFlowMode } from "@/lib/booking-mode";
-import { checkoutRequestSchema, idempotencyKeySchema } from "@/lib/checkout-validation";
+import { checkoutRequestSchema, idempotencyKeySchema, turnstileTokenSchema } from "@/lib/checkout-validation";
 import { sendBookingRequestEmails } from "@/lib/email";
 import { getPaymentProvider } from "@/lib/payments/provider";
 import { PaymentProviderError } from "@/lib/payments/types";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { getRequestIp, readJsonBody, RequestBodyError } from "@/lib/request";
 import { getPrisma } from "@/lib/db";
+import { TurnstileUnavailableError, verifyTurnstileToken } from "@/lib/turnstile";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +25,13 @@ export async function POST(request: Request) {
     if (!rateLimit.allowed) return Response.json({ error: "Too many checkout attempts. Please wait a minute and try again." }, { status: 429 });
 
     const idempotencyKey = idempotencyKeySchema.parse(request.headers.get("idempotency-key"));
-    const input = checkoutRequestSchema.parse(await readJsonBody(request));
+    const body = await readJsonBody(request);
+    if (!body || typeof body !== "object" || Array.isArray(body)) throw new RequestBodyError("Request body must be a JSON object", 400);
+    const { turnstileToken: rawTurnstileToken, ...rawCheckoutInput } = body as Record<string, unknown>;
+    const turnstileToken = turnstileTokenSchema.parse(rawTurnstileToken);
+    const input = checkoutRequestSchema.parse(rawCheckoutInput);
+    const turnstile = await verifyTurnstileToken({ token: turnstileToken, idempotencyKey, remoteIp: getRequestIp(request.headers) });
+    if (!turnstile.success) return Response.json({ error: "The security check expired or could not be verified. Please retry it and send your request again.", code: "SECURITY_CHECK_FAILED" }, { status: 403 });
     const reservation = await reserveBooking(input, idempotencyKey, mode);
     reference = reservation.booking.reference;
 
@@ -72,6 +79,7 @@ export async function POST(request: Request) {
   } catch (error) {
     if (reference && mode === "payment") await releasePendingBooking(reference).catch(() => undefined);
     if (error instanceof RequestBodyError) return Response.json({ error: error.message }, { status: error.status });
+    if (error instanceof TurnstileUnavailableError) return Response.json({ error: "The security check is temporarily unavailable. Please wait a moment and try again.", code: "SECURITY_CHECK_UNAVAILABLE" }, { status: 503 });
     if (error instanceof ZodError) return Response.json({ error: "Please check the booking details and try again.", fields: error.flatten().fieldErrors }, { status: 400 });
     if (error instanceof BookingError) return Response.json({ error: error.message, code: error.code }, { status: error.status });
     if (error instanceof PaymentProviderError) return Response.json({ error: "Secure payment could not be started. Your reserved spots have been released." }, { status: 502 });
