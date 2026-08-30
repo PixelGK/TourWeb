@@ -23,7 +23,7 @@ const privacySections = [
   ]],
   ["3. Who receives it", [
     "We share only what is reasonably needed with drivers, guides, activity operators, attractions, restaurants, or other suppliers involved in your booked day. For example, an activity operator may need traveler names, date, party size, and relevant age or safety information.",
-    "We also use service providers to run the business: Midtrans for hosted payment and payment status, Supabase for database infrastructure, Vercel for website hosting and operational logs, Resend for transactional email, and WhatsApp/Meta when you choose to message us there. Those providers handle data under their own terms and privacy notices.",
+    "We also use service providers to run the business: Midtrans for hosted payment and payment status, Supabase for database infrastructure, Vercel for website hosting and operational logs, Resend for transactional email, Cloudflare Turnstile for booking-form abuse prevention, and WhatsApp/Meta when you choose to message us there. Those providers handle data under their own terms and privacy notices.",
     "Information may also be disclosed where required by law, to protect safety or legal rights, or in connection with a genuine business reorganization. We do not sell personal information or provide it to data brokers.",
   ]],
   ["4. International processing", [
@@ -62,7 +62,7 @@ export default function PrivacyPage() {
         eyebrow="Privacy"
         title="Your trip details are for running your trip."
         description="This notice explains what BaliXperience collects, why it is needed, which booking partners receive it, and the choices available to you."
-        aside={<p className="text-sm leading-6 text-weathered"><strong className="block text-charcoal">Last updated</strong>15 August 2026</p>}
+        aside={<p className="text-sm leading-6 text-weathered"><strong className="block text-charcoal">Last updated</strong>30 August 2026</p>}
       />
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 lg:grid-cols-12 lg:px-12 lg:py-20">
         <aside className="lg:col-span-3">
