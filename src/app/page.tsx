@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { DayPlanPromise } from "@/components/site/day-plan-promise";
+import { HeroGallery, type HeroSlide } from "@/components/site/hero-gallery";
 import { SearchPanel } from "@/components/site/search-panel";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
   description: "Book private Bali driver days with hotel pickup, clear IDR prices, realistic routes, and clearly listed admissions.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "BaliXperience — Private Bali Driver & Day Trips",
+    title: "BaliXperience | Private Bali Driver & Day Trips",
     description: "Choose a ready-made Bali day or arrange a private driver around the places you want to visit.",
     url: "/",
     images: [{ url: "https://images.unsplash.com/photo-1769485016814-943270cdb5db?auto=format&fit=crop&w=1800&q=84", alt: "A Balinese woman carrying offerings near an ornate temple entrance" }],
@@ -25,6 +26,33 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 300;
+
+const heroSlides: readonly HeroSlide[] = [
+  {
+    src: "https://images.unsplash.com/photo-1769485016814-943270cdb5db?auto=format&fit=crop&w=2200&q=84",
+    alt: "A Balinese woman carrying offerings near an ornate temple entrance",
+    caption: "Morning offerings near a temple gate",
+    objectPosition: "center 42%",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1555865138-193ba536d7e0?auto=format&fit=crop&w=2200&q=84",
+    alt: "Layered green rice terraces in Bali",
+    caption: "Rice terraces along the central Bali road",
+    objectPosition: "center 52%",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1669108724321-aa81435896f4?auto=format&fit=crop&w=2200&q=84",
+    alt: "Mount Batur at sunrise beneath a dark blue sky",
+    caption: "An early start for Mount Batur",
+    objectPosition: "center 58%",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=2200&q=84",
+    alt: "A Balinese water temple reflected in a calm lake",
+    caption: "A quieter temple morning in north Bali",
+    objectPosition: "center 52%",
+  },
+] as const;
 
 const dayStyles = [
   {
@@ -89,38 +117,25 @@ export default async function HomePage() {
       <SiteHeader />
 
       <section className="site-shell grid overflow-hidden border-x border-b border-charcoal/15 bg-frangipani lg:min-h-[34rem] lg:grid-cols-[minmax(0,1.42fr)_minmax(25rem,1fr)]" aria-labelledby="hero-heading">
-        <div className="relative h-48 overflow-hidden bg-terrace sm:h-auto sm:aspect-[16/9] lg:aspect-auto lg:min-h-[34rem]">
-          <Image
-            src="https://images.unsplash.com/photo-1769485016814-943270cdb5db?auto=format&fit=crop&w=2200&q=84"
-            alt="A Balinese woman carrying offerings near an ornate temple entrance"
-            fill
-            priority
-            sizes="(max-width: 1023px) 100vw, 58vw"
-            className="object-cover object-[center_42%] brightness-[0.86] saturate-[0.9]"
-          />
-          <p className="absolute bottom-4 left-4 border-l-2 border-gold bg-charcoal/88 px-3 py-2 text-xs font-semibold text-frangipani sm:bottom-6 sm:left-6">
-            Bali · a morning offering
-          </p>
-        </div>
+        <HeroGallery slides={heroSlides} />
 
         <div className="flex flex-col justify-center bg-frangipani px-5 py-8 sm:px-9 sm:py-12 lg:px-12 lg:py-14 xl:px-14">
           <h1 id="hero-heading" className="max-w-[11ch] font-serif text-[clamp(2.9rem,4.8vw,4.8rem)] font-normal leading-[0.95] tracking-[-0.035em] text-terrace">
             Bali, with your own driver.
           </h1>
           <p className="mt-5 max-w-[31rem] text-base leading-7 text-charcoal/72 sm:mt-6 sm:text-[1.0625rem]">
-            Choose a ready-made day or tell us where you want to go. We’ll confirm the pickup, timing and what’s included before you book.
+            Choose a ready-made day or send your places. We check pickup, route order, inclusions and final IDR total before confirming.
           </p>
           <div className="mt-6 max-w-xl sm:mt-7">
             <SearchPanel />
           </div>
-          <p className="mt-4 hidden text-xs leading-5 text-weathered sm:block">Private vehicle · final total in IDR · pickup arranged directly</p>
         </div>
       </section>
 
-      <aside className="border-b border-charcoal/15 bg-charcoal text-frangipani" aria-label="Bali driving note">
+      <aside className="border-b border-charcoal/15 bg-charcoal text-frangipani" aria-label="Booking confirmation promise">
         <div className="site-shell grid gap-3 py-5 sm:grid-cols-[10rem_1fr_auto] sm:items-center sm:gap-7">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-gold">From the driver’s seat</p>
-          <p className="max-w-4xl font-serif text-xl font-normal leading-snug text-frangipani sm:text-2xl">In Bali, distance is a poor guide to drive time. Your hotel area changes which stops make a good day.</p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-gold">Checked before pickup</p>
+          <p className="max-w-4xl font-serif text-xl font-normal leading-snug text-frangipani sm:text-2xl">Driver, pickup, route order, inclusions and final IDR total, written down before the day.</p>
           <Link href="/plan" className="inline-flex min-h-11 w-fit items-center gap-2 border-b border-frangipani/45 text-sm font-semibold text-frangipani hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus">
             Plan from my hotel <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
