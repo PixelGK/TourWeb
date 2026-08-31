@@ -22,7 +22,14 @@ Useful checks:
 ```bash
 pnpm typecheck
 pnpm lint
+pnpm test
 pnpm build
+```
+
+Run the non-mutating production smoke checks with:
+
+```bash
+pnpm smoke:production
 ```
 
 Generate distinct runtime secrets locally with:
@@ -48,8 +55,8 @@ Checkout creates a booking first and then opens Midtrans Snap. The browser retur
 
 ## Current deployment note
 
-Tour browsing, availability, admin management, and the checkout UI are implemented. A production payment cannot be started until the Midtrans server key is configured.
+Tour browsing, availability, admin management, and request-first checkout are implemented. Midtrans remains disabled until BaliXperience has the required company and merchant setup. Do not switch `BOOKING_FLOW_MODE` away from `request` merely because a server key is available.
 
-## Image credit
+## Temporary photography
 
-The homepage photograph is by Justyna Kaźmierczak on [Unsplash](https://unsplash.com/photos/a-dirt-road-surrounded-by-palm-trees-and-rice-fields-NILzwbOk-YQ), used under the Unsplash License.
+Public pages currently use real Unsplash photography as temporary material. These images are not AI-generated and should be replaced with original BaliXperience photographs before the final brand launch.
