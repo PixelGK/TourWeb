@@ -92,7 +92,7 @@ export function HeroGallery({ slides }: HeroGalleryProps) {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-charcoal/85 via-charcoal/30 to-transparent" aria-hidden="true" />
 
       <div className="absolute inset-x-4 bottom-4 flex items-end justify-between gap-4 sm:inset-x-6 sm:bottom-6">
-        <div className="max-w-[70%] text-frangipani">
+        <div className="min-w-0 flex-1 pr-2 text-frangipani">
           <p className="text-[0.6875rem] font-bold tracking-[0.12em] text-gold">
             {String(currentIndex + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
           </p>
@@ -100,7 +100,7 @@ export function HeroGallery({ slides }: HeroGalleryProps) {
             {slides.map((slide, index) => (
               <p
                 key={slide.caption}
-                className={`absolute inset-0 text-sm font-semibold leading-5 transition-[opacity,transform] duration-500 motion-reduce:transition-none ${index === currentIndex ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}
+                className={`absolute inset-0 text-xs font-semibold leading-4 transition-[opacity,transform] duration-500 motion-reduce:transition-none sm:text-sm sm:leading-5 ${index === currentIndex ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}
                 aria-hidden={index !== currentIndex}
               >
                 {slide.caption}
