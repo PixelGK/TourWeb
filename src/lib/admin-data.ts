@@ -8,7 +8,7 @@ import { getTourDetail } from "@/data/mock-tour-details";
 import { allTours, topTours } from "@/data/mock-tours";
 import { getPrisma } from "@/lib/db";
 import { hasDatabaseConfiguration } from "@/lib/server-env";
-import { calculatePackageTotal, calculateVariantPriceAdjustment, calculateVariantSupplierCost } from "@/lib/tour-pricing";
+import { calculatePackageTotal, calculateVariantPriceAdjustment, calculateVariantSupplierCost, getTierPrice } from "@/lib/tour-pricing";
 import { evaluateTourReadiness, type TourReadinessIssue, type TourReadinessStatus } from "@/lib/tour-readiness";
 
 export interface AdminTourRow {
@@ -99,6 +99,11 @@ export interface AdminMarginTourRow {
   published: boolean;
   pricingMode: "PER_PERSON" | "PER_VEHICLE";
   examplePax: number;
+  customerUnitPriceIdr: number;
+  packageRevenueIdr: number;
+  variantTitle: string | null;
+  variantPriceAdjustmentIdr: number;
+  variantSupplierCostIdr: number;
   exampleRevenueIdr: number;
   baseCostIdr: number | null;
   perPaxCostIdr: number | null;
@@ -325,13 +330,16 @@ export async function getAdminOverview() {
   };
 }
 
-export async function getAdminMargins(): Promise<AdminMarginData> {
+export async function getAdminMargins(requestedPax = 2): Promise<AdminMarginData> {
+  const safeRequestedPax = Number.isInteger(requestedPax) && requestedPax > 0 ? requestedPax : 2;
   if (!hasDatabaseConfiguration()) {
     const tours = allTours.map((tour) => {
       const detail = getTourDetail(tour);
       const pricingMode = tour.pricingMode ?? "PER_PERSON";
-      const examplePax = 2;
-      const exampleRevenueIdr = calculatePackageTotal({ pricingMode, pricingTiers: detail.pricingTiers, pax: examplePax });
+      const examplePax = Math.min(safeRequestedPax, detail.maxGroupSize);
+      const customerUnitPriceIdr = getTierPrice(detail.pricingTiers, examplePax);
+      const packageRevenueIdr = calculatePackageTotal({ pricingMode, pricingTiers: detail.pricingTiers, pax: examplePax });
+      const exampleRevenueIdr = packageRevenueIdr;
       const baseCostIdr = tour.category === "Multi-Day Trips" ? Math.round(tour.durationHours / 24) * 500000 : 500000;
       const perPaxCostIdr = tour.slug === "ubud-atv-jungle-trail" ? 275000 : null;
       const exampleCostIdr = pricingMode === "PER_PERSON" && perPaxCostIdr === null ? null : baseCostIdr + (perPaxCostIdr ?? 0) * examplePax;
@@ -342,6 +350,11 @@ export async function getAdminMargins(): Promise<AdminMarginData> {
         published: true,
         pricingMode,
         examplePax,
+        customerUnitPriceIdr,
+        packageRevenueIdr,
+        variantTitle: null,
+        variantPriceAdjustmentIdr: 0,
+        variantSupplierCostIdr: 0,
         exampleRevenueIdr,
         baseCostIdr,
         perPaxCostIdr,
@@ -383,17 +396,21 @@ export async function getAdminMargins(): Promise<AdminMarginData> {
   ]);
 
   const tours = tourRows.map((tour) => {
-    const examplePax = Math.min(2, tour.maxGroupSize);
+    const examplePax = Math.min(safeRequestedPax, tour.maxGroupSize);
     const defaultVariant = tour.variants.find((variant) => variant.isDefault) ?? tour.variants[0];
-    const exampleRevenueIdr = calculatePackageTotal({
+    const customerUnitPriceIdr = getTierPrice(tour.pricingTiers, examplePax);
+    const packageRevenueIdr = calculatePackageTotal({
       pricingMode: tour.pricingMode,
       pricingTiers: tour.pricingTiers,
       pax: examplePax,
       childPriceIdr: tour.childPriceIdr,
-    }) + calculateVariantPriceAdjustment(defaultVariant, examplePax);
+    });
+    const variantPriceAdjustmentIdr = calculateVariantPriceAdjustment(defaultVariant, examplePax);
+    const variantSupplierCostIdr = defaultVariant ? calculateVariantSupplierCost(defaultVariant, examplePax) : 0;
+    const exampleRevenueIdr = packageRevenueIdr + variantPriceAdjustmentIdr;
     const exampleCostIdr = tour.baseCostIdr === null || (tour.pricingMode === "PER_PERSON" && tour.perPaxCostIdr === null && !defaultVariant)
       ? null
-      : tour.baseCostIdr + (tour.perPaxCostIdr ?? 0) * examplePax + (defaultVariant ? calculateVariantSupplierCost(defaultVariant, examplePax) : 0);
+      : tour.baseCostIdr + (tour.perPaxCostIdr ?? 0) * examplePax + variantSupplierCostIdr;
     const estimatedGrossProfitIdr = exampleCostIdr === null ? null : exampleRevenueIdr - exampleCostIdr;
     return {
       id: tour.id,
@@ -401,6 +418,11 @@ export async function getAdminMargins(): Promise<AdminMarginData> {
       published: tour.published,
       pricingMode: tour.pricingMode,
       examplePax,
+      customerUnitPriceIdr,
+      packageRevenueIdr,
+      variantTitle: defaultVariant?.title ?? null,
+      variantPriceAdjustmentIdr,
+      variantSupplierCostIdr,
       exampleRevenueIdr,
       baseCostIdr: tour.baseCostIdr,
       perPaxCostIdr: tour.perPaxCostIdr,
@@ -573,3 +595,4 @@ export async function getAdminCommerce() {
 }
 
 export type AdminTourDetail = Prisma.TourGetPayload<{ include: { itinerary: true; pricingTiers: true; addons: true; variants: true } }>;
+

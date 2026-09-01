@@ -32,12 +32,22 @@ test("free Ubud pickup does not require a surcharge add-on", () => {
   assert.equal(result.success, true);
 });
 
-test("paid pickup area must match its surcharge add-on", () => {
-  const missing = checkoutRequestSchema.safeParse(request({ pickupArea: "kuta" }));
-  assert.equal(missing.success, false);
-
+test("configured pickup surcharge must match its area", () => {
   const matched = checkoutRequestSchema.safeParse(request({ pickupArea: "kuta", addonCodes: ["pickup-kuta"] }));
   assert.equal(matched.success, true);
+
+  const mismatched = checkoutRequestSchema.safeParse(request({ pickupArea: "kuta", addonCodes: ["pickup-canggu"] }));
+  assert.equal(mismatched.success, false);
+});
+
+test("an area without a configured surcharge remains a manual quote", () => {
+  const result = checkoutRequestSchema.safeParse(request({ pickupArea: "seminyak" }));
+  assert.equal(result.success, true);
+});
+
+test("pickup area is required for every booking request", () => {
+  const result = checkoutRequestSchema.safeParse(request({ pickupArea: undefined }));
+  assert.equal(result.success, false);
 });
 
 test("traveler counts must equal the total party size", () => {
@@ -49,3 +59,4 @@ test("duplicate add-ons are normalized before pricing", () => {
   const result = checkoutRequestSchema.parse(request({ addonCodes: ["local-lunch", "local-lunch"] }));
   assert.deepEqual(result.addonCodes, ["local-lunch"]);
 });
+

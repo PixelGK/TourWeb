@@ -11,6 +11,7 @@ import { TurnstileWidget } from "@/components/security/turnstile-widget";
 import type { PricingTier, PublicTourVariant, TourPricingMode } from "@/types/public-tour";
 import type { MockAddon } from "@/data/mock-addons";
 import { cn } from "@/lib/utils";
+import { pickupAreas, type PickupAreaCode } from "@/lib/pickup-areas";
 import { calculatePackageTotal, calculateVariantPriceAdjustment } from "@/lib/tour-pricing";
 
 const idr = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
@@ -65,10 +66,14 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
   const lunchAddon = addons.find((addon) => addon.code === "local-lunch");
   const pickupAddons = addons.filter((addon) => addon.code.startsWith("pickup-"));
   const selectedPickup = pickupAddons.find((addon) => selectedAddons.includes(addon.code));
+  const pickupNeedsManualQuote = Boolean(pickupArea && pickupArea !== "ubud" && !selectedPickup);
   const otherAddons = addons.filter((addon) => addon.code !== "local-lunch" && !addon.code.startsWith("pickup-"));
   const lunchIncluded = lunchAddon ? selectedAddons.includes(lunchAddon.code) : false;
   const selectedExtraCount = selectedAddons.filter((code) => code !== lunchAddon?.code && !code.startsWith("pickup-")).length;
   const addOnTotal = addons.filter((addon) => selectedAddons.includes(addon.code)).reduce((sum, addon) => sum + addon.priceIdr * (addon.pricingMode === "PER_PERSON" ? pax : 1), 0);
+  const pickupChargeIdr = selectedPickup ? selectedPickup.priceIdr * (selectedPickup.pricingMode === "PER_PERSON" ? pax : 1) : 0;
+  const lunchChargeIdr = lunchIncluded && lunchAddon ? lunchAddon.priceIdr * (lunchAddon.pricingMode === "PER_PERSON" ? pax : 1) : 0;
+  const otherExtrasTotalIdr = addOnTotal - pickupChargeIdr - lunchChargeIdr;
   const selectedVariant = variants.find((variant) => variant.code === variantCode);
   const basePackageTotalIdr = calculatePackageTotal({ pricingMode, pricingTiers, pax, adultCount, childCount, childPriceIdr }) + calculateVariantPriceAdjustment(selectedVariant, pax);
   const packageSubtotalIdr = basePackageTotalIdr + addOnTotal;
@@ -104,9 +109,10 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
     ]);
   }
 
-  function choosePickupArea(area: string) {
+  function choosePickupArea(area: PickupAreaCode | "") {
     setPickupArea(area);
-    choosePickup(area === "ubud" ? null : `pickup-${area}`);
+    const configuredRule = pickupAddons.find((addon) => addon.code === `pickup-${area}`);
+    choosePickup(configuredRule?.code ?? null);
   }
 
   function updateTravelerCounts(adults: number, children: number) {
@@ -162,7 +168,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
           discountCode: promoDiscount?.code ?? "",
           variantCode,
           addonCodes: selectedAddons,
-          pickupArea: pickupAddons.length ? pickupArea : undefined,
+          pickupArea,
           termsAccepted,
           traveler: {
             ...traveler,
@@ -214,22 +220,25 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
               <Input label="Email" type="email" autoComplete="email" required value={traveler.email} onChange={(event) => updateTraveler("email", event.target.value)} />
               <Input label="WhatsApp / phone" type="tel" autoComplete="tel" required hint="Include your country code, for example +61." value={traveler.phone} onChange={(event) => updateTraveler("phone", event.target.value)} />
               <Input label="Country" autoComplete="country-name" required value={traveler.country} onChange={(event) => updateTraveler("country", event.target.value)} />
-              {pickupAddons.length ? (
-                <Select
-                  label="Pickup area"
-                  required
-                  value={pickupArea}
-                  onChange={(event) => choosePickupArea(event.target.value)}
-                  hint="Choose the area now so the total includes the correct vehicle charge."
-                  containerClassName="sm:col-span-2"
-                >
-                  <option value="" disabled>Select your pickup area</option>
-                  <option value="ubud">Ubud — included</option>
-                  {pickupAddons.map((addon) => (
-                    <option key={addon.code} value={addon.code.replace("pickup-", "")}>{addon.title.replace("Pickup from ", "")} — + {idr.format(addon.priceIdr)} per vehicle</option>
-                  ))}
-                </Select>
-              ) : null}
+              <Select
+                label="Pickup area"
+                required
+                value={pickupArea}
+                onChange={(event) => choosePickupArea(event.target.value as PickupAreaCode | "")}
+                hint="Ubud is included. A configured surcharge is added now; any other area is quoted before we confirm the request."
+                containerClassName="sm:col-span-2"
+              >
+                <option value="" disabled>Select your pickup area</option>
+                {pickupAreas.map((area) => {
+                  const configuredRule = pickupAddons.find((addon) => addon.code === `pickup-${area.code}`);
+                  const detail = area.included
+                    ? "included"
+                    : configuredRule
+                      ? `+ ${idr.format(configuredRule.priceIdr)} per vehicle`
+                      : "manual quote before confirmation";
+                  return <option key={area.code} value={area.code}>{area.label} — {detail}</option>;
+                })}
+              </Select>
               <Input label="Bali hotel or villa" autoComplete="organization" hint="Optional—you can confirm this later on WhatsApp." value={traveler.hotelName} onChange={(event) => updateTraveler("hotelName", event.target.value)} containerClassName="sm:col-span-2" />
               <label className="space-y-2 sm:col-span-2">
                 <span className="block text-sm font-semibold">Notes for the operator <span className="font-normal text-weathered">(optional)</span></span>
@@ -272,7 +281,7 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
               </fieldset>
             ) : null}
 
-            {pickupAddons.length ? <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-y border-charcoal/20 py-4 text-sm"><span><strong>Pickup:</strong> {pickupArea === "ubud" ? "Ubud · included" : selectedPickup ? `${selectedPickup.title.replace("Pickup from ", "")} · + ${idr.format(selectedPickup.priceIdr)} per vehicle` : "Not selected"}</span><button type="button" onClick={() => setStep(1)} className="min-h-11 border-b border-charcoal/40 font-semibold text-terrace hover:border-gold">Change pickup</button></div> : null}
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-y border-charcoal/20 py-4 text-sm"><span><strong>Pickup:</strong> {pickupArea === "ubud" ? "Ubud · included" : selectedPickup ? `${selectedPickup.title.replace("Pickup from ", "")} · + ${idr.format(pickupChargeIdr)} per vehicle` : pickupNeedsManualQuote ? `${pickupAreas.find((area) => area.code === pickupArea)?.label} · quote required` : "Not selected"}</span><button type="button" onClick={() => setStep(1)} className="min-h-11 border-b border-charcoal/40 font-semibold text-terrace hover:border-gold">Change pickup</button></div>
 
             {lunchAddon ? (
               <fieldset className="mt-8">
@@ -331,9 +340,10 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lead traveler</dt><dd className="text-right font-semibold">{traveler.name}<br /><span className="font-normal text-weathered">{traveler.email}</span></dd></div>
               <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">{pricingMode === "PER_VEHICLE" ? `Vehicle for ${pax} guests` : "Package price"}</dt><dd className="font-semibold tabular-nums">{idr.format(basePackageTotalIdr)}</dd></div>
               {selectedVariant ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Ride option</dt><dd className="text-right font-semibold">{selectedVariant.title}</dd></div> : null}
-              {pickupAddons.length ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Pickup area</dt><dd className="text-right font-semibold">{pickupArea === "ubud" ? "Ubud · Included" : selectedPickup ? <>{selectedPickup.title.replace("Pickup from ", "")} · <span className="tabular-nums">+ {idr.format(selectedPickup.priceIdr)}</span></> : "Not selected"}</dd></div> : null}
+              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Pickup area</dt><dd className="text-right font-semibold">{pickupAreas.find((area) => area.code === pickupArea)?.label ?? "Not selected"}</dd></div>
+              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Pickup charge</dt><dd className="text-right font-semibold">{pickupArea === "ubud" ? "Included" : selectedPickup ? <span className="tabular-nums">+ {idr.format(pickupChargeIdr)}</span> : pickupNeedsManualQuote ? <>Quoted before confirmation<span className="block text-xs font-normal text-weathered">Not included in the total below</span></> : "—"}</dd></div>
               {lunchAddon ? <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? <>Included · <span className="tabular-nums">{idr.format(lunchAddon.priceIdr * pax)}</span></> : <>Choose your own · <span className="font-normal text-weathered">pay at restaurant</span></>}</dd></div> : null}
-              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold tabular-nums">{idr.format(addOnTotal - (lunchIncluded && lunchAddon ? lunchAddon.priceIdr * pax : 0))}</dd></div>
+              <div className="flex justify-between gap-5 py-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold tabular-nums">{idr.format(otherExtrasTotalIdr)}</dd></div>
               {activeDiscount ? <div className="flex justify-between gap-5 py-4 text-success"><dt>Package discount · {activeDiscount.label}</dt><dd className="font-semibold tabular-nums">− {idr.format(discountAmountIdr)}</dd></div> : null}
             </dl>
             <div className="mt-6 border border-charcoal/25 bg-frangipani p-4">
@@ -371,10 +381,12 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
           {selectedVariant ? <div className="flex justify-between gap-4"><dt className="text-weathered">Ride option</dt><dd className="text-right font-semibold">{selectedVariant.title}</dd></div> : null}
           {childPriceIdr !== null ? <div className="flex justify-between gap-4"><dt className="text-weathered">Mix</dt><dd className="font-semibold">{adultCount} adult · {childCount} child</dd></div> : null}
           {lunchAddon ? <div className="flex justify-between gap-4"><dt className="text-weathered">Lunch</dt><dd className="text-right font-semibold">{lunchIncluded ? "Included" : "Choose & pay directly"}</dd></div> : null}
-          {pickupAddons.length ? <div className="flex justify-between gap-4"><dt className="text-weathered">Pickup</dt><dd className="text-right font-semibold">{pickupArea === "ubud" ? "Ubud · included" : selectedPickup ? selectedPickup.title.replace("Pickup from ", "") : "Select area"}</dd></div> : null}
+          <div className="flex justify-between gap-4"><dt className="text-weathered">Pickup</dt><dd className="text-right font-semibold">{pickupAreas.find((area) => area.code === pickupArea)?.label ?? "Select area"}</dd></div>
+          <div className="flex justify-between gap-4"><dt className="text-weathered">Pickup charge</dt><dd className="text-right font-semibold tabular-nums">{pickupArea === "ubud" ? "Included" : selectedPickup ? `+ ${idr.format(pickupChargeIdr)}` : pickupNeedsManualQuote ? "To be quoted" : "—"}</dd></div>
           <div className="flex justify-between gap-4"><dt className="text-weathered">Other extras</dt><dd className="font-semibold">{selectedExtraCount || "None"}</dd></div>
         </dl>
         <div className="mt-5 flex items-end justify-between gap-3"><span className="text-sm text-weathered">{mode === "request" ? "Quoted total" : "Total"}</span><strong className="font-serif text-3xl tabular-nums">{idr.format(totalIdr)}</strong></div>
+        {pickupNeedsManualQuote ? <p className="mt-3 border-l-3 border-gold pl-3 text-xs font-semibold leading-5 text-clay">Pickup from this area needs a manual quote. It is not included in the shown total, and we will state it before confirming your request.</p> : null}
         {activeDiscount ? <p className="mt-2 border-l-3 border-gold pl-3 text-xs font-bold leading-5 text-terrace">{activeDiscount.label} · {activeDiscount.percentOff}% off is included</p> : null}
         <p className="mt-1 text-right text-xs text-weathered">≈ {usd.format(totalIdr / idrPerUsdEstimate)} estimate</p>
         <p className="mt-5 flex gap-2 text-xs leading-5 text-weathered"><ShieldCheck className="size-4 shrink-0 text-terrace" aria-hidden="true" />{mode === "request" ? "No payment is taken when you submit. Any later payment arrangement will be stated clearly before you commit." : "The actual charge and settlement currency is IDR. Your bank determines any conversion rate or foreign transaction fee."}</p>
@@ -382,3 +394,4 @@ export function CheckoutFlow({ tour, date, pax, pricingTiers, pricingMode, addon
     </div>
   );
 }
+

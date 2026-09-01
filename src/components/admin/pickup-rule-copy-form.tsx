@@ -60,7 +60,7 @@ export function PickupRuleCopyForm({ tours, preview }: { tours: TourOption[]; pr
             </div>
           </div>
           <div className="flex flex-col gap-3 border-t border-charcoal/20 pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm leading-5 text-weathered">This replaces pickup rules only. Prices, itinerary, admissions, and other add-ons stay unchanged.</p>
+            <p className="text-sm leading-5 text-weathered">This replaces pickup rules only. Copy confirmed Ubud, Kuta, Canggu and Uluwatu coverage; leave other Bali areas as a manual quote until their costs are known.</p>
             <Button type="submit" loading={pending} disabled={!selected.length}><Copy className="size-4" aria-hidden="true" /> Copy to {selected.length || 0}</Button>
           </div>
           {state.message ? <p role="status" className={`border-l-4 p-3 text-sm font-semibold ${state.ok ? "border-success bg-success/8 text-success" : "border-error bg-error/8 text-error"}`}>{state.message}</p> : null}
@@ -69,3 +69,4 @@ export function PickupRuleCopyForm({ tours, preview }: { tours: TourOption[]; pr
     </details>
   );
 }
+
