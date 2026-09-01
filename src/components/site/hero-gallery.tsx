@@ -41,18 +41,16 @@ export function HeroGallery({ slides }: HeroGalleryProps) {
 
   useEffect(() => {
     if (!galleryReady || reduceMotion || isPaused || !pageVisible || slides.length < 2) return;
-    const interval = window.setInterval(() => {
+    const timeout = window.setTimeout(() => {
       setCurrentIndex((index) => (index + 1) % slides.length);
     }, advanceIntervalMs);
-    return () => window.clearInterval(interval);
-  }, [galleryReady, isPaused, pageVisible, reduceMotion, slides.length]);
+    return () => window.clearTimeout(timeout);
+  }, [currentIndex, galleryReady, isPaused, pageVisible, reduceMotion, slides.length]);
 
   if (!slides.length) return null;
 
   const showPrevious = () => setCurrentIndex((index) => (index - 1 + slides.length) % slides.length);
   const showNext = () => setCurrentIndex((index) => (index + 1) % slides.length);
-  const activeSlide = slides[currentIndex];
-
   return (
     <div
       className="relative h-full min-h-48 overflow-hidden bg-terrace sm:min-h-[22rem] lg:min-h-[34rem]"
@@ -98,7 +96,17 @@ export function HeroGallery({ slides }: HeroGalleryProps) {
           <p className="text-[0.6875rem] font-bold tracking-[0.12em] text-gold">
             {String(currentIndex + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
           </p>
-          <p className="mt-1 text-sm font-semibold leading-5" aria-live="off">{activeSlide.caption}</p>
+          <div className="relative mt-1 min-h-10" aria-live="off">
+            {slides.map((slide, index) => (
+              <p
+                key={slide.caption}
+                className={`absolute inset-0 text-sm font-semibold leading-5 transition-[opacity,transform] duration-500 motion-reduce:transition-none ${index === currentIndex ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"}`}
+                aria-hidden={index !== currentIndex}
+              >
+                {slide.caption}
+              </p>
+            ))}
+          </div>
         </div>
 
         {slides.length > 1 ? (
@@ -125,3 +133,4 @@ export function HeroGallery({ slides }: HeroGalleryProps) {
     </div>
   );
 }
+
