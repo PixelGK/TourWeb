@@ -77,7 +77,7 @@ export function evaluateTourReadiness(tour: TourReadinessInput) {
     issues.push({ code: "DEFAULT_VARIANT", message: "Choose one default active package option" });
   }
 
-  const configuredAddonCodes = new Set(tour.addons.map((addon) => addon.code));
+  const configuredAddonCodes = new Set(activeAddons.map((addon) => addon.code));
   const missingPickupAreas = paidPickupAreas.filter((area) => !configuredAddonCodes.has(pickupAddonCode(area.code)));
   if (missingPickupAreas.length) {
     issues.push({ code: "PICKUP_RULES", message: `Set pickup rules for ${missingPickupAreas.map((area) => area.label).join(", ")}` });
@@ -89,3 +89,4 @@ export function evaluateTourReadiness(tour: TourReadinessInput) {
   const status: TourReadinessStatus = !tour.published ? "DRAFT" : issues.length ? "NEEDS_ATTENTION" : "READY";
   return { status, issues };
 }
+
