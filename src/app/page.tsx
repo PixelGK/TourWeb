@@ -119,8 +119,8 @@ export default async function HomePage() {
       <section className="site-shell grid overflow-hidden border-x border-b border-charcoal/15 bg-frangipani lg:min-h-[34rem] lg:grid-cols-[minmax(0,1.42fr)_minmax(25rem,1fr)]" aria-labelledby="hero-heading">
         <HeroGallery slides={heroSlides} />
 
-        <div className="flex flex-col justify-center bg-frangipani px-5 py-8 sm:px-9 sm:py-12 lg:px-12 lg:py-14 xl:px-14">
-          <h1 id="hero-heading" className="max-w-[11ch] font-serif text-[clamp(2.9rem,4.8vw,4.8rem)] font-normal leading-[0.95] tracking-[-0.035em] text-terrace">
+        <div className="flex flex-col justify-center bg-frangipani px-5 py-7 sm:px-9 sm:py-12 lg:px-12 lg:py-14 xl:px-14">
+          <h1 id="hero-heading" className="max-w-[11ch] font-serif text-[clamp(2.75rem,4.8vw,4.8rem)] font-normal leading-[0.95] tracking-[-0.035em] text-terrace">
             Bali, with your own driver.
           </h1>
           <p className="mt-5 max-w-[31rem] text-base leading-7 text-charcoal/72 sm:mt-6 sm:text-[1.0625rem]">
@@ -221,3 +221,4 @@ function ExperienceChapter({ label, duration, description, href, image }: (typeo
     </Link>
   );
 }
+
