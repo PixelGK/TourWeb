@@ -108,8 +108,8 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
     const selectedAddons = tour.addons.filter((addon) => input.addonCodes.includes(addon.code));
     if (selectedAddons.length !== input.addonCodes.length) throw new BookingError("One or more selected add-ons are unavailable", "INVALID");
     const pickupOptions = tour.addons.filter((addon) => addon.code.startsWith("pickup-"));
-    if (pickupOptions.length && !input.pickupArea) throw new BookingError("Choose your pickup area so the total is accurate", "INVALID");
-    const expectedPickupCode = input.pickupArea && input.pickupArea !== "ubud" ? `pickup-${input.pickupArea}` : null;
+    const configuredPickup = pickupOptions.find((addon) => addon.code === `pickup-${input.pickupArea}`);
+    const expectedPickupCode = configuredPickup?.code ?? null;
     const selectedPickupCode = selectedAddons.find((addon) => addon.code.startsWith("pickup-"))?.code ?? null;
     if (expectedPickupCode !== selectedPickupCode) throw new BookingError("Pickup area and surcharge do not match", "INVALID");
     const variant = input.variantCode ? tour.variants.find((item) => item.code === input.variantCode) : tour.variants.find((item) => item.isDefault) ?? tour.variants[0];
@@ -234,7 +234,11 @@ export async function reserveBooking(input: CheckoutRequest, idempotencyKey: str
         customerPhone: input.traveler.phone,
         customerCountry: input.traveler.country,
         hotelName: input.traveler.hotelName || null,
-        notes: [input.pickupArea ? `Pickup area: ${pickupAreaLabel(input.pickupArea)}` : "", input.traveler.notes].filter(Boolean).join("\n") || null,
+        notes: [
+          `Pickup area: ${pickupAreaLabel(input.pickupArea)}`,
+          input.pickupArea !== "ubud" && !configuredPickup ? "Pickup surcharge: manual quote required before confirmation" : "",
+          input.traveler.notes,
+        ].filter(Boolean).join("\n") || null,
         totalAmountIdr,
         baseCostIdrSnapshot: tour.baseCostIdr,
         perPaxCostIdrSnapshot: tour.perPaxCostIdr,
@@ -430,3 +434,4 @@ export function toPaymentBooking(booking: Booking & { tour: { title: string } })
     totalAmountIdr: booking.totalAmountIdr,
   };
 }
+
