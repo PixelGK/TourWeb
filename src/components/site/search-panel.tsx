@@ -15,8 +15,8 @@ export function SearchPanel() {
     <form action="/tours" method="get" onSubmit={(event) => {
       const data = new FormData(event.currentTarget);
       trackConversion("tour_search", { destination: String(data.get("destination") ?? "all"), pax: Number(data.get("pax") ?? 2) });
-    }} className="grid gap-2.5" aria-label="Search Bali tours">
-      <Select label="Where in Bali?" name="destination" defaultValue="all" containerClassName="[&_label]:text-xs [&_select]:bg-white [&_select]:min-h-11">
+    }} className="grid gap-2.5 min-[360px]:grid-cols-2" aria-label="Search Bali tours">
+      <Select label="Where in Bali?" name="destination" defaultValue="all" containerClassName="min-[360px]:col-span-2 [&_label]:text-xs [&_select]:bg-white [&_select]:min-h-11">
         <option value="all">Anywhere in Bali</option>
         <option value="ubud">Ubud & central Bali</option>
         <option value="batur">Mount Batur</option>
@@ -42,9 +42,10 @@ export function SearchPanel() {
         <option value="4">4 travelers</option>
         <option value="5">5+ travelers</option>
       </Select>
-      <Button type="submit" size="lg" className="w-full shadow-none lg:min-w-48">
+      <Button type="submit" size="lg" className="w-full shadow-none min-[360px]:col-span-2 lg:min-w-48">
         Search available tours
       </Button>
     </form>
   );
 }
+
